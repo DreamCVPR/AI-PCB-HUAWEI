@@ -2,6 +2,7 @@ import router from '@ohos.router';
 import { Detection } from '../pages/Detection'
 import { Visual } from '../pages/Visual'
 import { Task } from '../components/task'
+import { TaskDialog } from '../components/TaskDialog'
 
 class NVElem {
   text: string = ''
@@ -69,19 +70,7 @@ struct Index {
             .margin({ left: 2 })
 
           Blank()
-          Image($r('app.media.add'))
-            .width(26)
-            .height(26)
-            .margin({ right: 5 })
-            .onClick(() => {
-              this.showTask = !this.showTask;
-              if (this.showTask)
-                console.log('打开');
-              else
-                console.log('关闭')
-            })
-            .zIndex(0)
-
+          TaskDialog()
         }
         .width('100%')
         .height(60)
@@ -93,14 +82,6 @@ struct Index {
           bottom: 5
         })
         .margin({ bottom: 10 })
-
-
-        // Divider()
-        //   .width('96%')
-        //   .height(200)
-        //   .backgroundColor('#30C9F0')
-        //   .padding({left: 5, right: 5, top: 5, bottom: 5})
-        //   .borderRadius(6)
 
         Tabs({ barPosition: BarPosition.End, controller: this.controller }) {
           ForEach(this.Build, (item: NVElem) => {
@@ -131,20 +112,6 @@ struct Index {
 
       }.width('100%').height('100%').backgroundColor('#F1F3F5')
 
-      Panel(this.showTask) {
-        Column() {
-          Text('Today Calendar')
-          Divider()
-          Text('1. afternoon 4:00 The project meeting')
-        }
-        .width('100%')
-        .height('100%')
-      }
-      .type(PanelType.Foldable).mode(PanelMode.Half)
-      .dragBar(true) // 默认开启
-      .halfHeight(500)
-      .position({ x: '0', y: '0' })
-      // .offset({ x: '0', y: '0' }) // 默认一半
     }
   }
 }
