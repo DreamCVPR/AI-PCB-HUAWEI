@@ -1,15 +1,36 @@
+import picker from '@ohos.file.picker';
+import { CusImage } from '../common/classes'
+
 
 @CustomDialog
 export struct TaskDetail {
   // 用于父子组件双向通信
   @Link taskName: string
+  @Link imageList: Array<string>
 
   controller?: CustomDialogController;
   // 若尝试在CustomDialog中传入多个其他的Controller，以实现在CustomDialog中打开另一个或另一些CustomDialog，那么此处需要将指向自己的controller放在所有controller的后面
+
   // 定义回调函数
   cancel: () => void = () => {
   }
   confirm: () => void = () => {
+  }
+
+  // 打开相册, 选择图像
+  choiceImage () {
+      let PhotoSelectOptions = new picker.PhotoSelectOptions();
+      PhotoSelectOptions.MIMEType = picker.PhotoViewMIMETypes.IMAGE_TYPE;
+      PhotoSelectOptions.maxSelectNumber = 5;
+      let photoPicker = new picker.PhotoViewPicker();
+      photoPicker.select(PhotoSelectOptions).then((PhotoSelectResult) => {
+        console.info('PhotoViewPicker.select successfully, PhotoSelectResult uri: ' + JSON.stringify(PhotoSelectResult));
+        this.imageList = PhotoSelectResult['photoUris']
+      }).catch((err: string) => {
+        console.error('PhotoViewPicker.select failed with err: ' + err);
+      });
+    } catch (err: string) {
+    console.error('PhotoViewPicker failed with err: ' + err);
   }
 
   build() {
@@ -26,8 +47,20 @@ export struct TaskDetail {
         Button('上传图像')
           .onClick(() => {
             console.log('上传图像');
+            this.choiceImage();
           })
           .margin({ top:20 })
+
+        List({space: 20, initialIndex: 0}) {
+          ForEach(this.imageList, (item: string) => {
+              ListItem() {
+                Text(item)
+                  .width('100%').fontSize(14)
+                  .textAlign(TextAlign.Center)
+              }
+          })
+        }
+
         Blank()
         Flex({ justifyContent: FlexAlign.SpaceAround }) {
           Button('取消', {type: ButtonType.Normal, stateEffect: true})
@@ -68,11 +101,13 @@ export struct TaskDetail {
 @Component
 export struct TaskDialog {
   @State taskName: string = '';
+  @State imageList: Array<string> = [];
   dialogController: CustomDialogController | null = new CustomDialogController({
     builder: TaskDetail({
       cancel: this.onCancel,
       confirm: this.onAccept,
       taskName: $taskName,
+      imageList: $imageList,
     }),
     cancel: this.exitApp,
     autoCancel: false,
@@ -86,11 +121,13 @@ export struct TaskDialog {
   // 在自定义组件即将析构销毁时销毁组件
   aboutToDisappear() {
     this.taskName = '';
+    this.imageList = [];
     this.dialogController = null;
   }
 
   onCancel() {
     this.taskName = '';
+    this.imageList = [];
     this.dialogController = null;
   }
 
