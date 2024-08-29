@@ -1,6 +1,7 @@
 {
   "src": [
     "pages/Index",
-    "pages/Homepage"
+    "pages/Detection",
+    "pages/Visual"
   ]
 }

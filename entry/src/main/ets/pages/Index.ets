@@ -1,124 +1,150 @@
 import router from '@ohos.router';
-// import store from '../utils/store'
-
+import { Detection } from '../pages/Detection'
+import { Visual } from '../pages/Visual'
+import { Task } from '../components/task'
 
 class NVElem {
   text: string = ''
   num: number = 0
+  init: string = ''
+  selected: string = ''
+  page: string = ''
 }
 
 @Entry
 @Component
 struct Index {
-  private arr: number[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-  @State currentIndex: number = 0
+  private controller: TabsController = new TabsController()
+  @State currentIndex: number = 0;
+  @State showTask: boolean = false;
   @State Build: Array<NVElem> = [
     {
-      text: 'home',
-      num: 0
+      text: '首页',
+      num: 0,
+      init: 'app.media.home',
+      selected: 'app.media.home_selected',
+      page: 'pages/Index',
     },
     {
-      text: 'det',
-      num: 1
+      text: '检测',
+      num: 1,
+      init: 'app.media.det',
+      selected: 'app.media.det_selected',
+      page: 'pages/Detection',
     },
     {
-      text: 'vis',
-      num: 2
+      text: '可视化',
+      num: 2,
+      init: 'app.media.vis',
+      selected: 'app.media.vis_selected',
+      page: 'pages/Visual',
     }
   ]
 
-  @Builder NavigationTitle() {
+  @Builder TabBuilder(index: number) {
     Column() {
-      Text('质造智控：AI助力的精密质检')
-        .fontColor('#182431')
-        .fontSize(25)
-        .lineHeight(41)
-        .fontWeight(700)
-        .margin({top: -20})
-        .textAlign(TextAlign.Center)
-        .width('100%')
-      Text('Mamba back again')
-        .fontColor('#182431')
-        .fontSize(14)
-        .lineHeight(19)
-        .opacity(0.4)
-        .margin({ top: 2, left: 20, bottom: 20 })
-    }.alignItems(HorizontalAlign.Start)
-  }
-
-  @Builder NavigationMenus() {
-    Row() {
-      Image('common/navigation_icon1.svg')
+      Image(this.currentIndex === this.Build[index].num ? $r(this.Build[index].selected) : $r(this.Build[index].init))
         .width(24)
         .height(24)
-      Image('common/navigation_icon1.svg')
-        .width(24)
-        .height(24)
-        .margin({ left: 24 })
-      Image('common/navigation_icon2.svg')
-        .width(24)
-        .height(24)
-        .margin({ left: 24 })
-    }
-  }
-
-  @Builder NavigationToolbar() {
-    Row() {
-      ForEach(this.Build, (item: NVElem) => {
-        Column() {
-          Image(this.currentIndex == item.num ? 'common/public_icon_selected.svg' : 'common/public_icon.svg')
-            .width(24)
-            .height(24)
-          Text(item.text)
-            .fontColor(this.currentIndex == item.num ? '#007DFF' : '#182431')
-            .fontSize(10)
-            .lineHeight(14)
-            .fontWeight(500)
-            .margin({ top: 3 })
-        }.width(104).height(56)
-        .onClick(() => {
-          this.currentIndex = item.num
-        })
-      })
-    }.margin({ left: 24 })
+        .margin({ bottom: 4 })
+        .objectFit(ImageFit.Contain)
+      Text(this.Build[index].text)
+        .fontSize(10)
+        .fontWeight(500)
+        .lineHeight(14)
+    }.width('100%')
   }
 
   build() {
     Column() {
-      Navigation() {
-        TextInput({ placeholder: 'search...' })
-          .width('90%')
-          .height(40)
-          .backgroundColor('#FFFFFF')
-          .margin({ top: 8 })
+      Flex({ direction: FlexDirection.Column }) {
 
-        List({ space: 12, initialIndex: 0 }) {
-          ForEach(this.arr, (item: NVElem) => {
-            ListItem() {
-              Text('' + item)
-                .width('90%')
-                .height(72)
-                .backgroundColor('#FFFFFF')
-                .borderRadius(24)
-                .fontSize(16)
-                .fontWeight(500)
-                .textAlign(TextAlign.Center)
-            }.editable(true)
+
+        Row() {
+          Text('检测任务')
+            .fontColor('#ffffff')
+            .fontSize(20)
+            .fontWeight(700)
+            .textAlign(TextAlign.Start)
+            .margin({ left: 2 })
+
+          Blank()
+          Image($r('app.media.add'))
+            .width(26)
+            .height(26)
+            .margin({ right: 5 })
+            .onClick(() => {
+              this.showTask = !this.showTask;
+              if (this.showTask)
+                console.log('打开');
+              else
+                console.log('关闭')
+            })
+            .zIndex(0)
+
+        }
+        .width('100%')
+        .height(60)
+        .backgroundColor('#3022CF')
+        .padding({
+          left: 10,
+          right: 10,
+          top: 5,
+          bottom: 5
+        })
+        .margin({ bottom: 10 })
+
+
+        // Divider()
+        //   .width('96%')
+        //   .height(200)
+        //   .backgroundColor('#30C9F0')
+        //   .padding({left: 5, right: 5, top: 5, bottom: 5})
+        //   .borderRadius(6)
+
+        Tabs({ barPosition: BarPosition.End, controller: this.controller }) {
+          ForEach(this.Build, (item: NVElem) => {
+            TabContent() {
+              Column() {
+                if (item.num === 0) {
+                  Task();
+                } else if (item.num === 1) {
+                  Detection();
+                } else if (item.num === 2) {
+                  Visual();
+                }
+              }.width('100%')
+            }.tabBar(this.TabBuilder(item.num))
           })
         }
-        .height(324)
+        .animationDuration(0)
+        // .scrollable(false)
+        .barMode(BarMode.Fixed)
+        .vertical(false)
+        .barHeight(56)
+        .onChange((index: number) => {
+          this.currentIndex = index
+        })
         .width('100%')
-        .margin({ top: 12, left: '10%' })
+        .backgroundColor('#F1F3F5')
+        .margin({ top: 8 })
+
+      }.width('100%').height('100%').backgroundColor('#F1F3F5')
+
+      Panel(this.showTask) {
+        Column() {
+          Text('Today Calendar')
+          Divider()
+          Text('1. afternoon 4:00 The project meeting')
+        }
+        .width('100%')
+        .height('100%')
       }
-      .title(this.NavigationTitle)
-      .menus(this.NavigationMenus)
-      .titleMode(NavigationTitleMode.Full)
-      .toolBar(this.NavigationToolbar)
-      .hideTitleBar(false)
-      .hideToolBar(false)
-      .onTitleModeChange((titleModel: NavigationTitleMode) => {
-        console.info('titleMode' + titleModel)
-      })
-    }.width('100%').height('100%').backgroundColor('#F1F3F5')
+      .type(PanelType.Foldable).mode(PanelMode.Half)
+      .dragBar(true) // 默认开启
+      .halfHeight(500)
+      .position({ x: '0', y: '0' })
+      // .offset({ x: '0', y: '0' }) // 默认一半
+    }
   }
 }
