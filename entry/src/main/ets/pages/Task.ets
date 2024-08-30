@@ -3,11 +3,34 @@ import { Response, TaskElem } from '../common/classes'
 import { detect, getTasks } from '../api/service'
 import { TaskController } from '../controllers/TaskController';
 
-
+// new TaskElem(
+//     48,
+//     "任务1",
+//     "这是任务1",
+//     "1",
+//     1,
+//     "2024-08-30 14:09:43"
+//   ),new TaskElem(
+//     48,
+//     "任务2",
+//     "这是任务weqweqww2",
+//     "1",
+//     0,
+//     "2024-08-30 14:09:43"
+//   ),
+//     new TaskElem(
+//       48,
+//       "任务2",
+//       "这是任务weqweqww2",
+//       "1",
+//       2,
+//       "2024-08-30 14:09:43"
+//     )
 @Entry
 @Component
 export struct Task {
   @State message: string = '任务列表';
+  @State isRefreshing: boolean = false;
   @State taskList: Array<TaskElem> = [new TaskElem(
     48,
     "任务1",
@@ -154,7 +177,7 @@ export struct Task {
   }
 
   build() {
-    RelativeContainer() {
+    Refresh({ refreshing: $$this.isRefreshing}) {
       List({space: 20, initialIndex: 0}) {
         ForEach(this.taskList, (item: TaskElem) => {
           this.TaskItem(item)
@@ -190,5 +213,15 @@ export struct Task {
     .height('100%')
     .width('100%')
     .backgroundColor(0xDCDCDC)
+    .onRefreshing(() => {
+      this.getTasks();
+      // this.isRefreshing = false
+      setTimeout(() => {
+        this.isRefreshing = false
+      }, 1000)
+      console.log('onRefreshing test')
+    })
+    .refreshOffset(64)
+    .pullToRefresh(true)
   }
 }
