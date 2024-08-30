@@ -1,9 +1,11 @@
 import router from '@ohos.router';
-import { Detection } from '../pages/Detection'
+import { Settings } from './Settings'
 import { Visual } from '../pages/Visual'
 import { Task } from './Task'
 import { TaskDialog } from '../components/TaskDialog'
-import { NVElem } from '../common/classes'
+import { NVElem, CommonConstants } from '../common/classes'
+import { TaskController } from '../controllers/TaskController'
+import { TaskDialogController } from '../controllers/TaskDialogController'
 import { login } from '../api/account';
 
 // 初始化存储的token
@@ -13,7 +15,8 @@ PersistentStorage.persistProp('token', '')
 @Entry
 @Component
 struct Index {
-  private controller: TabsController = new TabsController()
+  private tabController: TabsController = new TabsController()
+  private taskController: TaskController = new TaskController()
   @State currentIndex: number = 0;
   @State showTask: boolean = false;
   @State Build: Array<NVElem> = [
@@ -25,18 +28,18 @@ struct Index {
       page: 'pages/Index',
     },
     {
-      text: '检测',
+      text: '数据面板',
       num: 1,
-      init: 'app.media.det',
-      selected: 'app.media.det_selected',
-      page: 'pages/Detection',
-    },
-    {
-      text: '可视化',
-      num: 2,
       init: 'app.media.vis',
       selected: 'app.media.vis_selected',
       page: 'pages/Visual',
+    },
+    {
+      text: '我的',
+      num: 2,
+      init: 'app.media.settings',
+      selected: 'app.media.settings_selected',
+      page: 'pages/Settings',
     }
   ]
 
@@ -54,41 +57,51 @@ struct Index {
     }.width('100%')
   }
 
-
+  // 用于子组件调用, 出发父组件和其他组件通信, 刷新
+  onRefresh () {
+    console.log('子组件触发刷新');
+    this.taskController.getTasks();
+  }
 
   build() {
     Column() {
       Flex({ direction: FlexDirection.Column }) {
         Row() {
-          Text('检测任务')
-            .fontColor('#ffffff')
-            .fontSize(20)
-            .fontWeight(700)
-            .textAlign(TextAlign.Start)
-            .margin({ left: 2 })
-          Blank()
-          TaskDialog()
+          Flex() {
+            Text('检测任务')
+              .fontColor('#ffffff')
+              .fontSize(20)
+              .fontWeight(700)
+              .textAlign(TextAlign.Start)
+              .margin({ left: 2 })
+            Blank()
+            TaskDialog({
+              refresh: this.onRefresh.bind(this)
+            })
+          }
         }
         .width('100%')
-        .height(60)
-        .backgroundColor('#3022CF')
+        .height(CommonConstants.STATUS_BAR_HEIGHT - 10)
+        .backgroundColor('rgb(130, 178, 154)')
         .padding({
           left: 10,
           right: 10,
-          top: 5,
-          bottom: 5
+          top: 30,
+          bottom: 0
         })
 
-        Tabs({ barPosition: BarPosition.End, controller: this.controller }) {
+        Tabs({ barPosition: BarPosition.End, controller: this.tabController }) {
           ForEach(this.Build, (item: NVElem) => {
             TabContent() {
               Column() {
                 if (item.num === 0) {
-                  Task();
+                  Task({
+                    taskController: this.taskController
+                  });
                 } else if (item.num === 1) {
-                  Detection();
-                } else if (item.num === 2) {
                   Visual();
+                } else if (item.num === 2) {
+                  Settings();
                 }
               }.width('100%')
             }.tabBar(this.TabBuilder(item.num))
@@ -102,7 +115,7 @@ struct Index {
         // .scrollable(false)
         .barMode(BarMode.Fixed)
         .vertical(false)
-        .barHeight(56)
+        .barHeight(`${56}`)
 
       }.width('100%').height('100%')
 

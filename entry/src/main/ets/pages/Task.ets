@@ -1,6 +1,7 @@
 import router from '@ohos.router';
 import { Response, TaskElem } from '../common/classes'
 import { detect, getTasks } from '../api/service'
+import { TaskController } from '../controllers/TaskController';
 
 @Entry
 @Component
@@ -8,6 +9,16 @@ export struct Task {
   @State message: string = '任务列表';
   @State taskList: Array<object> = [];
   @State selectedId: number = -1;
+
+  public taskController: TaskController | null = null;
+
+  // 生命钩子函数
+  aboutToAppear(){
+    if (this.taskController) {
+      this.taskController.attach(this); //绑定控制器
+    }
+    this.getTasks();
+  }
 
   @Builder TaskItem(item: TaskElem) {
       Row() {
@@ -42,6 +53,7 @@ export struct Task {
     getTasks()
       .then((res: Response) => {
         console.log("获取任务成功:"+  JSON.stringify(res));
+        let tempList: Array<TaskElem> = [];
         for (let i = 0; i < res.result.length; i++) {
           let taskInfo = res.result[i];
           let taskObj: TaskElem = new TaskElem(
@@ -52,17 +64,13 @@ export struct Task {
             taskInfo['taskState'],
             taskInfo['gmtCreate']
           )
-          this.taskList.push(taskObj)
+          tempList.push(taskObj)
+          this.taskList = [...tempList]
         }
       })
       .catch((err: Response) => {
         console.log("获取任务失败:" + JSON.stringify(err))
       })
-  }
-
-  // 生命钩子函数
-  aboutToAppear(){
-    this.getTasks()
   }
 
   build() {

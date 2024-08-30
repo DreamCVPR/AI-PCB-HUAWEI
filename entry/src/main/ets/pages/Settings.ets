@@ -2,8 +2,8 @@ import router from '@ohos.router';
 
 @Entry
 @Component
-export struct Detection {
-  @State message: string = '检测页';
+export struct Settings {
+  @State message: string = '我的';
 
   build() {
     RelativeContainer() {

@@ -1,3 +1,9 @@
+
+// 全局变量
+export class CommonConstants {
+  static STATUS_BAR_HEIGHT: number = 0;
+}
+
 // 响应体对象
 export class Response {
   result: Array<Map<string, string | number>>

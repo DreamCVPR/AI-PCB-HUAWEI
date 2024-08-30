@@ -124,6 +124,8 @@ export struct TaskDialog {
   @State imageList: Array<string> = [];
   @State imgBase64: Array<string> = [];
 
+  refresh: () => void = () => {}
+
   @StorageLink('token') token: string = '';
 
   dialogController: CustomDialogController | null = new CustomDialogController({
@@ -203,6 +205,7 @@ export struct TaskDialog {
     })
       .then((data: Response) => {
         console.log("增加任务成功:"+  JSON.stringify(data));
+        this?.refresh();
       })
       .catch((err: Response) => {
         console.log("增加任务失败:" + JSON.stringify(err))
