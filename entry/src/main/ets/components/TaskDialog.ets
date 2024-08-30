@@ -46,37 +46,57 @@ export struct TaskDetail {
       Text('新建检测任务').fontSize(20).margin({ top: 10, bottom: 20 })
 
       Column() {
-        TextInput({ placeholder: '请输入任务名', text: this.taskName }).height(40).width('80%')
-          .onChange((value: string) => {
-            this.taskName = value
-          })
-          .margin({bottom: 10})
+        Column () {
+          TextInput({ placeholder: '请输入任务名', text: this.taskName }).height(40).width('80%')
+            .onChange((value: string) => {
+              this.taskName = value
+            })
+            .margin({ bottom: 10 })
 
-        TextInput({ placeholder: '请输入任务描述', text: this.taskDesc }).height(40).width('80%')
-          .onChange((value: string) => {
-            this.taskDesc = value
-          })
-          .margin({bottom: 10})
+          TextInput({ placeholder: '请输入任务描述', text: this.taskDesc }).height(40).width('80%')
+            .onChange((value: string) => {
+              this.taskDesc = value
+            })
+            .margin({ bottom: 10 })
 
-        Text('图像列表')
-        Button('上传图像')
-          .onClick(() => {
-            console.log('上传图像');
-            this.choiceImage();
-          })
-          .margin({ top:20 })
+          // Text('图像列表')
+          Flex() {
+            Button('上传图像')
+              .onClick(() => {
+                console.log('上传图像');
+                this.choiceImage();
+              })
+              .margin({ top: 10 })
+              .align(Alignment.Start)
+          }
+          .width('80%')
+        }
 
         List({space: 20, initialIndex: 0}) {
           ForEach(this.imageList, (item: string) => {
               ListItem() {
-                Text(item.substring(item.lastIndexOf("\/")+1))
-                  .width('100%').fontSize(14)
-                  .textAlign(TextAlign.Start)
-                  .margin({left: 22})
+                Row() {
+                  Flex() {
+                    Text(item.substring(item.lastIndexOf("\/") + 1))
+                      .width('80%').fontSize(14)
+                      .textAlign(TextAlign.Start)
+                    Image($r('app.media.delete2'))
+                      .width(24)
+                      .height(24)
+                      .onClick(() => {
+
+                      })
+                  }
+                  .margin({ left: 22, right: 18 })
+                  .width('100%')
+                }
               }
+              .width('100%')
+              .height(30)
           })
         }
         .margin(20)
+        .alignListItem(ListItemAlign.Start)
 
         Blank()
         Flex({ justifyContent: FlexAlign.SpaceAround }) {
@@ -109,8 +129,8 @@ export struct TaskDetail {
       }
       .height('80%')
 
-    }.borderRadius(10)
-    .height(400)
+    }.borderRadius(4)
+    .height('100%')
   }
 }
 
@@ -119,7 +139,7 @@ export struct TaskDetail {
 export struct TaskDialog {
   @State taskName: string = '';
   @State taskDesc: string = '';
-  @State imageList: Array<string> = [];
+  @State imageList: Array<string> = ['1.jpg', '2.jpg', '3.jpg'];
   @State imgBase64: Array<string> = [];
 
   refresh: () => void = () => {}
@@ -134,11 +154,11 @@ export struct TaskDialog {
       taskDesc: $taskDesc,
       imageList: $imageList,
     }),
-    cancel: this.exitApp,
+    cancel: this.exitApp.bind(this),
     autoCancel: false,
-    alignment: DialogAlignment.Bottom,
+    alignment: DialogAlignment.Center,
     offset: { dx: 0, dy: -20 },
-    gridCount: 8,
+    gridCount: 10,
     customStyle: false
   })
 
