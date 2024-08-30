@@ -1,6 +1,17 @@
 import picker from '@ohos.file.picker';
+import fs from '@ohos.file.fs';
 import { CusImage } from '../common/classes'
+import { login } from '../api/account';
+import store from '../utils/store';
+import { Response } from '../common/classes'
+import { addTask, startDet } from '../api/service';
+import common from '@ohos.app.ability.common';
 
+import util from '@ohos.util';
+import image from '@ohos.multimedia.image';
+
+let context = getContext(this) as common.UIAbilityContext;
+let cacheDir: string = context.cacheDir;
 
 @CustomDialog
 export struct TaskDetail {
@@ -56,7 +67,8 @@ export struct TaskDetail {
               ListItem() {
                 Text(item)
                   .width('100%').fontSize(14)
-                  .textAlign(TextAlign.Center)
+                  .textAlign(TextAlign.Start)
+                  .margin({top: 10, left: 20})
               }
           })
         }
@@ -100,8 +112,13 @@ export struct TaskDetail {
 @Entry
 @Component
 export struct TaskDialog {
-  @State taskName: string = '';
+  @State taskName: string = '123';
+  @State taskDesc: string = '123';
   @State imageList: Array<string> = [];
+  @State imgBase64: string = '';
+
+  @StorageLink('token') token: string = '';
+
   dialogController: CustomDialogController | null = new CustomDialogController({
     builder: TaskDetail({
       cancel: this.onCancel,
@@ -126,13 +143,98 @@ export struct TaskDialog {
   }
 
   onCancel() {
+    startDet({
+      'taskId': 41,
+    })
+      .then(async (data: Response) => {
+        console.log("successgetinfossssss:"+  JSON.stringify(data));
+      })
+      .catch((err: Response) => {
+        console.log("errorinfo:" + JSON.stringify(err))
+      })
     this.taskName = '';
     this.imageList = [];
     this.dialogController = null;
   }
 
+  transBase64(userAvatar: string) {
+    console.log('uploadImage:fileuri:' + userAvatar);
+    fs.open(userAvatar, fs.OpenMode.READ_ONLY).then((file) => {
+
+      console.info("uploadImage:file fd: " + file.fd);
+
+      const imageSource = image.createImageSource(file.fd);
+      const imagePackerApi: image.ImagePacker = image.createImagePacker();
+      let packOpts: image.PackingOption = { format: 'image/jpeg', quality: 30 };
+
+      imagePackerApi.packing(imageSource, packOpts).then((readBuffer) => {
+        let bufferArr = new Uint8Array(readBuffer)
+        let help = new util.Base64Helper
+        this.imgBase64 = help.encodeToStringSync(bufferArr)
+        console.info("uploadImage:base is : " + this.imgBase64);
+
+      });
+    }).catch((err: string) => {
+      console.info("uploadImage:copy file failed with error message: " + JSON.stringify(err));
+    });
+  }
+
+
+  // 增加任务(确定回调)
   onAccept() {
-    console.info('Callback when the second button is clicked')
+    // login({})
+    //   .then(async (data: Response) => {
+    //     console.log("successgetinfo:"+  JSON.stringify(data), data.result.length);
+    //     this.token = data.result;
+    //     AppStorage.setOrCreate('token', data.result);
+    //     console.log(this.token, '2312312312312', AppStorage.get('token'));
+    //   })
+    //   .catch((err: Response) => {
+    //     console.log("errorinfo:" + JSON.stringify(err))
+    //   })
+
+
+    let uri1: string = this.imageList[0];
+    console.log('uploadImage:fileuri:' + uri1);
+    fs.open(uri1, fs.OpenMode.READ_ONLY).then((file) => {
+
+      console.info("uploadImage:file fd: " + file.fd);
+
+      const imageSource = image.createImageSource(file.fd);
+      const imagePackerApi: image.ImagePacker = image.createImagePacker();
+      let packOpts: image.PackingOption = { format: 'image/jpeg', quality: 100 };
+
+      imagePackerApi.packing(imageSource, packOpts).then((readBuffer) => {
+        let bufferArr = new Uint8Array(readBuffer)
+        let help = new util.Base64Helper
+        this.imgBase64 = help.encodeToStringSync(bufferArr)
+        addTask({
+          'task_name': this.taskName,
+          'task_desc': this.taskDesc,
+          'files': this.imgBase64
+        })
+          .then(async (data: Response) => {
+            console.log("successgetinfossssss:"+  JSON.stringify(data));
+          })
+          .catch((err: Response) => {
+            console.log("errorinfo:" + JSON.stringify(err))
+          })
+        console.info("uploadImage:base is : " + this.imgBase64);
+
+      });
+    }).catch((err: string) => {
+      console.info("uploadImage:copy file failed with error message: " + JSON.stringify(err));
+    });
+
+    // let file = fs.openSync(uri1, fs.OpenMode.CREATE);
+    // fs.copyFileSync(file.fd, cacheDir + '/test.jpg')
+    // console.info('file fd: ' + file.fd);
+    // let buffer = new ArrayBuffer(4096);
+    // let readLen = fs.readSync(file.fd, buffer);
+    // console.info('readSync data to file succeed and buffer size is:' + readLen);
+    // fs.closeSync(file);
+    // console.log('bufferssss', buffer)
+
   }
 
   exitApp() {

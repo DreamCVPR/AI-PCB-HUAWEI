@@ -1,18 +1,10 @@
-import request from '../utils/request'
+import { requests } from '../utils/request'
 
 
 export function login (parameter) {
-  return request({
-    url: '/account/getUserInfo',
+  return requests({
+    url: '/account/login',
     method: 'post',
-    data: parameter
-  })
-}
-
-export function getToken (parameter) {
-  return request({
-    url: 'https://iam.cn-southwest-2.myhuaweicloud.com/v3/auth/tokens',
-    method: 'post',
-    data: parameter
+    data: parameter,
   })
 }

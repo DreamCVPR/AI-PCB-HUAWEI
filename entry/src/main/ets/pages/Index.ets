@@ -4,6 +4,9 @@ import { Visual } from '../pages/Visual'
 import { Task } from '../components/task'
 import { TaskDialog } from '../components/TaskDialog'
 
+// 初始化存储的token
+PersistentStorage.persistProp('token', '')
+
 class NVElem {
   text: string = ''
   num: number = 0
