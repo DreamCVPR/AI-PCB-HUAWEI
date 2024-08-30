@@ -223,7 +223,7 @@ export struct TaskDialog {
 
   build() {
     Column() {
-      Image($r('app.media.add'))
+      Image($r('app.media.add2'))
         .width(26)
         .height(26)
         .onClick(() => {

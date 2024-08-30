@@ -115,7 +115,8 @@ struct Index {
         // .scrollable(false)
         .barMode(BarMode.Fixed)
         .vertical(false)
-        .barHeight(`${56}`)
+        .barHeight(56)
+        .margin({bottom:16})
 
       }.width('100%').height('100%')
 
