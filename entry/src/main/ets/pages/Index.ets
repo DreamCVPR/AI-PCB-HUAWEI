@@ -3,17 +3,12 @@ import { Detection } from '../pages/Detection'
 import { Visual } from '../pages/Visual'
 import { Task } from '../components/task'
 import { TaskDialog } from '../components/TaskDialog'
+import { NVElem } from '../common/classes'
+import { login } from '../api/account';
 
 // 初始化存储的token
 PersistentStorage.persistProp('token', '')
 
-class NVElem {
-  text: string = ''
-  num: number = 0
-  init: string = ''
-  selected: string = ''
-  page: string = ''
-}
 
 @Entry
 @Component
@@ -59,11 +54,11 @@ struct Index {
     }.width('100%')
   }
 
+
+
   build() {
     Column() {
       Flex({ direction: FlexDirection.Column }) {
-
-
         Row() {
           Text('检测任务')
             .fontColor('#ffffff')
@@ -71,7 +66,6 @@ struct Index {
             .fontWeight(700)
             .textAlign(TextAlign.Start)
             .margin({ left: 2 })
-
           Blank()
           TaskDialog()
         }
@@ -84,7 +78,6 @@ struct Index {
           top: 5,
           bottom: 5
         })
-        .margin({ bottom: 10 })
 
         Tabs({ barPosition: BarPosition.End, controller: this.controller }) {
           ForEach(this.Build, (item: NVElem) => {
@@ -101,19 +94,17 @@ struct Index {
             }.tabBar(this.TabBuilder(item.num))
           })
         }
+        .onChange((index: number) => {
+          this.currentIndex = index
+        })
         .animationDuration(0)
+        .barWidth('100%')
         // .scrollable(false)
         .barMode(BarMode.Fixed)
         .vertical(false)
         .barHeight(56)
-        .onChange((index: number) => {
-          this.currentIndex = index
-        })
-        .width('100%')
-        .backgroundColor('#F1F3F5')
-        .margin({ top: 8 })
 
-      }.width('100%').height('100%').backgroundColor('#F1F3F5')
+      }.width('100%').height('100%')
 
     }
   }

@@ -1,6 +1,5 @@
 import picker from '@ohos.file.picker';
 import fs from '@ohos.file.fs';
-import { CusImage } from '../common/classes'
 import { login } from '../api/account';
 import store from '../utils/store';
 import { Response } from '../common/classes'
@@ -10,17 +9,17 @@ import common from '@ohos.app.ability.common';
 import util from '@ohos.util';
 import image from '@ohos.multimedia.image';
 
-let context = getContext(this) as common.UIAbilityContext;
-let cacheDir: string = context.cacheDir;
+
 
 @CustomDialog
 export struct TaskDetail {
   // 用于父子组件双向通信
   @Link taskName: string
+  @Link taskDesc: string
   @Link imageList: Array<string>
 
+  // 指向自己的controller
   controller?: CustomDialogController;
-  // 若尝试在CustomDialog中传入多个其他的Controller，以实现在CustomDialog中打开另一个或另一些CustomDialog，那么此处需要将指向自己的controller放在所有controller的后面
 
   // 定义回调函数
   cancel: () => void = () => {
@@ -54,6 +53,13 @@ export struct TaskDetail {
             this.taskName = value
           })
           .margin({bottom: 10})
+
+        TextInput({ placeholder: '请输入任务描述', text: this.taskDesc }).height(40).width('80%')
+          .onChange((value: string) => {
+            this.taskDesc = value
+          })
+          .margin({bottom: 10})
+
         Text('图像列表')
         Button('上传图像')
           .onClick(() => {
@@ -65,13 +71,14 @@ export struct TaskDetail {
         List({space: 20, initialIndex: 0}) {
           ForEach(this.imageList, (item: string) => {
               ListItem() {
-                Text(item)
+                Text(item.substring(item.lastIndexOf("\/")+1))
                   .width('100%').fontSize(14)
                   .textAlign(TextAlign.Start)
-                  .margin({top: 10, left: 20})
+                  .margin({left: 22})
               }
           })
         }
+        .margin(20)
 
         Blank()
         Flex({ justifyContent: FlexAlign.SpaceAround }) {
@@ -112,18 +119,19 @@ export struct TaskDetail {
 @Entry
 @Component
 export struct TaskDialog {
-  @State taskName: string = '123';
-  @State taskDesc: string = '123';
+  @State taskName: string = '';
+  @State taskDesc: string = '';
   @State imageList: Array<string> = [];
-  @State imgBase64: string = '';
+  @State imgBase64: Array<string> = [];
 
   @StorageLink('token') token: string = '';
 
   dialogController: CustomDialogController | null = new CustomDialogController({
     builder: TaskDetail({
-      cancel: this.onCancel,
-      confirm: this.onAccept,
+      cancel: this.onCancel.bind(this),
+      confirm: this.onAccept.bind(this),
       taskName: $taskName,
+      taskDesc: $taskDesc,
       imageList: $imageList,
     }),
     cancel: this.exitApp,
@@ -136,15 +144,62 @@ export struct TaskDialog {
 
 
   // 在自定义组件即将析构销毁时销毁组件
-  aboutToDisappear() {
+
+  clear () {
     this.taskName = '';
+    this.taskDesc = '';
     this.imageList = [];
     this.dialogController = null;
   }
+  aboutToDisappear() {
+    this.clear()
+  }
 
   onCancel() {
-    startDet({
-      'taskId': 41,
+   this.clear()
+  }
+
+  async transBase64() {
+    for (let i = 0; i < this.imageList.length; i++) {
+      let uri: string = this.imageList[0];
+      console.log('uploadImage:fileuri:' + uri);
+
+      try {
+        let fileDes = await fs.open(uri, fs.OpenMode.READ_ONLY);
+        console.info("uploadImage:file fd: " + fileDes.fd);
+        const imageSource = image.createImageSource(fileDes.fd);
+        const imagePackerApi: image.ImagePacker = image.createImagePacker();
+        let packOpts: image.PackingOption = { format: 'image/jpeg', quality: 98 };
+
+        let readBuffer = await imagePackerApi.packing(imageSource, packOpts);
+
+        let bufferArr = new Uint8Array(readBuffer)
+        let help = new util.Base64Helper
+        let base64 = help.encodeToStringSync(bufferArr)
+        console.info("uploadImage:base is : " + base64);
+        this.imgBase64.push(base64)
+      }
+      catch (err) {
+        console.info("uploadImage:copy file failed with error message: " + JSON.stringify(err));
+      }
+    }
+}
+
+
+  // 增加任务(确定回调), 文件转base64
+  async onAccept() {
+    await this.transBase64();
+    let fileNames: Array<string> = [];
+    for (let i = 0; i < this.imageList.length; i++) {
+      let fileName: string = this.imageList[i].substring(this.imageList[i].lastIndexOf("\/")+1);
+      fileNames.push(fileName);
+    }
+    console.log('fileNames', JSON.stringify(fileNames))
+    addTask({
+      'task_name': this.taskName,
+      'task_desc': this.taskDesc,
+      'files': this.imgBase64,
+      'fileNames': fileNames
     })
       .then(async (data: Response) => {
         console.log("successgetinfossssss:"+  JSON.stringify(data));
@@ -152,89 +207,6 @@ export struct TaskDialog {
       .catch((err: Response) => {
         console.log("errorinfo:" + JSON.stringify(err))
       })
-    this.taskName = '';
-    this.imageList = [];
-    this.dialogController = null;
-  }
-
-  transBase64(userAvatar: string) {
-    console.log('uploadImage:fileuri:' + userAvatar);
-    fs.open(userAvatar, fs.OpenMode.READ_ONLY).then((file) => {
-
-      console.info("uploadImage:file fd: " + file.fd);
-
-      const imageSource = image.createImageSource(file.fd);
-      const imagePackerApi: image.ImagePacker = image.createImagePacker();
-      let packOpts: image.PackingOption = { format: 'image/jpeg', quality: 30 };
-
-      imagePackerApi.packing(imageSource, packOpts).then((readBuffer) => {
-        let bufferArr = new Uint8Array(readBuffer)
-        let help = new util.Base64Helper
-        this.imgBase64 = help.encodeToStringSync(bufferArr)
-        console.info("uploadImage:base is : " + this.imgBase64);
-
-      });
-    }).catch((err: string) => {
-      console.info("uploadImage:copy file failed with error message: " + JSON.stringify(err));
-    });
-  }
-
-
-  // 增加任务(确定回调)
-  onAccept() {
-    // login({})
-    //   .then(async (data: Response) => {
-    //     console.log("successgetinfo:"+  JSON.stringify(data), data.result.length);
-    //     this.token = data.result;
-    //     AppStorage.setOrCreate('token', data.result);
-    //     console.log(this.token, '2312312312312', AppStorage.get('token'));
-    //   })
-    //   .catch((err: Response) => {
-    //     console.log("errorinfo:" + JSON.stringify(err))
-    //   })
-
-
-    let uri1: string = this.imageList[0];
-    console.log('uploadImage:fileuri:' + uri1);
-    fs.open(uri1, fs.OpenMode.READ_ONLY).then((file) => {
-
-      console.info("uploadImage:file fd: " + file.fd);
-
-      const imageSource = image.createImageSource(file.fd);
-      const imagePackerApi: image.ImagePacker = image.createImagePacker();
-      let packOpts: image.PackingOption = { format: 'image/jpeg', quality: 100 };
-
-      imagePackerApi.packing(imageSource, packOpts).then((readBuffer) => {
-        let bufferArr = new Uint8Array(readBuffer)
-        let help = new util.Base64Helper
-        this.imgBase64 = help.encodeToStringSync(bufferArr)
-        addTask({
-          'task_name': this.taskName,
-          'task_desc': this.taskDesc,
-          'files': this.imgBase64
-        })
-          .then(async (data: Response) => {
-            console.log("successgetinfossssss:"+  JSON.stringify(data));
-          })
-          .catch((err: Response) => {
-            console.log("errorinfo:" + JSON.stringify(err))
-          })
-        console.info("uploadImage:base is : " + this.imgBase64);
-
-      });
-    }).catch((err: string) => {
-      console.info("uploadImage:copy file failed with error message: " + JSON.stringify(err));
-    });
-
-    // let file = fs.openSync(uri1, fs.OpenMode.CREATE);
-    // fs.copyFileSync(file.fd, cacheDir + '/test.jpg')
-    // console.info('file fd: ' + file.fd);
-    // let buffer = new ArrayBuffer(4096);
-    // let readLen = fs.readSync(file.fd, buffer);
-    // console.info('readSync data to file succeed and buffer size is:' + readLen);
-    // fs.closeSync(file);
-    // console.log('bufferssss', buffer)
-
   }
 
   exitApp() {
