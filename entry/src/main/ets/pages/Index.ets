@@ -1,7 +1,7 @@
 import router from '@ohos.router';
 import { Detection } from '../pages/Detection'
 import { Visual } from '../pages/Visual'
-import { Task } from '../components/task'
+import { Task } from './Task'
 import { TaskDialog } from '../components/TaskDialog'
 import { NVElem } from '../common/classes'
 import { login } from '../api/account';

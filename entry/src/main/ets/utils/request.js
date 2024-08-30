@@ -10,6 +10,8 @@ export async function requests(options) {
     if (url.substring(0, 4) !== "http") {
         url = baseUrl + url
     }
+    if (!data)
+        data = {}
 
     let httpRequest = http.createHttp();
     let header = {

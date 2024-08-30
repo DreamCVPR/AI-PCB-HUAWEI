@@ -1,9 +1,9 @@
 import { requests } from '../utils/request'
 
 
-export function predict (parameter) {
+export function detect (parameter) {
     return requests({
-        url: '/service/predict',
+        url: '/task/detect',
         method: 'post',
         data: parameter
     })
@@ -22,5 +22,13 @@ export function startDet (parameter) {
         url: '/task/detect',
         method: 'post',
         data: parameter,
+    })
+}
+
+export function getTasks (parameter) {
+    return requests({
+        url: '/task/query',
+        method: 'post',
+        data: parameter
     })
 }

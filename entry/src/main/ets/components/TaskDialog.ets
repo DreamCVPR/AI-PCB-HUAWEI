@@ -149,7 +149,7 @@ export struct TaskDialog {
     this.taskName = '';
     this.taskDesc = '';
     this.imageList = [];
-    this.dialogController = null;
+    // this.dialogController = null;
   }
   aboutToDisappear() {
     this.clear()
@@ -201,15 +201,18 @@ export struct TaskDialog {
       'files': this.imgBase64,
       'fileNames': fileNames
     })
-      .then(async (data: Response) => {
-        console.log("successgetinfossssss:"+  JSON.stringify(data));
+      .then((data: Response) => {
+        console.log("增加任务成功:"+  JSON.stringify(data));
       })
       .catch((err: Response) => {
-        console.log("errorinfo:" + JSON.stringify(err))
+        console.log("增加任务失败:" + JSON.stringify(err))
       })
+
+    this.clear();
   }
 
   exitApp() {
+    this.clear();
     console.info('Click the callback in the blank area')
   }
 
