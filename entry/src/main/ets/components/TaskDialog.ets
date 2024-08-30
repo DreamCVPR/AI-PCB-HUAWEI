@@ -1,10 +1,8 @@
 import picker from '@ohos.file.picker';
 import fs from '@ohos.file.fs';
 import { login } from '../api/account';
-import store from '../utils/store';
 import { Response } from '../common/classes'
 import { addTask, startDet } from '../api/service';
-import common from '@ohos.app.ability.common';
 
 import util from '@ohos.util';
 import image from '@ohos.multimedia.image';

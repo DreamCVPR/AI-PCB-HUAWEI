@@ -108,10 +108,6 @@ export struct Task {
               .height(36)
               .width(96)
             }
-              .onClick(() => {
-                this.startDet(item.taskId);
-                this.getTasks();
-              })
               .borderRadius(4)
               .margin({right: 12})
               .backgroundColor('rgb(021, 151, 165)')
@@ -119,8 +115,36 @@ export struct Task {
           else if (item.taskState == 0) {
             Button('检测', {type: ButtonType.Normal, stateEffect: true})
               .onClick(() => {
-                this.startDet(item.taskId);
-                this.getTasks();
+                this.selectedId = item.taskId;
+                AlertDialog.show(
+                  {
+                    title: '是否开始检测?',
+                    message: '',
+                    autoCancel: true,
+                    alignment: DialogAlignment.Center,
+                    gridCount: 4,
+                    offset: {dx: 0, dy: -20},
+                    primaryButton: {
+                      value: '取消',
+                      fontColor: '#000000',
+                      backgroundColor: '#ffffff',
+                      action: () => {
+                          this.selectedId = -1;
+                      }
+                    },
+                    secondaryButton: {
+                      value: '确定',
+                      fontColor: '#000000',
+                      backgroundColor: '#ffffff',
+                      action: () => {
+                        this.startDet(item.taskId);
+                      }
+                    },
+                    cancel: () => {
+                      this.selectedId = -1;
+                    }
+                  }
+                )
               })
               .borderRadius(4)
               .margin({right: 12})
@@ -131,10 +155,14 @@ export struct Task {
         }
         .height('100%')
       }
+      .onClick(() => {
+        // TODO: 进入任务详情页
+      })
       .width('100%')
       .height(100)
       .backgroundColor(0xFFFFFF)
       .borderRadius(12)
+
   }
 
   // 检测某一任务
@@ -144,7 +172,8 @@ export struct Task {
     })
       .then((res: Response) => {
         console.log('开始检测', JSON.stringify(res));
-        this.selectedId = selectedId;
+        this.getTasks();
+        this.selectedId = -1;
       })
       .catch((err: Response) => {
         console.log("检测失败:" + JSON.stringify(err))
@@ -187,7 +216,7 @@ export struct Task {
       .scrollBar(BarState.Off)
       .friction(0.6)
       .divider({
-        strokeWidth: 2, color: 0xFFFFFF, startMargin: 20, endMargin: 20
+        strokeWidth: 2, color: 'rgb(240, 250, 239)', startMargin: 20, endMargin: 20
       })
       .edgeEffect(EdgeEffect.Spring)
       .onScrollIndex((firstIndex: number, lastIndex: number, centerIndex: number) => {
