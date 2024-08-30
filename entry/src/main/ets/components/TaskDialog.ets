@@ -151,6 +151,7 @@ export struct TaskDialog {
     this.taskName = '';
     this.taskDesc = '';
     this.imageList = [];
+    this.imgBase64 = [];
     // this.dialogController = null;
   }
   aboutToDisappear() {
@@ -165,7 +166,7 @@ export struct TaskDialog {
     for (let i = 0; i < this.imageList.length; i++) {
       let uri: string = this.imageList[0];
       console.log('uploadImage:fileuri:' + uri);
-
+      let tempBase64: Array<string> = [];
       try {
         let fileDes = await fs.open(uri, fs.OpenMode.READ_ONLY);
         console.info("uploadImage:file fd: " + fileDes.fd);
@@ -179,7 +180,8 @@ export struct TaskDialog {
         let help = new util.Base64Helper
         let base64 = help.encodeToStringSync(bufferArr)
         console.info("uploadImage:base is : " + base64);
-        this.imgBase64.push(base64)
+        tempBase64.push(base64)
+        this.imgBase64 = [...tempBase64]
       }
       catch (err) {
         console.info("uploadImage:copy file failed with error message: " + JSON.stringify(err));
