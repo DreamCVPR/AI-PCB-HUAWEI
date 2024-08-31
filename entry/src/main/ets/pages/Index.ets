@@ -7,6 +7,7 @@ import { NVElem, CommonConstants } from '../common/classes'
 import { TaskController } from '../controllers/TaskController'
 import { TaskDialogController } from '../controllers/TaskDialogController'
 import { login } from '../api/account';
+import { JSONObject } from '../utils/JSONObject';
 
 // 初始化存储的token
 PersistentStorage.persistProp('token', '')
@@ -19,6 +20,7 @@ struct Index {
   private taskController: TaskController = new TaskController()
   @State currentIndex: number = 0;
   @State showTask: boolean = false;
+  @StorageLink("token") token: string = "";
   @State Build: Array<NVElem> = [
     {
       text: '首页',
@@ -57,6 +59,18 @@ struct Index {
     }.width('100%')
   }
 
+  aboutToAppear(): void {
+    login()
+      .then((res: object) => {
+        console.log("获取任务成功:"+  JSON.stringify(res));
+        this.token = res["result"]
+        // PersistentStorage.persistProp('token', this.token)
+      })
+      .catch((err: JSONObject) => {
+        console.log("获取任务失败:" + JSON.stringify(err))
+      })
+  }
+
   // 用于子组件调用, 出发父组件和其他组件通信, 刷新
   onRefresh () {
     console.log('子组件触发刷新');
@@ -91,21 +105,23 @@ struct Index {
         })
 
         Tabs({ barPosition: BarPosition.End, controller: this.tabController }) {
-          ForEach(this.Build, (item: NVElem) => {
-            TabContent() {
-              Column() {
-                if (item.num === 0) {
-                  Task({
-                    taskController: this.taskController
-                  });
-                } else if (item.num === 1) {
-                  Visual();
-                } else if (item.num === 2) {
-                  Settings();
-                }
-              }.width('100%')
-            }.tabBar(this.TabBuilder(item.num))
-          })
+          if (this.token) {
+            ForEach(this.Build, (item: NVElem) => {
+              TabContent() {
+                Column() {
+                  if (item.num === 0) {
+                    Task({
+                      taskController: this.taskController
+                    });
+                  } else if (item.num === 1) {
+                    Visual();
+                  } else if (item.num === 2) {
+                    Settings();
+                  }
+                }.width('100%')
+              }.tabBar(this.TabBuilder(item.num))
+            })
+          }
         }
         .onChange((index: number) => {
           this.currentIndex = index
