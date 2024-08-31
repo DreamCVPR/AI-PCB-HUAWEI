@@ -1,7 +1,7 @@
 import http from '@ohos.net.http'
 
 // 后端API地址
-const baseUrl = 'http://192.168.0.114:6666/api'
+const baseUrl = 'http://192.168.0.114:7777/api'
 
 // 通用请求实现
 export async function requests(options) {

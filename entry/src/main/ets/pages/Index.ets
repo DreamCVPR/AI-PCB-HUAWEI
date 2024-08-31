@@ -104,7 +104,6 @@ struct Index {
         })
 
         Tabs({ barPosition: BarPosition.End, controller: this.tabController }) {
-          if (this.token) {
             ForEach(this.Build, (item: NVElem) => {
               TabContent() {
                 Column() {
@@ -120,7 +119,7 @@ struct Index {
                 }.width('100%')
               }.tabBar(this.TabBuilder(item.num))
             })
-          }
+
         }
         .onChange((index: number) => {
           this.currentIndex = index
