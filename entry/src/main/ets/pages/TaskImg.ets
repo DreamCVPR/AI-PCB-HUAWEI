@@ -62,6 +62,12 @@ export struct TaskImg {
     .onClick((e)=>{
       this.originImgUrl = baseUrl+"/file/download/image/"+img["imgUrl"]
     })
+    .gesture(
+      LongPressGesture({fingers: 1, repeat: false, duration: 300})//fingers :触发最少手指数，默认1  repeat 是否连续触发 默认false  duration 长按多久触发，默认500
+        .onAction(event=>{
+          console.error('longPress: ' + JSON.stringify(event))
+        })
+    )
   }
 
   @Builder ListRow(taskImgList: Array<object>, index: number) {
