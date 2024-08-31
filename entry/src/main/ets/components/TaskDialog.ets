@@ -35,7 +35,7 @@ export struct TaskDetail {
   choiceImage () {
       let PhotoSelectOptions = new picker.PhotoSelectOptions();
       PhotoSelectOptions.MIMEType = picker.PhotoViewMIMETypes.IMAGE_TYPE;
-      PhotoSelectOptions.maxSelectNumber = 5;
+      PhotoSelectOptions.maxSelectNumber = 10;
       let photoPicker = new picker.PhotoViewPicker();
       photoPicker.select(PhotoSelectOptions).then((PhotoSelectResult) => {
         console.info('PhotoViewPicker.select successfully, PhotoSelectResult uri: ' + JSON.stringify(PhotoSelectResult));
@@ -136,6 +136,9 @@ export struct TaskDetail {
         }
         .margin(20)
         .alignListItem(ListItemAlign.Start)
+        .height(240)
+        .divider({strokeWidth: 2, startMargin: 20, endMargin: 20})
+
 
         Blank()
         Flex({ justifyContent: FlexAlign.SpaceAround }) {
@@ -182,7 +185,7 @@ export struct TaskDetail {
             .width(120)
         }
       }
-      .height('80%')
+      .height('86%')
 
     }.borderRadius(4)
     .height('100%')
@@ -194,7 +197,7 @@ export struct TaskDetail {
 export struct TaskDialog {
   @State taskName: string = '';
   @State taskDesc: string = '';
-  @State imageList: Array<string> = ['1.jpg', '2.jpg', '3.jpg'];
+  @State imageList: Array<string> = ['1.jpg', '2.jpg', '3.jpg', '1.jpg', '2.jpg', '3.jpg'];
   @State imgBase64: Array<string> = [];
   @State isValidTaskName: boolean = true;
   @State isValidTaskDesc: boolean = true;
@@ -270,7 +273,6 @@ export struct TaskDialog {
     }
 }
 
-
   // 增加任务(确定回调), 文件转base64
   async onAccept() {
     await this.transBase64();
@@ -279,6 +281,7 @@ export struct TaskDialog {
       let fileName: string = this.imageList[i].substring(this.imageList[i].lastIndexOf("\/")+1);
       fileNames.push(fileName);
     }
+    console.log('imageList', JSON.stringify(this.imageList))
     console.log('fileNames', JSON.stringify(fileNames))
     addTask({
       'task_name': this.taskName,
