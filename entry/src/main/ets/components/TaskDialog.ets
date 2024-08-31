@@ -16,6 +16,12 @@ export struct TaskDetail {
   @Link taskDesc: string
   @Link imageList: Array<string>
 
+  @Link isValidTaskName: boolean
+  @Link isValidTaskDesc: boolean
+  @Link isInit: boolean
+
+  inputNameController: TextInputController = new TextInputController();
+  inputDescController: TextInputController = new TextInputController();
   // 指向自己的controller
   controller?: CustomDialogController;
 
@@ -47,19 +53,48 @@ export struct TaskDetail {
 
       Column() {
         Column () {
-          TextInput({ placeholder: '请输入任务名', text: this.taskName }).height(40).width('80%')
-            .onChange((value: string) => {
-              this.taskName = value
-            })
-            .margin({ bottom: 10 })
+          Column() {
+            TextInput({ placeholder: '请输入任务名', text: this.taskName, controller: this.inputNameController })
+              .height(40).width('80%')
+              .onChange((value: string) => {
+                if (value.length > 16)
+                  this.isValidTaskName = false;
+                else
+                  this.isValidTaskName = true;
+                this.taskName = value
+              })
+              .onCopy((value: string) => {
+                this.taskName = value
+              })
+              Text(this.isValidTaskName ? ' ' : '请输入一个1至16位的任务名称')
+                .fontColor('rgb(239, 065, 067)')
+                .fontSize(12)
+                .width('80%')
+                .margin({left: 30})
+            }
+          .margin({bottom: 12})
 
-          TextInput({ placeholder: '请输入任务描述', text: this.taskDesc }).height(40).width('80%')
-            .onChange((value: string) => {
-              this.taskDesc = value
-            })
-            .margin({ bottom: 10 })
+          Column() {
+            TextArea({ placeholder: '请输入任务描述', text: this.taskDesc, controller: this.inputNameController })
+              .height(60)
+              .width('80%')
+              .textOverflow(TextOverflow.Ellipsis)
+              .onChange((value: string) => {
+                if (value.length > 64)
+                  this.isValidTaskDesc = false;
+                else
+                  this.isValidTaskDesc = true;
+                this.taskDesc = value
+              })
 
-          // Text('图像列表')
+            Text(this.isValidTaskDesc ? ' ' : '请输入一个1至64位的任务描述')
+              .fontColor('rgb(239, 065, 067)')
+              .fontSize(12)
+              .width('80%')
+              .margin({ left: 30 })
+          }
+          .margin({bottom: 12})
+
           Flex() {
             Button('上传图像')
               .onClick(() => {
@@ -84,7 +119,11 @@ export struct TaskDetail {
                       .width(24)
                       .height(24)
                       .onClick(() => {
-
+                        let tempImage = [...this.imageList];
+                        let index = tempImage.indexOf(item);
+                        if (index > -1)
+                          tempImage.splice(index, 1);
+                        this.imageList = [...tempImage];
                       })
                   }
                   .margin({ left: 22, right: 18 })
@@ -102,7 +141,7 @@ export struct TaskDetail {
         Flex({ justifyContent: FlexAlign.SpaceAround }) {
           Button('取消', {type: ButtonType.Normal, stateEffect: true})
             .onClick(() => {
-              this.controller?.close()
+              this.controller?.close();
               this.cancel()
             })
             .fontColor(Color.Black)
@@ -114,13 +153,29 @@ export struct TaskDetail {
             .height(36)
             .width(120)
 
-          Button('确定', {type: ButtonType.Normal, stateEffect: true})
+          Button('确定',
+            {type: ButtonType.Normal, stateEffect: this.isValidTaskName && this.isValidTaskDesc ? true: false})
             .onClick(() => {
-              if (this.controller != undefined) {
+              // 再次判断下
+              if (this.taskName.length > 0 && this.taskName.length <= 16)
+                this.isValidTaskName = true;
+              else
+                this.isValidTaskName = false;
+
+              if (this.taskDesc.length > 0 && this.taskDesc.length <= 64)
+                this.isValidTaskDesc = true;
+              else
+                this.isValidTaskDesc = false;
+
+
+              if (this.isValidTaskName && this.isValidTaskDesc && this.controller != undefined) {
+                this.isValidTaskName = true;
+                this.isValidTaskDesc = true;
+                this.confirm();
                 this.controller?.close()
-                this.confirm()
               }
             })
+            .opacity(this.isValidTaskName && this.isValidTaskDesc ? 1.0: 0.4)
             .backgroundColor('#0A59F7')
             .borderRadius(4)
             .height(36)
@@ -141,6 +196,9 @@ export struct TaskDialog {
   @State taskDesc: string = '';
   @State imageList: Array<string> = ['1.jpg', '2.jpg', '3.jpg'];
   @State imgBase64: Array<string> = [];
+  @State isValidTaskName: boolean = true;
+  @State isValidTaskDesc: boolean = true;
+  @State isInit: boolean = true;
 
   refresh: () => void = () => {}
 
@@ -150,9 +208,12 @@ export struct TaskDialog {
     builder: TaskDetail({
       cancel: this.onCancel.bind(this),
       confirm: this.onAccept.bind(this),
-      taskName: $taskName,
-      taskDesc: $taskDesc,
-      imageList: $imageList,
+      taskName: this.taskName,
+      taskDesc: this.taskDesc,
+      imageList: this.imageList,
+      isValidTaskName: this.isValidTaskName,
+      isValidTaskDesc: this.isValidTaskDesc,
+      isInit: this.isInit,
     }),
     cancel: this.exitApp.bind(this),
     autoCancel: false,
@@ -170,6 +231,8 @@ export struct TaskDialog {
     this.taskDesc = '';
     this.imageList = [];
     this.imgBase64 = [];
+    this.isValidTaskName = true;
+    this.isValidTaskDesc = true
     // this.dialogController = null;
   }
   aboutToDisappear() {
