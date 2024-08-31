@@ -7,7 +7,6 @@ import { NVElem, CommonConstants } from '../common/classes'
 import { TaskController } from '../controllers/TaskController'
 import { TaskDialogController } from '../controllers/TaskDialogController'
 import { login } from '../api/account';
-import { JSONObject } from '../utils/JSONObject';
 
 // 初始化存储的token
 PersistentStorage.persistProp('token', '')
@@ -66,7 +65,7 @@ struct Index {
         this.token = res["result"]
         // PersistentStorage.persistProp('token', this.token)
       })
-      .catch((err: JSONObject) => {
+      .catch((err: object) => {
         console.log("获取任务失败:" + JSON.stringify(err))
       })
   }
