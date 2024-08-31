@@ -113,13 +113,18 @@ export struct Task {
         .height('100%')
       }
       .onClick(() => {
+        router.pushUrl({
+          "url": "pages/TaskImg",
+          "params": {
+            "taskId": item.taskId
+          }
+        })
         // TODO: 进入任务详情页
       })
       .width('100%')
       .height(100)
       .backgroundColor(0xFFFFFF)
       .borderRadius(12)
-
   }
 
   // 检测某一任务

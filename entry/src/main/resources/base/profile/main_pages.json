@@ -3,6 +3,7 @@
     "pages/Login",
     "pages/Index",
     "pages/Settings",
-    "pages/Visual"
+    "pages/Visual",
+    "pages/TaskImg"
   ]
 }
