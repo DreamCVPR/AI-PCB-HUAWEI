@@ -8,8 +8,8 @@ import { TaskController } from '../controllers/TaskController'
 import { TaskDialogController } from '../controllers/TaskDialogController'
 import { login } from '../api/account';
 
-// 初始化存储的token
-PersistentStorage.persistProp('token', '')
+// // 初始化存储的token
+// PersistentStorage.persistProp('token', '')
 
 
 @Entry
@@ -19,7 +19,6 @@ struct Index {
   private taskController: TaskController = new TaskController()
   @State currentIndex: number = 0;
   @State showTask: boolean = false;
-  @StorageLink("token") token: string = "";
   @State Build: Array<NVElem> = [
     {
       text: '首页',
@@ -59,15 +58,15 @@ struct Index {
   }
 
   aboutToAppear(): void {
-    login()
-      .then((res: object) => {
-        console.log("获取任务成功:"+  JSON.stringify(res));
-        this.token = res["result"]
-        // PersistentStorage.persistProp('token', this.token)
-      })
-      .catch((err: object) => {
-        console.log("获取任务失败:" + JSON.stringify(err))
-      })
+    // login()
+    //   .then((res: object) => {
+    //     console.log("获取任务成功:"+  JSON.stringify(res));
+    //     this.token = res["result"]
+    //     // PersistentStorage.persistProp('token', this.token)
+    //   })
+    //   .catch((err: object) => {
+    //     console.log("获取任务失败:" + JSON.stringify(err))
+    //   })
   }
 
   // 用于子组件调用, 出发父组件和其他组件通信, 刷新

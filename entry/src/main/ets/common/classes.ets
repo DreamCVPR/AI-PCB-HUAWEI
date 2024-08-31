@@ -17,7 +17,6 @@ export class Response {
   }
 }
 
-
 // tab对象
 export class NVElem {
   text: string = ''

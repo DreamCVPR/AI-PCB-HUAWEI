@@ -2,6 +2,7 @@ import router from '@ohos.router';
 import { Response, TaskElem } from '../common/classes'
 import { detect, getTasks } from '../api/service'
 import { TaskController } from '../controllers/TaskController';
+import { Empty } from '../components/Empty';
 
 
 @Entry
@@ -9,35 +10,7 @@ import { TaskController } from '../controllers/TaskController';
 export struct Task {
   @State message: string = '任务列表';
   @State isRefreshing: boolean = false;
-  @State taskList: Array<TaskElem> = [new TaskElem(
-    48,
-    "任务1",
-    "这是任务1",
-    "1",
-    1,
-    "2024-08-30 14:09:43",
-    5,
-    5
-  ),new TaskElem(
-    48,
-    "任务2",
-    "这是任务weqweqww2",
-    "1",
-    0,
-    "2024-08-30 14:09:43",
-    3,
-    5
-  ),
-    new TaskElem(
-      48,
-      "任务2",
-      "这是任务weqweqww2",
-      "1",
-      2,
-      "2024-08-30 14:09:43",
-      4,
-      6
-    )];
+  @State taskList: Array<TaskElem> = [];
   @State selectedId: number = -1;
 
   public taskController: TaskController | null = null;
@@ -192,51 +165,58 @@ export struct Task {
   }
 
   build() {
-    Refresh({ refreshing: $$this.isRefreshing}) {
-      List({space: 20, initialIndex: 0}) {
-        ForEach(this.taskList, (item: TaskElem) => {
-          this.TaskItem(item)
+    if (this.taskList.length === 0) {
+      Empty()
+    } else {
+      Refresh({ refreshing: $$this.isRefreshing }) {
+        List({ space: 20, initialIndex: 0 }) {
+          ForEach(this.taskList, (item: TaskElem) => {
+            this.TaskItem(item)
+          })
+        }
+        .listDirection(Axis.Vertical)
+        .scrollBar(BarState.Off)
+        .friction(0.6)
+        .divider({
+          strokeWidth: 2,
+          color: 'rgb(240, 250, 239)',
+          startMargin: 20,
+          endMargin: 20
         })
+        .edgeEffect(EdgeEffect.Spring)
+        .onScrollIndex((firstIndex: number, lastIndex: number, centerIndex: number) => {
+          console.info('first' + firstIndex)
+          console.info('last' + lastIndex)
+          console.info('center' + centerIndex)
+        })
+        .onScrollVisibleContentChange((start: VisibleListContentInfo, end: VisibleListContentInfo) => {
+          console.log(' start index: ' + start.index +
+            ' start item group area: ' + start.itemGroupArea +
+            ' start index in group: ' + start.itemIndexInGroup)
+          console.log(' end index: ' + end.index +
+            ' end item group area: ' + end.itemGroupArea +
+            ' end index in group: ' + end.itemIndexInGroup)
+        })
+        .onDidScroll((scrollOffset: number, scrollState: ScrollState) => {
+          console.info(`onScroll scrollState = ScrollState` + scrollState + `, scrollOffset = ` + scrollOffset)
+        })
+        .width('100%')
+        .padding({ left: 8, right: 8, top: 10 })
+        .height('100%')
       }
-      .listDirection(Axis.Vertical)
-      .scrollBar(BarState.Off)
-      .friction(0.6)
-      .divider({
-        strokeWidth: 2, color: 'rgb(240, 250, 239)', startMargin: 20, endMargin: 20
-      })
-      .edgeEffect(EdgeEffect.Spring)
-      .onScrollIndex((firstIndex: number, lastIndex: number, centerIndex: number) => {
-        console.info('first' + firstIndex)
-        console.info('last' + lastIndex)
-        console.info('center' + centerIndex)
-      })
-      .onScrollVisibleContentChange((start: VisibleListContentInfo, end: VisibleListContentInfo) => {
-        console.log(' start index: ' + start.index +
-          ' start item group area: ' + start.itemGroupArea +
-          ' start index in group: ' + start.itemIndexInGroup)
-        console.log(' end index: ' + end.index +
-          ' end item group area: ' + end.itemGroupArea +
-          ' end index in group: ' + end.itemIndexInGroup)
-      })
-      .onDidScroll((scrollOffset: number, scrollState: ScrollState) => {
-        console.info(`onScroll scrollState = ScrollState` + scrollState + `, scrollOffset = ` + scrollOffset)
-      })
-      .width('100%')
-      .padding({left: 8, right: 8, top: 10})
       .height('100%')
+      .width('100%')
+      .backgroundColor(0xDCDCDC)
+      .onRefreshing(() => {
+        this.getTasks();
+        // this.isRefreshing = false
+        setTimeout(() => {
+          this.isRefreshing = false
+        }, 1000)
+        console.log('onRefreshing test')
+      })
+      .refreshOffset(64)
+      .pullToRefresh(true)
     }
-    .height('100%')
-    .width('100%')
-    .backgroundColor(0xDCDCDC)
-    .onRefreshing(() => {
-      this.getTasks();
-      // this.isRefreshing = false
-      setTimeout(() => {
-        this.isRefreshing = false
-      }, 1000)
-      console.log('onRefreshing test')
-    })
-    .refreshOffset(64)
-    .pullToRefresh(true)
   }
 }
