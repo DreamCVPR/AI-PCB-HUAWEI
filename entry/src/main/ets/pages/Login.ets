@@ -1,8 +1,10 @@
 import { login } from '../api/account';
 import { Response } from '../common/classes';
+import { router } from '@kit.ArkUI';
 
 // 初始化存储的token
 PersistentStorage.persistProp('token', '')
+PersistentStorage.persistProp('userInfo', {})
 
 @Entry
 @Component
@@ -12,8 +14,14 @@ export struct Login {
   @State isValidUsername: boolean = true;
   @State isValidPassword: boolean = true;
   @StorageLink("token") token: string = "";
+  @StorageLink("userInfo") userInfo: object | null = null;
 
   logo: string = 'app.media.logo'
+
+  aboutToAppear(): void {
+    if (this.token != '')
+      router.replaceUrl({url: 'pages/Index'})
+  }
 
   build() {
     Column() {
@@ -23,7 +31,7 @@ export struct Login {
           .height(80)
           .align(Alignment.Center)
       }
-      .margin({top: 180})
+      .margin({top: 200})
       Column() {
         TextInput({ placeholder: '请输入用户名', text: this.username })
           .height(46)
@@ -38,7 +46,7 @@ export struct Login {
           .backgroundColor('rgb(230, 230, 230)')
           .borderRadius(16)
 
-        TextInput({ placeholder: '请输入密码', text: this.username })
+        TextInput({ placeholder: '请输入密码', text: this.password })
           .height(46)
           .width('80%')
           .type(InputType.Password)
@@ -58,13 +66,19 @@ export struct Login {
         Button('登录')
           .width(200)
           .onClick(() => {
-            login()
+            login({
+              loginName: this.username,
+              loginPwd: this.password,
+            })
               .then((res: object) => {
-                console.log("获取任务成功:"+  JSON.stringify(res));
-                this.token = res["result"];
+                console.log("登入成功:"+  JSON.stringify(res));
+                this.token = res["result"]["token"];
+                this.userInfo = res["result"]
+                console.log("userInfo", JSON.stringify(this.userInfo))
+                router.replaceUrl({ url: "pages/Index" })
               })
               .catch((err: object) => {
-                console.log("获取任务失败:" + JSON.stringify(err))
+                console.log("登入失败:" + JSON.stringify(err))
               })
           })
       }

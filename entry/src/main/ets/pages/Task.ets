@@ -167,6 +167,7 @@ export struct Task {
   build() {
     if (this.taskList.length === 0) {
       Empty()
+        .backgroundColor(0xDCDCDC)
     } else {
       Refresh({ refreshing: $$this.isRefreshing }) {
         List({ space: 20, initialIndex: 0 }) {

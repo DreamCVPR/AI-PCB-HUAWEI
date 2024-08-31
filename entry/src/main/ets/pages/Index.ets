@@ -58,15 +58,6 @@ struct Index {
   }
 
   aboutToAppear(): void {
-    // login()
-    //   .then((res: object) => {
-    //     console.log("获取任务成功:"+  JSON.stringify(res));
-    //     this.token = res["result"]
-    //     // PersistentStorage.persistProp('token', this.token)
-    //   })
-    //   .catch((err: object) => {
-    //     console.log("获取任务失败:" + JSON.stringify(err))
-    //   })
   }
 
   // 用于子组件调用, 出发父组件和其他组件通信, 刷新

@@ -1,9 +1,10 @@
-import router from '@ohos.router';
+import { router } from '@kit.ArkUI';
 
 @Entry
 @Component
 export struct Settings {
   @State message: string = '我的';
+  @StorageLink("token") token: string = "";
 
   build() {
     RelativeContainer() {
@@ -14,6 +15,11 @@ export struct Settings {
         .alignRules({
           center: { anchor: '__container__', align: VerticalAlign.Center },
           middle: { anchor: '__container__', align: HorizontalAlign.Center }
+        })
+      Button('清除token')
+        .onClick(() => {
+          this.token = '';
+          router.replaceUrl({url: 'pages/Login'})
         })
     }
     .height('100%')

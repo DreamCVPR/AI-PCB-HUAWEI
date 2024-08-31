@@ -1,5 +1,6 @@
 {
   "src": [
+    "pages/Login",
     "pages/Index",
     "pages/Settings",
     "pages/Visual"
