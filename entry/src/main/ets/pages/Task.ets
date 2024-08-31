@@ -3,29 +3,7 @@ import { Response, TaskElem } from '../common/classes'
 import { detect, getTasks } from '../api/service'
 import { TaskController } from '../controllers/TaskController';
 
-// new TaskElem(
-//     48,
-//     "任务1",
-//     "这是任务1",
-//     "1",
-//     1,
-//     "2024-08-30 14:09:43"
-//   ),new TaskElem(
-//     48,
-//     "任务2",
-//     "这是任务weqweqww2",
-//     "1",
-//     0,
-//     "2024-08-30 14:09:43"
-//   ),
-//     new TaskElem(
-//       48,
-//       "任务2",
-//       "这是任务weqweqww2",
-//       "1",
-//       2,
-//       "2024-08-30 14:09:43"
-//     )
+
 @Entry
 @Component
 export struct Task {
@@ -37,14 +15,18 @@ export struct Task {
     "这是任务1",
     "1",
     1,
-    "2024-08-30 14:09:43"
+    "2024-08-30 14:09:43",
+    5,
+    5
   ),new TaskElem(
     48,
     "任务2",
     "这是任务weqweqww2",
     "1",
     0,
-    "2024-08-30 14:09:43"
+    "2024-08-30 14:09:43",
+    3,
+    5
   ),
     new TaskElem(
       48,
@@ -52,7 +34,9 @@ export struct Task {
       "这是任务weqweqww2",
       "1",
       2,
-      "2024-08-30 14:09:43"
+      "2024-08-30 14:09:43",
+      4,
+      6
     )];
   @State selectedId: number = -1;
 
@@ -113,7 +97,7 @@ export struct Task {
               .backgroundColor('rgb(021, 151, 165)')
           }
           else if (item.taskState == 0) {
-            Button('检测', {type: ButtonType.Normal, stateEffect: true})
+            Button(`检测 ${item.countDetectImg}/${item.countAllImg}`, {type: ButtonType.Normal, stateEffect: true})
               .onClick(() => {
                 this.selectedId = item.taskId;
                 AlertDialog.show(
@@ -194,7 +178,9 @@ export struct Task {
             taskInfo['taskDesc'],
             taskInfo['harmonyUserId'],
             taskInfo['taskState'],
-            taskInfo['gmtCreate']
+            taskInfo['gmtCreate'],
+            taskInfo['countDetectImg'],
+            taskInfo['countAllImg'],
           )
           tempList.push(taskObj)
           this.taskList = [...tempList]

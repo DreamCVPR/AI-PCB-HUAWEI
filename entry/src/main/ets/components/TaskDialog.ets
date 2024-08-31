@@ -197,7 +197,7 @@ export struct TaskDetail {
 export struct TaskDialog {
   @State taskName: string = '';
   @State taskDesc: string = '';
-  @State imageList: Array<string> = ['1.jpg', '2.jpg', '3.jpg', '1.jpg', '2.jpg', '3.jpg'];
+  @State imageList: Array<string> = [];
   @State imgBase64: Array<string> = [];
   @State isValidTaskName: boolean = true;
   @State isValidTaskDesc: boolean = true;
@@ -247,10 +247,10 @@ export struct TaskDialog {
   }
 
   async transBase64() {
+    let tempBase64: Array<string> = [];
     for (let i = 0; i < this.imageList.length; i++) {
       let uri: string = this.imageList[0];
       console.log('uploadImage:fileuri:' + uri);
-      let tempBase64: Array<string> = [];
       try {
         let fileDes = await fs.open(uri, fs.OpenMode.READ_ONLY);
         console.info("uploadImage:file fd: " + fileDes.fd);
@@ -265,12 +265,12 @@ export struct TaskDialog {
         let base64 = help.encodeToStringSync(bufferArr)
         console.info("uploadImage:base is : " + base64);
         tempBase64.push(base64)
-        this.imgBase64 = [...tempBase64]
       }
       catch (err) {
         console.info("uploadImage:copy file failed with error message: " + JSON.stringify(err));
       }
     }
+    this.imgBase64 = [...tempBase64]
 }
 
   // 增加任务(确定回调), 文件转base64
