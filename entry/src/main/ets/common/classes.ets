@@ -49,3 +49,8 @@ export class TaskElem {
       this.countAllImg = countAllImg;
   }
 }
+
+// 首页任务刷新参数
+export class RouRefresh {
+  refresh: boolean = false;
+}
