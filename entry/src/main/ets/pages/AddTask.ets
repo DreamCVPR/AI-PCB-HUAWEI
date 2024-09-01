@@ -34,10 +34,10 @@ export struct AddTask {
     this.previewImg = false;
   }
 
-  aboutToAppear(): void {
-    if (!this.token)
-      router.replaceUrl({url: 'pages/Login'})
-  }
+  // aboutToAppear(): void {
+  //   if (!this.token)
+  //     router.replaceUrl({url: 'pages/Login'})
+  // }
 
   // 打开相册, 选择图像
   choiceImage () {
@@ -220,6 +220,7 @@ export struct AddTask {
                   this.choiceImage();
                 })
                 .align(Alignment.Start)
+                .enabled(!this.previewImg)
               Blank()
               Text(this.openManage ? '退出管理' : '管理')
                 .onClick(() => {
@@ -305,6 +306,7 @@ export struct AddTask {
             .backgroundColor('#ffffff')
             .height(36)
             .width(120)
+            .enabled(!this.previewImg)
 
           Button('确定',
             { type: ButtonType.Normal, stateEffect: this.isValidTaskName && this.isValidTaskDesc ? true : false })
@@ -318,11 +320,12 @@ export struct AddTask {
             .borderRadius(4)
             .height(36)
             .width(120)
+            .enabled(!this.previewImg)
         }
       }
       .height('100%')
       .margin({ top: 60 })
-    }
+    }.enabled(!this.previewImg)
   }
 
   build() {
