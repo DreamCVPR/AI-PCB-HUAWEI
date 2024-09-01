@@ -7,9 +7,11 @@ import { CommonConstants } from '../common/classes';
 @Component
 export struct TaskImg {
   @State message: string = '检测页';
-  @State taskId?: number = (router.getParams() as object)['taskId'];
+  @State task: object = (router.getParams() as object);
+  @State taskId: number = (router.getParams() as object)['taskId'];
   @State taskImgList: Array<object> = []
   @State originImgUrl: string = ""
+  @State chooseImgIndex?: Array<number> = undefined
 
   // @State taskImg: JSON;
 
@@ -28,46 +30,82 @@ export struct TaskImg {
       })
   }
 
-  @Builder Mask(opacity: number = 0.95) {
-    Row() {}.height("100%").width("100%").backgroundColor(Color.Gray).opacity(opacity)
+  @Builder Mask(opacity: number = 0.95, zIndex: number = 1) {
+    Row() {}.height("100%").width("100%").backgroundColor(Color.Gray).opacity(opacity).zIndex(zIndex)
   }
 
   @Builder ImgCard(img: object, index: number) {
     Column() {
-      Image(baseUrl+"/file/download/image/"+img["imgUrl"])
-        // .alt($r('media.LoadingProgress'))// 使用alt，在网络图片加载成功前使用占位图
-        .width("100%")
-        .height("100%")
-        .objectFit(ImageFit.CENTER)
-      Flex({ alignItems: ItemAlign.Start }) {
-      }
-      .width("100%")
-      .height(20)
-      .position({bottom: 0})
-      .backgroundColor("#5B5B66")
-      .opacity(0.7)
-      Text(index.toString().padStart(2, '0'))
-        .fontSize(15)
-        .fontWeight(FontWeight.Bold)
-        .fontColor(Color.White)
-        .position({bottom: 1, left: 3})
-      if (img["isDetect"]) {
-        Image($r('app.media.yes'))
-          .height(15)
-          .width(15)
-          .position({bottom: 1, right: 3})
+      Stack() {
+        Row() {
+          Image(baseUrl+"/file/compress/"+img["imgUrl"])
+            .alt($r('app.media.load_img'))
+            .width("100%")
+            .height("100%")
+            .objectFit(ImageFit.CENTER)
+          Flex({ alignItems: ItemAlign.Start }) {
+          }
+          .width("100%")
+          .height(20)
+          .position({bottom: 0})
+          .backgroundColor("#5B5B66")
+          .opacity(0.7)
+          Text(index.toString().padStart(2, '0'))
+            .fontSize(15)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(Color.White)
+            .position({bottom: 1, left: 3})
+          if (img["isDetect"]) {
+            Image($r('app.media.yes'))
+              .height(15)
+              .width(15)
+              .position({bottom: 1, right: 3})
+          }
+        }
+        .onClick((e)=>{
+          this.originImgUrl = baseUrl+"/file/download/"+img["imgUrl"]
+        })
+        .gesture(
+          LongPressGesture({fingers: 1, repeat: false, duration: 300})
+            .onAction(event=>{
+              this.chooseImgIndex = [index]
+            })
+        )
+        if (this.chooseImgIndex !== undefined) {
+          Row() {
+            this.Mask(0.7)
+          }
+          .onClick(()=>{
+            if (this.chooseImgIndex !== undefined) {
+              if (this.chooseImgIndex.includes(index)) {
+                this.chooseImgIndex = this.chooseImgIndex.filter(item => item != index)
+              } else {
+                this.chooseImgIndex?.push(index)
+              }
+            }
+            console.log('this.chooseImgIndex: '+ this.chooseImgIndex)
+          })
+          Checkbox()
+            .select(this.chooseImgIndex.includes(index))
+            .selectedColor(0x39a2db)
+            .shape(CheckBoxShape.ROUNDED_SQUARE)
+            .onClick(() => {
+              if (this.chooseImgIndex !== undefined) {
+                if (this.chooseImgIndex.includes(index)) {
+                  this.chooseImgIndex = this.chooseImgIndex.filter(item => item != index)
+                } else {
+                  this.chooseImgIndex?.push(index)
+                }
+              }
+              console.log('this.chooseImgIndex: '+ this.chooseImgIndex)
+            })
+            .zIndex(2)
+            .position({top: 2, right: 2})
+            .borderColor(Color.White)
+        }
       }
     }
     .width('49%')
-    .onClick((e)=>{
-      this.originImgUrl = baseUrl+"/file/download/image/"+img["imgUrl"]
-    })
-    .gesture(
-      LongPressGesture({fingers: 1, repeat: false, duration: 300})//fingers :触发最少手指数，默认1  repeat 是否连续触发 默认false  duration 长按多久触发，默认500
-        .onAction(event=>{
-          console.error('longPress: ' + JSON.stringify(event))
-        })
-    )
   }
 
   @Builder ListRow(taskImgList: Array<object>, index: number) {
@@ -86,6 +124,43 @@ export struct TaskImg {
     Column() {
       Flex({ direction: FlexDirection.Column }) {
         Row() {
+          Flex() {
+            Image($r('app.media.left_arrow'))
+              .height(25)
+              .width(25)
+              .margin({ left: 2 })
+              .onClick(()=>{
+                if (this.chooseImgIndex == undefined) {
+                  router.back()
+                } else {
+                  this.chooseImgIndex = undefined
+                }
+              })
+            Text(this.chooseImgIndex == undefined ? this.task['taskName'] : '已选'+this.chooseImgIndex?.length.toString()+'项')
+              .fontColor(Color.White)
+              .fontSize(20)
+              .fontWeight(700)
+              .textAlign(TextAlign.Start)
+              .margin({ left: 10 })
+            Blank()
+            if (this.chooseImgIndex !== undefined) {
+              Text(this.chooseImgIndex.length == this.taskImgList.length ? '取消全选' : '全选')
+                .fontColor(Color.White)
+                .fontSize(20)
+                .fontWeight(700)
+                .textAlign(TextAlign.Start)
+                .margin({ right: 4 })
+                .onClick(()=>{
+                  if (this.chooseImgIndex !== undefined) {
+                    if (this.chooseImgIndex.length == this.taskImgList.length) {
+                      this.chooseImgIndex = []
+                    } else {
+                      this.chooseImgIndex = Array.from(this.taskImgList.keys()).map(v=>v+1)
+                    }
+                  }
+                })
+            }
+          }
         }
         .width('100%')
         .height(CommonConstants.STATUS_BAR_HEIGHT - 10)
@@ -114,12 +189,13 @@ export struct TaskImg {
             Stack() {
               this.Mask()
               Image(this.originImgUrl)// 直接加载网络地址，请填写一个具体的网络图片地址
-                // .alt($r('media.LoadingProgress'))// 使用alt，在网络图片加载成功前使用占位图
+                .alt($r('app.media.load_img'))
                 .width("100%")
                 .height("100%")
                 .objectFit(ImageFit.ScaleDown)
                 .zIndex(2)
                 .onClick((e)=>{
+                  console.log("this.originImgUrl："+ this.originImgUrl)
                   this.originImgUrl = ""
                 })
             }.zIndex(2)
@@ -127,7 +203,6 @@ export struct TaskImg {
         }
 
       }.width('100%').height('100%')
-
     }
   }
 }

@@ -115,9 +115,7 @@ export struct Task {
       .onClick(() => {
         router.pushUrl({
           "url": "pages/TaskImg",
-          "params": {
-            "taskId": item.taskId
-          }
+          "params": item
         })
         // TODO: 进入任务详情页
       })
