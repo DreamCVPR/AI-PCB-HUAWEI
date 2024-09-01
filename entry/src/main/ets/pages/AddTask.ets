@@ -15,7 +15,7 @@ import { Empty } from '../components/Empty';
 export struct AddTask {
   @State taskName: string = '';
   @State taskDesc: string = '';
-  @State imageList: Array<string> = [];
+  @State imageList: Array<string> = ['1'];
   @State imgBase64: Array<string> = [];
   @State isValidTaskName: boolean = false;
   @State isValidTaskDesc: boolean = false;
@@ -313,7 +313,7 @@ export struct AddTask {
                 this.confirm();
               }
             })
-            .opacity(this.isValidTaskName && this.isValidTaskDesc ? 1.0 : 0.4)
+            .enabled(this.isValidTaskName && this.isValidTaskDesc)
             .backgroundColor('#0A59F7')
             .borderRadius(4)
             .height(36)

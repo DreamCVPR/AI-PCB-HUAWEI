@@ -84,7 +84,7 @@ export struct Login {
                 })
             }
           })
-          .opacity(this.isValidUsername && this.isValidPassword ? 1.0: 0.4)
+          .enabled(this.isValidUsername && this.isValidPassword)
       }
       .margin({top: 20})
       Blank()

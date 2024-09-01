@@ -51,7 +51,7 @@ export struct Task {
             Button({type: ButtonType.Normal, stateEffect: false}) {
               Row() {
                 LoadingProgress().width(20).height(20).margin({left: 8}).color('#ffffff')
-                Text('检测中').fontColor('#ffffff').margin({left: 8, right:8})
+                Text('检测中').fontColor('#ffffff').margin({left: 8, right:8}).enabled(false)
               }
               .width(96)
               .height(36)
@@ -117,7 +117,7 @@ export struct Task {
               .height(36)
               .width(96)
               .backgroundColor('rgb(7, 193, 96)')
-              .opacity(item.countDetectImg < item.countAllImg ? 1.0: 0.5)
+              .enabled(item.countDetectImg < item.countAllImg)
           }
         }
         .height('100%')
