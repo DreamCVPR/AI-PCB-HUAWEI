@@ -131,7 +131,7 @@ export struct AddTask {
 
         Column() {
           Text('创建检测任务')
-            .fontSize(18)
+            .fontSize(20)
             .width('76%')
             .textAlign(TextAlign.Center)
         }

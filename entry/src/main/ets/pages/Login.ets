@@ -1,5 +1,6 @@
 import { login } from '../api/account';
 import { router } from '@kit.ArkUI';
+import { Alert } from '../components/Alert';
 
 // 初始化存储的token
 PersistentStorage.persistProp('token', '')
@@ -65,6 +66,7 @@ export struct Login {
         Button('登录', {stateEffect: this.isValidUsername && this.isValidPassword})
           .width(200)
           .onClick(() => {
+            // Alert({status:0}).openAlert()
             if (this.isValidUsername && this.isValidPassword) {
               login({
                 loginName: this.username,

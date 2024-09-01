@@ -1,6 +1,6 @@
 import router from '@ohos.router';
 import { Response, TaskElem } from '../common/classes'
-import { detect, getTasks } from '../api/service'
+import { delTask, getTasks, startDet } from '../api/service'
 import { TaskController } from '../controllers/TaskController';
 import { Empty } from '../components/Empty';
 
@@ -33,11 +33,11 @@ export struct Task {
         Column() {
           Text(item.taskName)
             .margin({bottom: 10})
-            .fontSize(22)
+            .fontSize(24)
             .fontWeight(600)
             .textAlign(TextAlign.Start)
           Text(item.taskDesc)
-            .fontSize(12)
+            .fontSize(14)
             .fontColor('rgb(127, 127, 127)')
             .textAlign(TextAlign.Start)
             .textOverflow({ overflow: TextOverflow.Ellipsis })
@@ -74,44 +74,50 @@ export struct Task {
               .backgroundColor('rgb(021, 151, 165)')
           }
           else if (item.taskState == 0) {
-            Button(`检测 ${item.countDetectImg}/${item.countAllImg}`, {type: ButtonType.Normal, stateEffect: true})
+            Button(
+              `检测 ${item.countDetectImg}/${item.countAllImg}`,
+              {type: ButtonType.Normal, stateEffect: item.countDetectImg < item.countAllImg ? true: false}
+            )
               .onClick(() => {
-                this.selectedId = item.taskId;
-                AlertDialog.show(
-                  {
-                    title: '是否开始检测?',
-                    message: '',
-                    autoCancel: true,
-                    alignment: DialogAlignment.Center,
-                    gridCount: 4,
-                    offset: {dx: 0, dy: -20},
-                    primaryButton: {
-                      value: '取消',
-                      fontColor: '#000000',
-                      backgroundColor: '#ffffff',
-                      action: () => {
+                if (item.countDetectImg < item.countAllImg) {
+                  this.selectedId = item.taskId;
+                  AlertDialog.show(
+                    {
+                      title: '是否开始检测?',
+                      message: '',
+                      autoCancel: true,
+                      alignment: DialogAlignment.Center,
+                      gridCount: 4,
+                      offset: { dx: 0, dy: -20 },
+                      primaryButton: {
+                        value: '取消',
+                        fontColor: '#000000',
+                        backgroundColor: '#ffffff',
+                        action: () => {
                           this.selectedId = -1;
+                        }
+                      },
+                      secondaryButton: {
+                        value: '确定',
+                        fontColor: '#000000',
+                        backgroundColor: '#ffffff',
+                        action: () => {
+                          this.startDet(item.taskId);
+                        }
+                      },
+                      cancel: () => {
+                        this.selectedId = -1;
                       }
-                    },
-                    secondaryButton: {
-                      value: '确定',
-                      fontColor: '#000000',
-                      backgroundColor: '#ffffff',
-                      action: () => {
-                        this.startDet(item.taskId);
-                      }
-                    },
-                    cancel: () => {
-                      this.selectedId = -1;
                     }
-                  }
-                )
+                  )
+                }
               })
               .borderRadius(4)
               .margin({right: 12})
               .height(36)
               .width(96)
-              .backgroundColor('rgb(042, 157, 142)')
+              .backgroundColor('rgb(7, 193, 96)')
+              .opacity(item.countDetectImg < item.countAllImg ? 1.0: 0.5)
           }
         }
         .height('100%')
@@ -123,6 +129,52 @@ export struct Task {
         })
         // TODO: 进入任务详情页
       })
+      .gesture(
+        // 长按提示是否删除
+        LongPressGesture({repeat: false, duration: 1000})
+          .onAction((event: GestureEvent | undefined) => {
+            if (event) {
+              AlertDialog.show(
+                {
+                  title: '是否删除该任务?',
+                  message: '',
+                  autoCancel: true,
+                  alignment: DialogAlignment.Center,
+                  gridCount: 4,
+                  offset: { dx: 0, dy: -20 },
+                  primaryButton: {
+                    value: '取消',
+                    fontColor: '#000000',
+                    backgroundColor: '#ffffff',
+                    action: () => {
+                      this.selectedId = -1;
+                    }
+                  },
+                  secondaryButton: {
+                    value: '确定',
+                    fontColor: '#000000',
+                    backgroundColor: '#ffffff',
+                    action: () => {
+                      delTask({
+                        taskIds: item.taskId
+                      })
+                        .then((res: Response) => {
+                          console.log('删除任务成功', JSON.stringify(res));
+                          this.getTasks()
+                      })
+                        .catch((err: Response) => {
+                          console.log('删除任务失败', JSON.stringify(err));
+                        })
+                    }
+                  },
+                  cancel: () => {
+                    this.selectedId = -1;
+                  }
+                }
+              )
+            }
+          })
+      )
       .width('100%')
       .height(100)
       .backgroundColor(0xFFFFFF)
@@ -131,7 +183,7 @@ export struct Task {
 
   // 检测某一任务
   startDet (selectedId: number) {
-    detect({
+    startDet({
       taskId: selectedId
     })
       .then((res: Response) => {
@@ -163,8 +215,8 @@ export struct Task {
             taskInfo['countAllImg'],
           )
           tempList.push(taskObj)
-          this.taskList = [...tempList]
         }
+        this.taskList = [...tempList]
       })
       .catch((err: Response) => {
         console.log("获取任务失败:" + JSON.stringify(err))
