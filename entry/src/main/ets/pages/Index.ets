@@ -1,15 +1,9 @@
-import router from '@ohos.router';
+import { router } from '@kit.ArkUI';
 import { Settings } from './Settings'
 import { Visual } from '../pages/Visual'
 import { Task } from './Task'
-import { TaskDialog } from '../components/TaskDialog'
 import { NVElem, CommonConstants } from '../common/classes'
 import { TaskController } from '../controllers/TaskController'
-import { TaskDialogController } from '../controllers/TaskDialogController'
-import { login } from '../api/account';
-
-// // 初始化存储的token
-// PersistentStorage.persistProp('token', '')
 
 
 @Entry
@@ -19,6 +13,7 @@ struct Index {
   private taskController: TaskController = new TaskController()
   @State currentIndex: number = 0;
   @State showTask: boolean = false;
+  @State helpPopup: boolean = false;
   @State Build: Array<NVElem> = [
     {
       text: '首页',
@@ -71,20 +66,45 @@ struct Index {
       Flex({ direction: FlexDirection.Column }) {
         Row() {
           Flex() {
-            Text('检测任务')
+            Text('PCB 检测')
               .fontColor('#ffffff')
               .fontSize(20)
               .fontWeight(700)
               .textAlign(TextAlign.Start)
               .margin({ left: 2 })
+
             Blank()
-            TaskDialog({
-              refresh: this.onRefresh.bind(this)
-            })
+
+            Image($r('app.media.help'))
+              .width(26)
+              .height(26)
+              .margin({right: 16})
+              .onClick(() => {
+                this.helpPopup = !this.helpPopup;
+              })
+              .bindPopup(this.helpPopup, {
+                message: '需先创建PCB检测任务, 再执行检测',
+                placementOnTop: true,
+                showInSubWindow: false,
+                onStateChange: (e) => {
+                  console.info(JSON.stringify(e.isVisible))
+                  if (!e.isVisible) {
+                    this.helpPopup = false
+                  }
+                },
+              })
+
+            Image($r('app.media.add2'))
+              .width(26)
+              .height(26)
+              .onClick(() => {
+                console.log('进入增加任务页面')
+                router.pushUrl({url: 'pages/AddTask'})
+              })
           }
         }
         .width('100%')
-        .height(CommonConstants.STATUS_BAR_HEIGHT - 10)
+        .height(CommonConstants.STATUS_BAR_HEIGHT - 30)
         .backgroundColor('rgb(130, 178, 154)')
         .padding({
           left: 10,

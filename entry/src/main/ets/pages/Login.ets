@@ -1,5 +1,4 @@
 import { login } from '../api/account';
-import { Response } from '../common/classes';
 import { router } from '@kit.ArkUI';
 
 // 初始化存储的token
