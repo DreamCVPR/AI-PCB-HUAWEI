@@ -5,7 +5,7 @@
 export struct PreviewImg {
   public url: string = ''
 
-  @Builder Mask(opacity: number = 0.95, zIndex: number = 998) {
+  @Builder Mask(opacity: number = 0.95, zIndex: number = 1) {
     Row() {}.height("100%").width("100%").backgroundColor(Color.Gray).opacity(opacity).zIndex(zIndex)
   }
   @Builder previewImg(): void {
@@ -16,16 +16,13 @@ export struct PreviewImg {
         .width("100%")
         .height("100%")
         .objectFit(ImageFit.ScaleDown)
-        .zIndex(999)
-        .onClick((e)=>{
-          console.log("this.originImgUrl："+ this.url)
-        })
+        .zIndex(2)
         .position({ x: '0', y: '0' })
-    }.zIndex(999)
+    }.zIndex(2)
   }
 
   build() {
-    Stack() {
+    Row() {
       this.previewImg();
     }
   }

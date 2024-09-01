@@ -9,6 +9,7 @@ import util from '@ohos.util';
 import image from '@ohos.multimedia.image';
 import { router } from '@kit.ArkUI';
 import { Empty } from '../components/Empty';
+import { baseUrl } from '../utils/request';
 
 @Entry
 @Component
@@ -291,6 +292,7 @@ export struct AddTask {
               bottom: 12
             })
             .alignListItem(ListItemAlign.Start)
+            .enabled(!this.previewImg)
           }
           // .divider({ strokeWidth: 2, startMargin: 20, endMargin: 20, color: 'rgb(230, 230, 230)' })
         }
@@ -332,10 +334,16 @@ export struct AddTask {
 
     Flex({direction: FlexDirection.Column}) {
       Stack({alignContent: Alignment.TopStart}) {
-        if (this.previewImg) {
-          PreviewImg({url: this.currentImg});
-        }
         this.Body()
+
+        if (this.previewImg && this.currentImg != '') {
+          PreviewImg({url: this.currentImg})
+            .onClick(() => {
+              console.log('关闭预览图像')
+              this.previewImg = !this.previewImg;
+              this.currentImg = ''
+            })
+        }
       }
       .height('100%')
     }
