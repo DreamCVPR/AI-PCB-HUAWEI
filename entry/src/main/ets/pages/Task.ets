@@ -5,13 +5,16 @@ import { TaskController } from '../controllers/TaskController';
 import { Empty } from '../components/Empty';
 
 
-@Entry
 @Component
 export struct Task {
+  @Link openBatchDel: boolean;
+  @Link chooseTaskIdx: Array<number>;
+
   @State message: string = '任务列表';
   @State isRefreshing: boolean = false;
   @State taskList: Array<TaskElem> = [];
   @State selectedId: number = -1;
+
   @StorageLink("token") token: object | null = null;
 
   public taskController: TaskController | null = null;
@@ -30,6 +33,22 @@ export struct Task {
   @Builder TaskItem(item: TaskElem) {
       Row() {
         Flex({alignItems: ItemAlign.Center}) {
+          if (this.openBatchDel) {
+            Checkbox()
+              .select(this.chooseTaskIdx.includes(item.taskId))
+              .selectedColor(0x39a2db)
+              .shape(CheckBoxShape.ROUNDED_SQUARE)
+              .onClick(() => {
+                if (this.chooseTaskIdx.includes(item.taskId)) {
+                  this.chooseTaskIdx = this.chooseTaskIdx.filter((i: number) => i != item.taskId)
+                } else {
+                  this.chooseTaskIdx.push(item.taskId)
+                }
+                console.log('this.chooseTaskIdx: ' + this.chooseTaskIdx)
+              })
+              .position({ top: 2, right: 2 })
+              .borderColor(Color.White)
+          }
         Column() {
           Text(item.taskName)
             .margin({bottom: 10})

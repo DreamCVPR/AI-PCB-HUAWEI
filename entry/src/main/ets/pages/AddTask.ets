@@ -16,7 +16,7 @@ import { baseUrl } from '../utils/request';
 export struct AddTask {
   @State taskName: string = '';
   @State taskDesc: string = '';
-  @State imageList: Array<string> = ['1'];
+  @State imageList: Array<string> = [];
   @State imgBase64: Array<string> = [];
   @State isValidTaskName: boolean = false;
   @State isValidTaskDesc: boolean = false;
