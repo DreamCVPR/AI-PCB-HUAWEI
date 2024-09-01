@@ -1,5 +1,6 @@
 import { login } from '../api/account';
-import { router } from '@kit.ArkUI';
+import { LoadingDialog, router } from '@kit.ArkUI';
+import { Alert } from '../components/Alert';
 
 // 初始化存储的token
 PersistentStorage.persistProp('token', '')
@@ -16,6 +17,12 @@ export struct Login {
   @StorageLink("userInfo") userInfo: object | null = null;
 
   logo: string = 'app.media.logo'
+
+  dialogControllerProgress: CustomDialogController = new CustomDialogController({
+    builder: LoadingDialog({
+      content: '处理中...',
+    }),
+  })
 
   aboutToAppear(): void {
     if (this.token != '')
@@ -65,6 +72,7 @@ export struct Login {
         Button('登录', {stateEffect: this.isValidUsername && this.isValidPassword})
           .width(200)
           .onClick(() => {
+            this.dialogControllerProgress.open();
             if (this.isValidUsername && this.isValidPassword) {
               login({
                 loginName: this.username,
@@ -75,6 +83,7 @@ export struct Login {
                   this.token = res["result"]["token"];
                   this.userInfo = res["result"]
                   console.log("userInfo", JSON.stringify(this.userInfo))
+                  this.dialogControllerProgress.close();
                   router.replaceUrl({ url: "pages/Index" })
                 })
                 .catch((err: object) => {
@@ -82,7 +91,7 @@ export struct Login {
                 })
             }
           })
-          .opacity(this.isValidUsername && this.isValidPassword ? 1.0: 0.4)
+          .enabled(this.isValidUsername && this.isValidPassword)
       }
       .margin({top: 20})
       Blank()

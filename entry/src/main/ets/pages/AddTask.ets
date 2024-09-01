@@ -7,7 +7,7 @@ import { addTask, startDet } from '../api/service';
 
 import util from '@ohos.util';
 import image from '@ohos.multimedia.image';
-import { router } from '@kit.ArkUI';
+import { LoadingDialog, router } from '@kit.ArkUI';
 import { Empty } from '../components/Empty';
 
 @Entry
@@ -23,6 +23,13 @@ export struct AddTask {
   @State previewImg: boolean = false;
   @State currentImg: string = '';
   @StorageLink("token") token: object | null = null;
+
+  dialogControllerProgress: CustomDialogController = new CustomDialogController({
+    builder: LoadingDialog({
+      content: '处理中...',
+    }),
+  })
+
 
   clear () {
     this.taskName = '';
@@ -93,6 +100,7 @@ export struct AddTask {
 
   // 提交任务
   async confirm() {
+    this.dialogControllerProgress.open();
     await this.transBase64();
     let fileNames: Array<string> = [];
     for (let i = 0; i < this.imageList.length; i++) {
@@ -109,13 +117,14 @@ export struct AddTask {
     })
       .then((data: Response) => {
         console.log("增加任务成功:"+  JSON.stringify(data));
+        this.dialogControllerProgress.close();
         this?.back();
+        this.clear();
       })
       .catch((err: Response) => {
         console.log("增加任务失败:" + JSON.stringify(err))
       })
 
-    this.clear();
   }
 
   @Builder Body(): void {
@@ -131,7 +140,7 @@ export struct AddTask {
 
         Column() {
           Text('创建检测任务')
-            .fontSize(18)
+            .fontSize(20)
             .width('76%')
             .textAlign(TextAlign.Center)
         }
@@ -220,6 +229,7 @@ export struct AddTask {
                   this.choiceImage();
                 })
                 .align(Alignment.Start)
+                .enabled(!this.previewImg)
               Blank()
               Text(this.openManage ? '退出管理' : '管理')
                 .onClick(() => {
@@ -290,6 +300,7 @@ export struct AddTask {
               bottom: 12
             })
             .alignListItem(ListItemAlign.Start)
+            .enabled(!this.previewImg)
           }
           // .divider({ strokeWidth: 2, startMargin: 20, endMargin: 20, color: 'rgb(230, 230, 230)' })
         }
@@ -305,6 +316,7 @@ export struct AddTask {
             .backgroundColor('#ffffff')
             .height(36)
             .width(120)
+            .enabled(!this.previewImg)
 
           Button('确定',
             { type: ButtonType.Normal, stateEffect: this.isValidTaskName && this.isValidTaskDesc ? true : false })
@@ -313,26 +325,33 @@ export struct AddTask {
                 this.confirm();
               }
             })
-            .opacity(this.isValidTaskName && this.isValidTaskDesc ? 1.0 : 0.4)
+            .enabled(this.isValidTaskName && this.isValidTaskDesc)
             .backgroundColor('#0A59F7')
             .borderRadius(4)
             .height(36)
             .width(120)
+            .enabled(!this.previewImg)
         }
       }
       .height('100%')
       .margin({ top: 60 })
-    }
+    }.enabled(!this.previewImg)
   }
 
   build() {
 
     Flex({direction: FlexDirection.Column}) {
       Stack({alignContent: Alignment.TopStart}) {
-        if (this.previewImg) {
-          PreviewImg({url: this.currentImg});
-        }
         this.Body()
+
+        if (this.previewImg && this.currentImg != '') {
+          PreviewImg({url: this.currentImg})
+            .onClick(() => {
+              console.log('关闭预览图像')
+              this.previewImg = !this.previewImg;
+              this.currentImg = ''
+            })
+        }
       }
       .height('100%')
     }
