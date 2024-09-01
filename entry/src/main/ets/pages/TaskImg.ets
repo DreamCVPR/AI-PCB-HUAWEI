@@ -12,10 +12,13 @@ export struct TaskImg {
   @State taskImgList: Array<object> = []
   @State originImgUrl: string = ""
   @State chooseImgIndex?: Array<number> = undefined
+  @StorageLink("token") token: object | null = null;
 
   // @State taskImg: JSON;
 
   aboutToAppear(): void {
+    if (!this.token)
+      router.replaceUrl({url: 'pages/Login'})
     this.getTaskImg()
   }
 
