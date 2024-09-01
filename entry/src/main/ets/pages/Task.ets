@@ -3,6 +3,7 @@ import { Response, TaskElem } from '../common/classes'
 import { delTask, getTasks, startDet } from '../api/service'
 import { TaskController } from '../controllers/TaskController';
 import { Empty } from '../components/Empty';
+import { LoadingDialog } from '@kit.ArkUI';
 
 
 @Component
@@ -19,7 +20,11 @@ export struct Task {
 
   public taskController: TaskController | null = null;
 
-
+  dialogControllerProgress: CustomDialogController = new CustomDialogController({
+    builder: LoadingDialog({
+      content: '处理中...',
+    }),
+  })
   // 生命钩子函数
   aboutToAppear(){
     if (!this.token)
@@ -174,12 +179,14 @@ export struct Task {
                     fontColor: '#000000',
                     backgroundColor: '#ffffff',
                     action: () => {
+                      this.dialogControllerProgress.open();
                       delTask({
                         taskIds: item.taskId
                       })
                         .then((res: Response) => {
                           console.log('删除任务成功', JSON.stringify(res));
-                          this.getTasks()
+                          this.dialogControllerProgress.close();
+                          this.getTasks();
                       })
                         .catch((err: Response) => {
                           console.log('删除任务失败', JSON.stringify(err));

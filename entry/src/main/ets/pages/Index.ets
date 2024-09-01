@@ -1,4 +1,4 @@
-import { router } from '@kit.ArkUI';
+import { LoadingDialog, router } from '@kit.ArkUI';
 import { Settings } from './Settings'
 import { Visual } from '../pages/Visual'
 import { Task } from './Task'
@@ -18,9 +18,6 @@ struct Index {
   @State title: string = '首页';
   @State openBatchDel: boolean = false;
   @State chooseTaskIdx: Array<number> = [];
-
-  @StorageLink("token") token: object | null = null;
-
   @State tabs: Array<NVElem> = [
     {
       text: '首页',
@@ -44,6 +41,15 @@ struct Index {
       page: 'pages/Settings',
     }
   ]
+
+  @StorageLink("token") token: object | null = null;
+
+
+  dialogControllerProgress: CustomDialogController = new CustomDialogController({
+    builder: LoadingDialog({
+      content: '处理中...',
+    }),
+  })
 
   aboutToAppear(): void {
     if (!this.token)
@@ -77,7 +83,7 @@ struct Index {
       }
       .alignItems(VerticalAlign.Center)
       .justifyContent(FlexAlign.Start)
-      .width('20%')
+      .width('30%')
 
       Row() {
         Text(this.openBatchDel ? '完成': '')
@@ -88,8 +94,7 @@ struct Index {
       }
       .alignItems(VerticalAlign.Center)
       .justifyContent(FlexAlign.Center)
-      .width('50%')
-      .padding({left: '10%'})
+      .width('40%')
       .enabled(this.openBatchDel)
       .onClick(() => {
         AlertDialog.show(
@@ -112,6 +117,7 @@ struct Index {
               fontColor: '#000000',
               backgroundColor: '#ffffff',
               action: () => {
+                this.dialogControllerProgress.open();
                 let taskIds = this.chooseTaskIdx.join(',')
                 delTask({
                   taskIds: taskIds
@@ -120,6 +126,7 @@ struct Index {
                     console.log('删除任务成功', JSON.stringify(res));
                     this.chooseTaskIdx = [];
                     this.openBatchDel = false;
+                    this.dialogControllerProgress.close();
                     this.taskController?.getTasks();
                 })
                   .catch((err: Response) => {

@@ -7,9 +7,8 @@ import { addTask, startDet } from '../api/service';
 
 import util from '@ohos.util';
 import image from '@ohos.multimedia.image';
-import { router } from '@kit.ArkUI';
+import { LoadingDialog, router } from '@kit.ArkUI';
 import { Empty } from '../components/Empty';
-import { baseUrl } from '../utils/request';
 
 @Entry
 @Component
@@ -25,6 +24,13 @@ export struct AddTask {
   @State currentImg: string = '';
   @StorageLink("token") token: object | null = null;
 
+  dialogControllerProgress: CustomDialogController = new CustomDialogController({
+    builder: LoadingDialog({
+      content: '处理中...',
+    }),
+  })
+
+
   clear () {
     this.taskName = '';
     this.taskDesc = '';
@@ -35,10 +41,10 @@ export struct AddTask {
     this.previewImg = false;
   }
 
-  // aboutToAppear(): void {
-  //   if (!this.token)
-  //     router.replaceUrl({url: 'pages/Login'})
-  // }
+  aboutToAppear(): void {
+    if (!this.token)
+      router.replaceUrl({url: 'pages/Login'})
+  }
 
   // 打开相册, 选择图像
   choiceImage () {
@@ -94,6 +100,7 @@ export struct AddTask {
 
   // 提交任务
   async confirm() {
+    this.dialogControllerProgress.open();
     await this.transBase64();
     let fileNames: Array<string> = [];
     for (let i = 0; i < this.imageList.length; i++) {
@@ -110,13 +117,14 @@ export struct AddTask {
     })
       .then((data: Response) => {
         console.log("增加任务成功:"+  JSON.stringify(data));
+        this.dialogControllerProgress.close();
         this?.back();
+        this.clear();
       })
       .catch((err: Response) => {
         console.log("增加任务失败:" + JSON.stringify(err))
       })
 
-    this.clear();
   }
 
   @Builder Body(): void {
