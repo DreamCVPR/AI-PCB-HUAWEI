@@ -14,7 +14,10 @@ struct Index {
   @State currentIndex: number = 0;
   @State showTask: boolean = false;
   @State helpPopup: boolean = false;
-  @State title: string = '首页'
+  @State title: string = '首页';
+
+  @StorageLink("token") token: object | null = null;
+
   @State tabs: Array<NVElem> = [
     {
       text: '首页',
@@ -38,6 +41,12 @@ struct Index {
       page: 'pages/Settings',
     }
   ]
+
+  aboutToAppear(): void {
+    if (!this.token)
+      router.replaceUrl({url: 'pages/Login'})
+  }
+
 
   @Builder TabBuilder(index: number) {
     Column() {

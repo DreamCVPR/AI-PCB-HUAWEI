@@ -12,11 +12,15 @@ export struct Task {
   @State isRefreshing: boolean = false;
   @State taskList: Array<TaskElem> = [];
   @State selectedId: number = -1;
+  @StorageLink("token") token: object | null = null;
 
   public taskController: TaskController | null = null;
 
+
   // 生命钩子函数
   aboutToAppear(){
+    if (!this.token)
+      router.replaceUrl({url: 'pages/Login'})
     if (this.taskController) {
       this.taskController.attach(this); //绑定控制器
     }

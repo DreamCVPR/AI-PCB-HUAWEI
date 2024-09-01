@@ -22,6 +22,7 @@ export struct AddTask {
   @State openManage: boolean = false;
   @State previewImg: boolean = false;
   @State currentImg: string = '';
+  @StorageLink("token") token: object | null = null;
 
   clear () {
     this.taskName = '';
@@ -31,6 +32,11 @@ export struct AddTask {
     this.isValidTaskName = false;
     this.isValidTaskDesc = false;
     this.previewImg = false;
+  }
+
+  aboutToAppear(): void {
+    if (!this.token)
+      router.replaceUrl({url: 'pages/Login'})
   }
 
   // 打开相册, 选择图像
@@ -52,7 +58,7 @@ export struct AddTask {
   async transBase64() {
     let tempBase64: Array<string> = [];
     for (let i = 0; i < this.imageList.length; i++) {
-      let uri: string = this.imageList[0];
+      let uri: string = this.imageList[i];
       console.log('uploadImage:fileuri:' + uri);
       try {
         let fileDes = await fs.open(uri, fs.OpenMode.READ_ONLY);
