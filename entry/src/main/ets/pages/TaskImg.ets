@@ -316,7 +316,7 @@ export struct TaskImg {
                     if (this.chooseImgIndex.length == this.taskImgList.length) {
                       this.chooseImgIndex = []
                     } else {
-                      this.chooseImgIndex = Array.from(this.taskImgList.keys()).map(v=>v+1)
+                      this.chooseImgIndex = Array.from(this.taskImgList.keys())
                     }
                   }
                 })
