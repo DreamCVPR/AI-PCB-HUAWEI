@@ -42,11 +42,11 @@ export struct Settings {
       //     center: { anchor: '__container__', align: VerticalAlign.Center },
       //     middle: { anchor: '__container__', align: HorizontalAlign.Center }
       //   })
-      // Button('清除token')
-      //   .onClick(() => {
-      //     AppStorage.set('token', '');
-      //     router.replaceUrl({url: 'pages/Login'})
-      //   })
+      Button('清除token')
+        .onClick(() => {
+          AppStorage.set('token', '');
+          router.replaceUrl({url: 'pages/Login'})
+        })
     }
     .height('100%')
     .width('100%')
