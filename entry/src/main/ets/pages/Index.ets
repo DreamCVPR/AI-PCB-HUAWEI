@@ -21,7 +21,7 @@ struct Index {
   @State taskList: Array<TaskElem> = [];
   @State tabs: Array<NVElem> = [
     {
-      text: '首页',
+      text: '任务 ',
       num: 0,
       init: 'app.media.home',
       selected: 'app.media.home_selected',
@@ -60,15 +60,20 @@ struct Index {
 
   @Builder TabBuilder(index: number) {
     Column() {
-      Image(this.currentIndex === this.tabs[index].num ? $r(this.tabs[index].selected) : $r(this.tabs[index].init))
+      Image($r(this.tabs[index].init))
         .width(24)
         .height(24)
         .margin({ bottom: 4 })
         .objectFit(ImageFit.Contain)
+        .fillColor(
+          this.currentIndex === this.tabs[index].num ? '#000000': '#aaaaaa')
       Text(this.tabs[index].text)
-        .fontSize(10)
+        .fontSize(12)
         .fontWeight(500)
         .lineHeight(14)
+        .fontColor(
+          this.currentIndex === this.tabs[index].num ? '#000000': '#aaaaaa'
+        )
     }.width('100%')
   }
 

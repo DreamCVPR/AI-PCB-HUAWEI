@@ -26,7 +26,6 @@ export struct Settings {
           .backgroundColor('#000000')
       }
       Text(this.userInfo?.userName)
-
     }
     .width('100%')
     .height('100%')

@@ -307,7 +307,7 @@ export struct TaskDialog {
 
   build() {
     Column() {
-      Image($r('app.media.add2'))
+      Image($r('app.media.add'))
         .width(26)
         .height(26)
         .onClick(() => {

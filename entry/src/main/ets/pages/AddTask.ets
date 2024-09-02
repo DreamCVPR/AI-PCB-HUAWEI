@@ -261,34 +261,42 @@ export struct AddTask {
               ForEach(this.imageList, (item: string) => {
                 ListItem() {
                   Row() {
-                    Flex({ justifyContent: FlexAlign.Start }) {
-                      Column() {
+                    Image($r(item))
+                      .width(28)
+                      .height(28)
+                    Row() {
                         Text(item.substring(item.lastIndexOf("\/") + 1))
-                          .width('76%').fontSize(16)
+                          .fontSize(16)
                           .textAlign(TextAlign.Start)
+                          .textOverflow({ overflow: TextOverflow.Ellipsis })
                           .onClick(() => {
                             this.currentImg = item;
                             this.previewImg = !this.previewImg;
                           })
-                      }
-                      .height('100%')
+                          .maxLines(1)
+                          .height('100%')
+                          .width('80%')
 
                       if (this.openManage) {
-                        Image($r('app.media.delete2'))
-                          .width(24)
-                          .height(24)
-                          .onClick(() => {
-                            let tempImage = [...this.imageList];
-                            let index = tempImage.indexOf(item);
-                            if (index > -1)
-                              tempImage.splice(index, 1);
-                            this.imageList = [...tempImage];
-                          })
-                          .margin({ left: 16 })
+                        Column() {
+                          Image($r('app.media.delete2'))
+                            .width(24)
+                            .height(24)
+                            .onClick(() => {
+                              let tempImage = [...this.imageList];
+                              let index = tempImage.indexOf(item);
+                              if (index > -1)
+                                tempImage.splice(index, 1);
+                              this.imageList = [...tempImage];
+                            })
+                            .margin({ left: 16, top: 4 })
+                        }
+                        .height('100%')
                       }
                     }
                     .margin({ left: 22, right: 18 })
-                    .width('100%')
+                    .width('80%')
+                    .alignItems(VerticalAlign.Center)
                   }
                 }
                 .width('100%')
@@ -303,6 +311,7 @@ export struct AddTask {
             })
             .alignListItem(ListItemAlign.Start)
             .enabled(!this.previewImg)
+            // .width('100%')
           }
           // .divider({ strokeWidth: 2, startMargin: 20, endMargin: 20, color: 'rgb(230, 230, 230)' })
         }
@@ -319,6 +328,8 @@ export struct AddTask {
             .height(36)
             .width(120)
             .enabled(!this.previewImg)
+            .borderWidth(1)
+            .borderRadius(4)
 
           Button('确定',
             { type: ButtonType.Normal, stateEffect: this.isValidTaskName && this.isValidTaskDesc ? true : false })
