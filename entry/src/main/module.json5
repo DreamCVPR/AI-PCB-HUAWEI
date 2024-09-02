@@ -61,10 +61,17 @@
         "reason": "$string:app_name",
         "usedScene": {
           "when": "always"
-        }
+        },
       },
       {
         "name" : "ohos.permission.WRITE_MEDIA",
+        "reason": "$string:app_name",
+        "usedScene": {
+          "when": "always"
+        }
+      },
+      {
+        "name" : "ohos.permission.READ_PASTEBOARD",
         "reason": "$string:app_name",
         "usedScene": {
           "when": "always"

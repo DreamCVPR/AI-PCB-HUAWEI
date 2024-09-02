@@ -1,12 +1,16 @@
 import router from '@ohos.router';
 import { baseUrl } from '../utils/request'
 import { getTaskImg } from '../api/taskImg'
-import { CommonConstants } from '../common/classes';
 import { SwiperDataSource } from '../utils/SwiperDataSource'
+import { Empty } from '../components/Empty';
+import { pasteboard } from '@kit.BasicServicesKit';
+import { promptAction } from '@kit.ArkUI';
 
 @Entry
 @Component
 export struct TaskImg {
+  COMPRESS_FILE: string = "/file/compress/"
+  ORIGIN_FILE: string = "/file/download/"
   @State message: string = '检测页';
   @State task: object = (router.getParams() as object);
   @State taskId: number = (router.getParams() as object)['taskId'];
@@ -18,6 +22,7 @@ export struct TaskImg {
   @State chooseImgIndex?: Array<number> = undefined
   @State isImgEdge: boolean = true
   @State maskType: HitTestMode = HitTestMode.None;
+  @State isRefreshing: boolean = false;
   @StorageLink("token") token: object | null = null;
 
 
@@ -42,6 +47,7 @@ export struct TaskImg {
       .then((res: object) => {
         this.taskImgList = res['result']
         this.originImgSize = Array.from(this.taskImgList.keys()).map(v=>new Object())
+        this.isRefreshing = false
         this.resetOriginImg()
         console.log("获取taskImg成功:"+  JSON.stringify(res));
       })
@@ -88,6 +94,19 @@ export struct TaskImg {
     return this.isImgEdge
   }
 
+  copyText(text: string) {
+    const pasteboardData = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, text);
+    const systemPasteboard = pasteboard.getSystemPasteboard();
+    systemPasteboard.setData(pasteboardData); // 将数据放入剪切板
+    systemPasteboard.getData().then((data) => {
+      if (data) {
+        promptAction.showToast({ message: '复制成功' });
+      } else {
+        promptAction.showToast({ message: '复制失败' });
+      }
+    })
+  }
+
   @Builder Mask(opacity: number = 0.95, zIndex: number = 1) {
     Row() {}.height("100%").width("100%").backgroundColor(Color.Gray).opacity(opacity).zIndex(zIndex)
   }
@@ -97,7 +116,7 @@ export struct TaskImg {
       Stack() {
         // 低清图片
         Row() {
-          Image(baseUrl+"/file/compress/"+img["imgUrl"])
+          Image(baseUrl+this.COMPRESS_FILE+img["imgUrl"])
             .alt($r('app.media.load_img'))
             .width("100%")
             .height("100%")
@@ -122,7 +141,7 @@ export struct TaskImg {
           }
         }
         .onClick((e)=>{
-          this.img = new ImageBitmap(baseUrl+"/file/download/"+img["imgUrl"])
+          this.img = new ImageBitmap(baseUrl+this.ORIGIN_FILE+img["imgUrl"])
           this.originImgIndex = index
         })
         .gesture(
@@ -160,7 +179,7 @@ export struct TaskImg {
             })
             .zIndex(2)
             .position({top: 2, right: 2})
-            .borderColor(Color.White)
+            .unselectedColor(Color.White)
         }
       }
     }
@@ -191,7 +210,7 @@ export struct TaskImg {
       //     this.context.putImageData(img, 150, 150)
       //   })
       //   .zIndex(2)
-      Image(baseUrl+"/file/download/"+img["imgUrl"])
+      Image(baseUrl+this.ORIGIN_FILE+img["imgUrl"])
         .alt($r('app.media.load_img'))
         .width("100%")
         .height("100%")
@@ -248,10 +267,12 @@ export struct TaskImg {
                   const offsetX: number = this.originImgTranslate[index]["positionX"] + event.offsetX*this.originImgScale[index]["scaleValue"]
                   const offsetY: number = this.originImgTranslate[index]["positionY"] + event.offsetY*this.originImgScale[index]["scaleValue"]
                   if (!this.originImgSize[index]['originSize'] || !this.judgeImgEdge(this.originImgSize[index]['originSize'], this.originImgSize[index]['nowSize'], new Object({'offsetX': offsetX, 'offsetY': offsetY}))) {
-                    if (event.offsetX < -15) {
-                      this.originImgSwiperController.changeIndex(index+1, true)
-                    } else if (event.offsetX > 15) {
-                      this.originImgSwiperController.changeIndex(index-1, true)
+                    if (Math.abs(event.offsetY) < 2) {
+                      if (event.offsetX < -12) {
+                        this.originImgSwiperController.changeIndex((index+1)%this.taskImgList.length, true)
+                      } else if (event.offsetX > 12) {
+                        this.originImgSwiperController.changeIndex((index+this.taskImgList.length-1)%this.taskImgList.length, true)
+                      }
                     }
                     return
                   }
@@ -280,6 +301,19 @@ export struct TaskImg {
     })
   }
 
+  @Builder Tab(img: ResourceStr, test: string) {
+    Column() {
+      Image(img)
+        .width(25)
+        .height(25)
+        .objectFit(ImageFit.Contain)
+      Text(test)
+        .fontSize(11)
+        .fontWeight(400)
+        .lineHeight(14)
+    }.width('100%')
+  }
+
   build() {
     Column() {
       Flex({ direction: FlexDirection.Column }) {
@@ -290,6 +324,7 @@ export struct TaskImg {
               .height(25)
               .width(25)
               .margin({ left: 2 })
+              .position({bottom: -1})
               .onClick(()=>{
                 if (this.chooseImgIndex == undefined) {
                   router.back()
@@ -297,18 +332,18 @@ export struct TaskImg {
                   this.chooseImgIndex = undefined
                 }
               })
-            Text(this.chooseImgIndex == undefined ? this.task['taskName'] : '已选'+this.chooseImgIndex?.length.toString()+'项')
-              .fontColor(Color.White)
+            Text(this.originImgIndex > -1 ? (this.originImgIndex+1).toString().padStart(2, '0') : (this.chooseImgIndex == undefined ? this.task['taskName'] : '已选'+this.chooseImgIndex?.length.toString()+'项'))
+              .fontColor(Color.Black)
               .fontSize(20)
-              .fontWeight(700)
+              .fontWeight(400)
               .textAlign(TextAlign.Start)
-              .margin({ left: 10 })
+              .margin({ left: 10+27 })
             Blank()
             if (this.chooseImgIndex !== undefined) {
               Text(this.chooseImgIndex.length == this.taskImgList.length ? '取消全选' : '全选')
-                .fontColor(Color.White)
+                .fontColor(Color.Black)
                 .fontSize(20)
-                .fontWeight(700)
+                .fontWeight(400)
                 .textAlign(TextAlign.Start)
                 .margin({ right: 4 })
                 .onClick(()=>{
@@ -320,62 +355,133 @@ export struct TaskImg {
                     }
                   }
                 })
+            } else if (this.originImgIndex > -1) {
+              Image($r('app.media.share'))
+                .height(25)
+                .width(25)
+                .margin({ right: 4 })
+                .onClick(()=>{
+                  this.copyText(baseUrl+this.ORIGIN_FILE+this.taskImgList[this.originImgIndex]['imgUrl'])
+                })
             }
           }
         }
         .width('100%')
-        .height(AppStorage.get('statusBarHeight') as number - 10)
-        .backgroundColor('rgb(130, 178, 154)')
+        .height(AppStorage.get('statusBarHeight') as number - 30)
+        .backgroundColor(Color.White)
         .padding({
           left: 10,
           right: 10,
           top: 30,
           bottom: 0
         })
-        // 图片列表
-        Stack() {
-          List({initialIndex: 0}) {
-            ForEach(this.taskImgList, (item: object, index: number) => {
-              if (index % 2 == 0) {
-                this.ListRow(this.taskImgList, index)
+        Flex({ direction: FlexDirection.Column }) {
+          // 图片列表
+          Refresh({ refreshing: $$this.isRefreshing}) {
+            Stack() {
+              if (this.taskImgList.length == 0) {
+                Empty()
               }
-            })
-          }
-          .width('100%')
-          .padding({left: 8, right: 8, top: 10})
-          .height('100%')
-          .zIndex(1)
-
-          // 图片详情
-          if (this.originImgIndex > -1) {
-            Text((this.originImgIndex+1)?.toString()+'/'+this.taskImgList.length.toString())
-              .fontSize(15)
-              .backgroundColor("#616163")
-              .position({top: "2%", left: "2%"})
-              .fontColor("#C9C9CB")
-              .zIndex(3)
-              .padding(5)
-            Swiper(this.originImgSwiperController) {
-              LazyForEach(new SwiperDataSource(this.taskImgList), (img: object, index: number) => {
-                this.OriginImg(img, index)
-              }, (item: string) => item)
+              List({initialIndex: 0}) {
+                ForEach(this.taskImgList, (item: object, index: number) => {
+                  if (index % 2 == 0) {
+                    this.ListRow(this.taskImgList, index)
+                  }
+                })
+              }
+              .width('100%')
+              .padding({left: 8, right: 8, top: 10})
+              .height('100%')
+              .zIndex(1)
+              .scrollBar(BarState.Off)
+              .edgeEffect(EdgeEffect.Fade)
+              // 图片详情
+              if (this.originImgIndex > -1) {
+                Text((this.originImgIndex+1)?.toString()+'/'+this.taskImgList.length.toString())
+                  .fontSize(15)
+                  .backgroundColor("#616163")
+                  .position({top: "2%", left: "2%"})
+                  .fontColor("#C9C9CB")
+                  .zIndex(3)
+                  .padding(5)
+                Swiper(this.originImgSwiperController) {
+                  LazyForEach(new SwiperDataSource(this.taskImgList), (img: object, index: number) => {
+                    this.OriginImg(img, index)
+                  }, (item: string) => item)
+                }
+                .onChange((index: number) => {
+                  this.resetOriginImg(index)
+                })
+                .hitTestBehavior(HitTestMode.None)
+                .width("100%")
+                .height("100%")
+                .cachedCount(2)
+                .index(this.originImgIndex)
+                .duration(100)
+                .itemSpace(0)
+                .loop(true)
+                .zIndex(2)
+              }
             }
-            .onChange((index: number) => {
-              this.resetOriginImg(index)
-            })
-            .effectMode(EdgeEffect.Fade)
-            .hitTestBehavior(HitTestMode.None)
-            .width("100%")
-            .height("100%")
-            .cachedCount(2)
-            .index(this.originImgIndex)
-            .duration(100)
-            .itemSpace(0)
-            .loop(false)
-            .zIndex(2)
+            .backgroundColor(0xDCDCDC)
           }
-        }
+          .onRefreshing(() => {
+            this.getTaskImg()
+          })
+          .height("100%")
+          .width("100%")
+          .backgroundColor(0xDCDCDC)
+          .refreshOffset(64)
+          .pullToRefresh(true)
+          // 底部导航栏
+          if (this.chooseImgIndex !== undefined) {
+            Stack({alignContent: Alignment.Center}) {
+              GridRow({columns: 5}) {
+                GridCol() { this.Tab($r('app.media.share'), '分享') }
+                .onClick(()=>{
+                  let text: Array<string> = []
+                  if (this.chooseImgIndex !== undefined) {
+                    this.chooseImgIndex.forEach(index => {
+                      text.push(baseUrl+ this.ORIGIN_FILE+this.taskImgList[index]['imgUrl'])
+                    });
+                  }
+                  this.copyText(text.join('\n'))
+                })
+                GridCol() { this.Tab($r('app.media.download'), '保存到相册') }
+                .onClick(()=>{
+                  console.log("我点了保存到相册")
+                })
+                GridCol() {}
+                GridCol() { this.Tab($r('app.media.move'), '移动') }
+                .onClick(()=>{
+                  console.log("我点了移动")
+                })
+                GridCol() { this.Tab($r('app.media.remove'), '删除') }
+                .onClick(()=>{
+                  console.log("我点了删除")
+                })
+              }
+              .width('100%')
+              .height(56)
+              .margin({bottom: 5})
+              Image($r('app.media.detect'))
+                .width(60)
+                .height(60)
+                .borderRadius("50%")
+                .objectFit(ImageFit.None)
+                .margin({bottom: 46})
+                .backgroundColor("#19BCAB")
+                .onClick(()=>{
+                  console.log("我点了检测")
+                })
+            }
+            .enabled(this.chooseImgIndex.length > 0)
+            .opacity(this.chooseImgIndex.length > 0 ? 1 : 0.7)
+            .height(80)
+            .backgroundColor(Color.White)
+          }
+        }.width('100%').height('100%')
       }.width('100%').height('100%')
-    }
+    }.width('100%').height('100%')
   }
 }
