@@ -1,7 +1,7 @@
 import { AbilityConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
-import { CommonConstants } from '../common/classes'
+import { BusinessError } from '@kit.BasicServicesKit';
 
 export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
@@ -24,10 +24,29 @@ export default class EntryAbility extends UIAbility {
       }
       hilog.info(0x0000, 'testTag', 'Succeeded in loading the content.');
     });
+
+    let windowClass: window.Window = windowStage.getMainWindowSync(); // 获取应用主窗口
+
+    let isLayoutFullScreen = true;
+    windowClass.setWindowLayoutFullScreen(isLayoutFullScreen)
+      .then(() => {
+        console.info('Succeeded in setting the window layout to full-screen mode.');
+      })
+      .catch((err: BusinessError) => {
+        console.error('Failed to set the window layout to full-screen mode. Cause:' + JSON.stringify(err));
+      });
+
+    let type = window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR; // 以导航条避让为例
+    let avoidArea = windowClass.getWindowAvoidArea(type);
+    let bottomRectHeight = avoidArea.bottomRect.height; // 获取到导航条区域的高度
+    AppStorage.setOrCreate('bottomRectHeight', bottomRectHeight);
+
+
     windowStage.getMainWindow((err,windowClass) => {
       if (err.code) {
         console.log(JSON.stringify(err))
       }
+
       //设置沉浸式效果
       windowClass.setWindowLayoutFullScreen(true,(error,data) => {
         if(error.code == 0){
@@ -38,7 +57,7 @@ export default class EntryAbility extends UIAbility {
       })
       let statusBarHeight: number = windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM).topRect.height;
       console.log('fuck', statusBarHeight);
-      CommonConstants.STATUS_BAR_HEIGHT = statusBarHeight;
+      AppStorage.setOrCreate('statusBarHeight', statusBarHeight);
     })
 
 

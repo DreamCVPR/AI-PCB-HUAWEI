@@ -186,7 +186,7 @@ struct Index {
       .width('30%')
     }
     .width('100%')
-    .height(CommonConstants.STATUS_BAR_HEIGHT - 30)
+    .height(AppStorage.get('statusBarHeight') as number - 30)
     .backgroundColor('rgb(130, 178, 154)')
     .padding({
       left: 10,

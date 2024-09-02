@@ -147,7 +147,7 @@ export struct AddTask {
         .margin({ left: 20 })
       }
       .padding({ top: 36 })
-      .height(CommonConstants.STATUS_BAR_HEIGHT - 40)
+      .height(AppStorage.get('statusBarHeight') as number - 40)
       .width('100%')
 
       Column() {

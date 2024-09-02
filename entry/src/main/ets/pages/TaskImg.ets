@@ -166,7 +166,7 @@ export struct TaskImg {
           }
         }
         .width('100%')
-        .height(CommonConstants.STATUS_BAR_HEIGHT - 10)
+        .height(AppStorage.get('statusBarHeight') as number - 10)
         .backgroundColor('rgb(130, 178, 154)')
         .padding({
           left: 10,
