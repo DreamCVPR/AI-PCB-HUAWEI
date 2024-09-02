@@ -54,3 +54,17 @@ export class TaskElem {
 export class RouRefresh {
   refresh: boolean = false;
 }
+
+// 用户个人信息类
+export class UserInfo {
+  harmonyUserId?: string
+  gmtCreate?: string
+  openId?: string
+  unionId?: string
+  userImg?: string
+  userName?: string
+  userPhone?: string
+  loginName?: string
+  loginPwd?: string
+  token?: string
+}

@@ -15,7 +15,7 @@ struct Index {
   @State currentIndex: number = 0;
   @State showTask: boolean = false;
   @State helpPopup: boolean = false;
-  @State title: string = '首页';
+  @State title: string = '任务';
   @State openBatchDel: boolean = false;
   @State chooseTaskIdx: Array<number> = [];
   @State taskList: Array<TaskElem> = [];
@@ -137,78 +137,78 @@ struct Index {
   }
 
   @Builder Nav(): void {
-    Row() {
+    if (this.currentIndex == 0) {
       Row() {
-        Text(this.title)
-          .fontColor('#000000')
-          .fontSize(20)
-          .textAlign(TextAlign.Start)
-          .margin({ left: 2 })
-      }
-      .alignItems(VerticalAlign.Center)
-      .justifyContent(FlexAlign.Start)
-      .width('30%')
+        Row() {
+          Text(`${this.title}(${this.taskList.length})`)
+            .fontColor('#000000')
+            .fontSize(20)
+            .textAlign(TextAlign.Start)
+            .margin({ left: 2, top: 4 })
+        }
+        .alignItems(VerticalAlign.Center)
+        .justifyContent(FlexAlign.Start)
+        .width('30%')
 
-      Row() {
-        Text(this.openBatchDel ? '完成': '')
-          .fontColor('#000000')
-          .fontSize(20)
-          .textAlign(TextAlign.Start)
-      }
-      .alignItems(VerticalAlign.Center)
-      .justifyContent(FlexAlign.Center)
-      .width('40%')
-      .enabled(this.openBatchDel)
-      .onClick(() => {
-        AlertDialog.show(
-          {
-            title: '是否删除?',
-            message: '',
-            autoCancel: true,
-            alignment: DialogAlignment.Center,
-            gridCount: 4,
-            offset: { dx: 0, dy: -20 },
-            primaryButton: {
-              value: '取消',
-              fontColor: '#000000',
-              backgroundColor: '#ffffff',
-              action: () => {
-                this.chooseTaskIdx = [];
-                this.openBatchDel = false;
-              }
-            },
-            secondaryButton: {
-              value: '确定',
-              fontColor: '#000000',
-              backgroundColor: '#ffffff',
-              enabled: this.chooseTaskIdx.length > 0,
-              action: () => {
-                this.dialogControllerProgress.open();
-                let taskIds = this.chooseTaskIdx.join(',')
-                delTask({
-                  taskIds: taskIds
-                })
-                  .then((res: Response) => {
-                    console.log('删除任务成功', JSON.stringify(res));
-                    this.chooseTaskIdx = [];
-                    this.openBatchDel = false;
-                    this.dialogControllerProgress.close();
-                    this.taskController?.getTasks();
-                })
-                  .catch((err: Response) => {
-                    console.log('删除任务失败', JSON.stringify(err));
+        Row() {
+          Text(this.openBatchDel ? '完成' : '')
+            .fontColor('#000000')
+            .fontSize(20)
+            .textAlign(TextAlign.Start)
+        }
+        .alignItems(VerticalAlign.Center)
+        .justifyContent(FlexAlign.Center)
+        .width('40%')
+        .enabled(this.openBatchDel)
+        .onClick(() => {
+          AlertDialog.show(
+            {
+              title: '是否删除?',
+              message: '',
+              autoCancel: true,
+              alignment: DialogAlignment.Center,
+              gridCount: 4,
+              offset: { dx: 0, dy: -20 },
+              primaryButton: {
+                value: '取消',
+                fontColor: '#000000',
+                backgroundColor: '#ffffff',
+                action: () => {
+                  this.chooseTaskIdx = [];
+                  this.openBatchDel = false;
+                }
+              },
+              secondaryButton: {
+                value: '确定',
+                fontColor: '#000000',
+                backgroundColor: '#ffffff',
+                enabled: this.chooseTaskIdx.length > 0,
+                action: () => {
+                  this.dialogControllerProgress.open();
+                  let taskIds = this.chooseTaskIdx.join(',')
+                  delTask({
+                    taskIds: taskIds
                   })
+                    .then((res: Response) => {
+                      console.log('删除任务成功', JSON.stringify(res));
+                      this.chooseTaskIdx = [];
+                      this.openBatchDel = false;
+                      this.dialogControllerProgress.close();
+                      this.taskController?.getTasks();
+                    })
+                    .catch((err: Response) => {
+                      console.log('删除任务失败', JSON.stringify(err));
+                    })
+                }
+              },
+              cancel: () => {
+
               }
-            },
-            cancel: () => {
+            })
+        })
 
-            }
-          })
-      })
-
-      // Blank()
-      Row() {
-        if (this.currentIndex == 0) {
+        // Blank()
+        Row() {
           Image($r('app.media.manage'))
             .width(30)
             .height(30)
@@ -218,21 +218,105 @@ struct Index {
               this.TaskMenu
             )
         }
+        .alignItems(VerticalAlign.Center)
+        .justifyContent(FlexAlign.End)
+        .width('30%')
+        .position({ top: 16, right: 10 })
       }
-      .alignItems(VerticalAlign.Center)
-      .justifyContent(FlexAlign.End)
-      .width('30%')
-      .position({top: 16, right: 10})
+      .width('100%')
+      .height(AppStorage.get('statusBarHeight') as number - 30)
+      .backgroundColor('#ffffff')
+      .padding({
+        left: 10,
+        right: 10,
+        top: 30,
+        bottom: 0
+      })
     }
-    .width('100%')
-    .height(AppStorage.get('statusBarHeight') as number - 30)
-    .backgroundColor('#ffffff')
-    .padding({
-      left: 10,
-      right: 10,
-      top: 30,
-      bottom: 0
-    })
+    else if (this.currentIndex == 1) {
+      Row() {
+        Row() {
+          Text(`${this.title}`)
+            .fontColor('#000000')
+            .fontSize(20)
+            .textAlign(TextAlign.Start)
+            .margin({ left: 2, top: 4 })
+        }
+        .alignItems(VerticalAlign.Center)
+        .justifyContent(FlexAlign.Start)
+        .width('30%')
+
+        Row() {
+          Text('')
+            .fontColor('#000000')
+            .fontSize(20)
+            .textAlign(TextAlign.Start)
+        }
+        .alignItems(VerticalAlign.Center)
+        .justifyContent(FlexAlign.Center)
+        .width('40%')
+        .enabled(this.openBatchDel)
+
+        // Blank()
+        Row() {
+        }
+        .alignItems(VerticalAlign.Center)
+        .justifyContent(FlexAlign.End)
+        .width('30%')
+        .position({ top: 16, right: 10 })
+      }
+      .width('100%')
+      .height(AppStorage.get('statusBarHeight') as number - 30)
+      .backgroundColor('#ffffff')
+      .padding({
+        left: 10,
+        right: 10,
+        top: 30,
+        bottom: 0
+      })
+    }
+    else {
+      Row() {
+        Row() {
+          Text('')
+            .fontColor('#000000')
+            .fontSize(20)
+            .textAlign(TextAlign.Start)
+            .margin({ left: 2, top: 4 })
+        }
+        .alignItems(VerticalAlign.Center)
+        .justifyContent(FlexAlign.Start)
+        .width('30%')
+
+        Row() {
+          Text('')
+            .fontColor('#000000')
+            .fontSize(20)
+            .textAlign(TextAlign.Start)
+        }
+        .alignItems(VerticalAlign.Center)
+        .justifyContent(FlexAlign.Center)
+        .width('40%')
+        .enabled(this.openBatchDel)
+
+        // Blank()
+        Row() {
+        }
+        .alignItems(VerticalAlign.Center)
+        .justifyContent(FlexAlign.End)
+        .width('30%')
+        .position({ top: 16, right: 10 })
+      }
+      .width('100%')
+      .height(AppStorage.get('statusBarHeight') as number - 30)
+      .backgroundColor('#ffffff')
+      .padding({
+        left: 10,
+        right: 10,
+        top: 30,
+        bottom: 0
+      })
+    }
   }
 
   @Builder Body(): void {

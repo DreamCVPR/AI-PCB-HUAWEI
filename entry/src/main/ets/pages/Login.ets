@@ -1,6 +1,7 @@
 import { login } from '../api/account';
 import { LoadingDialog, router } from '@kit.ArkUI';
 import { Alert } from '../components/Alert';
+import { UserInfo } from '../common/classes';
 
 // 初始化存储的token
 PersistentStorage.persistProp('token', '')
@@ -14,7 +15,7 @@ export struct Login {
   @State isValidUsername: boolean = false;
   @State isValidPassword: boolean = false;
   @StorageLink("token") token: string = '';
-  @StorageLink("userInfo") userInfo: object | null = null;
+  @StorageLink("userInfo") userInfo: UserInfo | null = null;
 
   logo: string = 'app.media.logo'
 
@@ -88,15 +89,17 @@ export struct Login {
                 })
                 .catch((err: object) => {
                   console.log("登入失败:" + JSON.stringify(err))
+                  this.dialogControllerProgress.close();
                 })
             }
           })
           .enabled(this.isValidUsername && this.isValidPassword)
       }
       .margin({top: 20})
-      Blank()
+
       Text('队名：mamba back again')
         .fontSize(12)
+        .height('60%')
     }
     .width('100%')
     .height('100%')
