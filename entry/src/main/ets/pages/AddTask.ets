@@ -130,18 +130,20 @@ export struct AddTask {
   @Builder Body(): void {
     RelativeContainer() {
       Row() {
-        Image($r('app.media.back'))
-          .width(24)
-          .height(24)
-          .margin({ left: 8 })
-          .onClick(() => {
-            this.back();
-          })
+        Row() {
+          Image($r('app.media.back'))
+            .width(22)
+            .height(22)
+            .margin({ left: 8 })
+        }
+        .onClick(() => {
+          this.back();
+        })
 
         Column() {
           Text('创建检测任务')
-            .fontSize(20)
-            .width('76%')
+            .fontSize(18)
+            .width('78%')
             .textAlign(TextAlign.Center)
         }
         .margin({ left: 20 })

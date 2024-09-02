@@ -223,8 +223,8 @@ export struct Task {
   }
 
   // 获取任务列表
-  getTasks () {
-    getTasks()
+  getTasks (params: object | null = null) {
+    getTasks(params)
       .then((res: Response) => {
         console.log("获取任务成功:"+  JSON.stringify(res));
         let tempList: Array<TaskElem> = [];

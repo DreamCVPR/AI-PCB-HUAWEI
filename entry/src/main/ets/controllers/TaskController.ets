@@ -8,8 +8,8 @@ export class TaskController {
     this.taskComponent = component
   }
 
-  public getTasks(): void  {
+  public getTasks(params: object | null = null): void  {
     if (this.taskComponent)
-      this.taskComponent.getTasks();
+      this.taskComponent.getTasks(params);
   }
 }

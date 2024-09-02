@@ -4,7 +4,7 @@ import { Visual } from '../pages/Visual'
 import { Task } from './Task'
 import { NVElem, CommonConstants, RouRefresh, Response, TaskElem } from '../common/classes'
 import { TaskController } from '../controllers/TaskController'
-import { delTask } from '../api/service';
+import { delTask, getTasks } from '../api/service';
 
 
 @Entry
@@ -72,6 +72,70 @@ struct Index {
     }.width('100%')
   }
 
+  @Builder TaskSortSubMenu() {
+    Menu() {
+      MenuItem({startIcon: $r('app.media.deting'), content: '检测中'})
+        .onClick(() => {
+          console.log('按照“检测中”状态进行查询')
+          this.dialogControllerProgress?.open()
+          this.taskController.getTasks(Object({taskState: 2}))
+          this.dialogControllerProgress?.close()
+        })
+      MenuItem({startIcon: $r('app.media.deted'), content: '空闲'})
+        .onClick(() => {
+          console.log('按照“空闲”状态进行查询')
+          this.dialogControllerProgress?.open()
+          this.taskController.getTasks(Object({taskState: 0}))
+          this.dialogControllerProgress?.close()
+        })
+      MenuItem({startIcon: $r('app.media.time'), content: '创建时间'})
+        .onClick(() => {
+          console.log('按照“创建时间”状态进行查询')
+          this.dialogControllerProgress?.open()
+          this.taskController.getTasks();
+          this.dialogControllerProgress?.close()
+        })
+    }
+  }
+
+  @Builder TaskMenu() {
+    Menu() {
+      MenuItem({startIcon: $r('app.media.add'), content: '增加任务'})
+        .onClick(() => {
+          console.log('进入增加任务页面')
+          router.pushUrl({ url: 'pages/AddTask' })
+        })
+      MenuItem({startIcon: $r('app.media.delete3'), content: '删除任务'}).enabled(this.taskList.length > 0)
+        .onClick(() => {
+          console.log('批量删除');
+          this.openBatchDel = !this.openBatchDel;
+          this.chooseTaskIdx = [];
+        })
+      MenuItem({
+        startIcon: $r('app.media.menu_left'),
+        content: '排序任务',
+        builder: this.TaskSortSubMenu
+      })
+        .enabled(this.taskList.length > 0)
+
+      MenuItem({startIcon: $r('app.media.help'), content: '帮助'})
+        .onTouch(() => {
+        this.helpPopup = !this.helpPopup;
+      })
+        .bindPopup(this.helpPopup, {
+          message: '需先创建PCB检测任务, 再执行检测',
+          placementOnTop: true,
+          showInSubWindow: false,
+          onStateChange: (e) => {
+            console.info(JSON.stringify(e.isVisible))
+            if (!e.isVisible) {
+              this.helpPopup = false
+            }
+          },
+        })
+    }
+  }
+
   @Builder Nav(): void {
     Row() {
       Row() {
@@ -87,9 +151,8 @@ struct Index {
 
       Row() {
         Text(this.openBatchDel ? '完成': '')
-          .fontColor('#ffffff')
+          .fontColor('#000000')
           .fontSize(20)
-          .fontWeight(700)
           .textAlign(TextAlign.Start)
       }
       .alignItems(VerticalAlign.Center)
@@ -110,12 +173,15 @@ struct Index {
               fontColor: '#000000',
               backgroundColor: '#ffffff',
               action: () => {
+                this.chooseTaskIdx = [];
+                this.openBatchDel = false;
               }
             },
             secondaryButton: {
               value: '确定',
               fontColor: '#000000',
               backgroundColor: '#ffffff',
+              enabled: this.chooseTaskIdx.length > 0,
               action: () => {
                 this.dialogControllerProgress.open();
                 let taskIds = this.chooseTaskIdx.join(',')
@@ -143,48 +209,20 @@ struct Index {
       // Blank()
       Row() {
         if (this.currentIndex == 0) {
-          Image($r('app.media.help'))
-            .width(26)
-            .height(26)
-            .margin({ right: 16 })
-            .onClick(() => {
-              this.helpPopup = !this.helpPopup;
-            })
-            .bindPopup(this.helpPopup, {
-              message: '需先创建PCB检测任务, 再执行检测',
-              placementOnTop: true,
-              showInSubWindow: false,
-              onStateChange: (e) => {
-                console.info(JSON.stringify(e.isVisible))
-                if (!e.isVisible) {
-                  this.helpPopup = false
-                }
-              },
-            })
-
-          Image($r('app.media.add3'))
-            .width(26)
-            .height(26)
-            .onClick(() => {
-              console.log('进入增加任务页面')
-              router.pushUrl({ url: 'pages/AddTask' })
-            })
-            .margin({ right: 16 })
-          if (this.taskList.length > 0) {
-            Image(this.openBatchDel ? $r('app.media.waste') : $r('app.media.multi_choose'))
-              .width(26)
-              .height(26)
-              .onClick(() => {
-                console.log('批量删除');
-                this.openBatchDel = !this.openBatchDel;
-                this.chooseTaskIdx = [];
-              })
-          }
+          Image($r('app.media.manage'))
+            .width(30)
+            .height(30)
+            .margin({ right: 8 })
+            .fillColor('#000000')
+            .bindMenu(
+              this.TaskMenu
+            )
         }
       }
       .alignItems(VerticalAlign.Center)
       .justifyContent(FlexAlign.End)
       .width('30%')
+      .position({top: 16, right: 10})
     }
     .width('100%')
     .height(AppStorage.get('statusBarHeight') as number - 30)
