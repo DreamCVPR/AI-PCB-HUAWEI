@@ -126,31 +126,36 @@ export struct AddTask {
       })
 
   }
+  @Builder Nav(): void {
+    Row() {
+      Row() {
+        Image($r('app.media.left_arrow'))
+          .width(24)
+          .height(24)
+          .margin({ left: 8 })
+          .fillColor('#000000')
+      }
+      .onClick(() => {
+        this.back();
+      })
+
+      Column() {
+        Text('创建检测任务')
+          .fontSize(18)
+          .width('78%')
+          .textAlign(TextAlign.Center)
+      }
+      .margin({ left: 20 })
+    }
+    .padding({ top: 36, left: 6, right: 10 })
+    .height(AppStorage.get('statusBarHeight') as number - 40)
+    .width('100%')
+    .zIndex(99)
+  }
 
   @Builder Body(): void {
     RelativeContainer() {
-      Row() {
-        Row() {
-          Image($r('app.media.back'))
-            .width(22)
-            .height(22)
-            .margin({ left: 8 })
-        }
-        .onClick(() => {
-          this.back();
-        })
-
-        Column() {
-          Text('创建检测任务')
-            .fontSize(18)
-            .width('78%')
-            .textAlign(TextAlign.Center)
-        }
-        .margin({ left: 20 })
-      }
-      .padding({ top: 36 })
-      .height(AppStorage.get('statusBarHeight') as number - 40)
-      .width('100%')
+       this.Nav()
 
       Column() {
         Column() {
@@ -346,9 +351,9 @@ export struct AddTask {
             .enabled(!this.previewImg && this.isValidTaskName && this.isValidTaskDesc)
         }
       }
-      .height('100%')
-      .margin({ top: 60 })
+      .margin({ top: 80 })
     }.enabled(!this.previewImg)
+    .height('100%')
   }
 
   build() {
