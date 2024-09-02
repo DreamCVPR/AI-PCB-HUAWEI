@@ -11,6 +11,10 @@ import { promptAction } from '@kit.ArkUI';
 export struct TaskImg {
   COMPRESS_FILE: string = "/file/compress/"
   ORIGIN_FILE: string = "/file/download/"
+  LABEL_COLOR: object = new Object({
+    "mouse_bite": "",
+    "short": ""
+  })
   @State message: string = '检测页';
   @State task: object = (router.getParams() as object);
   @State taskId: number = (router.getParams() as object)['taskId'];
@@ -19,6 +23,7 @@ export struct TaskImg {
   @State originImgTranslate: Array<object> = [];
   @State originImgScale: Array<object> = [];
   @State originImgSize: Array<object> = [];
+  @State showImgDefect: boolean = true;
   @State chooseImgIndex?: Array<number> = undefined
   @State isImgEdge: boolean = true
   @State maskType: HitTestMode = HitTestMode.None;
@@ -100,9 +105,9 @@ export struct TaskImg {
     systemPasteboard.setData(pasteboardData); // 将数据放入剪切板
     systemPasteboard.getData().then((data) => {
       if (data) {
-        promptAction.showToast({ message: '复制成功' });
+        promptAction.showToast({ message: '复制链接成功' });
       } else {
-        promptAction.showToast({ message: '复制失败' });
+        promptAction.showToast({ message: '复制链接失败' });
       }
     })
   }
@@ -293,6 +298,16 @@ export struct TaskImg {
               })
           )
         )
+      Image($r('app.media.detect'))
+        .width(60)
+        .height(60)
+        .borderRadius("50%")
+        .objectFit(ImageFit.None)
+        .margin({bottom: 46})
+        .backgroundColor("#19BCAB")
+        .onClick(()=>{
+          console.log("我点了检测")
+        })
     }
     .zIndex(2)
     .onClick((e)=>{
@@ -359,9 +374,16 @@ export struct TaskImg {
               Image($r('app.media.share'))
                 .height(25)
                 .width(25)
-                .margin({ right: 4 })
+                .margin({ right: 10 })
                 .onClick(()=>{
                   this.copyText(baseUrl+this.ORIGIN_FILE+this.taskImgList[this.originImgIndex]['imgUrl'])
+                })
+              Image(this.showImgDefect ? $r('app.media.open_eye') : $r('app.media.close_eye'))
+                .height(25)
+                .width(25)
+                .margin({ right: 4 })
+                .onClick(()=>{
+                  this.showImgDefect = !this.showImgDefect
                 })
             }
           }
