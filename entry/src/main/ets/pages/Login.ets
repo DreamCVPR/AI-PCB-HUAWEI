@@ -13,7 +13,7 @@ export struct Login {
   @State password: string = ''
   @State isValidUsername: boolean = false;
   @State isValidPassword: boolean = false;
-  @StorageLink("token") token: string = "";
+  @StorageLink("token") token: string = '';
   @StorageLink("userInfo") userInfo: object | null = null;
 
   logo: string = 'app.media.logo'
@@ -25,7 +25,7 @@ export struct Login {
   })
 
   aboutToAppear(): void {
-    if (this.token != '')
+    if (this.token !== '')
       router.replaceUrl({url: 'pages/Index'})
   }
 

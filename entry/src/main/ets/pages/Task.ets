@@ -10,13 +10,13 @@ import { LoadingDialog } from '@kit.ArkUI';
 export struct Task {
   @Link openBatchDel: boolean;
   @Link chooseTaskIdx: Array<number>;
+  @Link taskList: Array<TaskElem>;
 
   @State message: string = '任务列表';
   @State isRefreshing: boolean = false;
-  @State taskList: Array<TaskElem> = [];
   @State selectedId: number = -1;
 
-  @StorageLink("token") token: object | null = null;
+  @StorageLink("token") token: string = '';
 
   public taskController: TaskController | null = null;
 
@@ -27,7 +27,7 @@ export struct Task {
   })
   // 生命钩子函数
   aboutToAppear(){
-    if (!this.token)
+    if (this.token === '')
       router.replaceUrl({url: 'pages/Login'})
     if (this.taskController) {
       this.taskController.attach(this); //绑定控制器

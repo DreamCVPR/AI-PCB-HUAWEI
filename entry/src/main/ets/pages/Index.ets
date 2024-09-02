@@ -2,7 +2,7 @@ import { LoadingDialog, router } from '@kit.ArkUI';
 import { Settings } from './Settings'
 import { Visual } from '../pages/Visual'
 import { Task } from './Task'
-import { NVElem, CommonConstants, RouRefresh, Response } from '../common/classes'
+import { NVElem, CommonConstants, RouRefresh, Response, TaskElem } from '../common/classes'
 import { TaskController } from '../controllers/TaskController'
 import { delTask } from '../api/service';
 
@@ -18,6 +18,7 @@ struct Index {
   @State title: string = '首页';
   @State openBatchDel: boolean = false;
   @State chooseTaskIdx: Array<number> = [];
+  @State taskList: Array<TaskElem> = [];
   @State tabs: Array<NVElem> = [
     {
       text: '首页',
@@ -42,7 +43,7 @@ struct Index {
     }
   ]
 
-  @StorageLink("token") token: object | null = null;
+  @StorageLink("token") token: string = ''
 
 
   dialogControllerProgress: CustomDialogController = new CustomDialogController({
@@ -52,7 +53,7 @@ struct Index {
   })
 
   aboutToAppear(): void {
-    if (!this.token)
+    if (this.token === '')
       router.replaceUrl({url: 'pages/Login'})
   }
 
@@ -75,9 +76,8 @@ struct Index {
     Row() {
       Row() {
         Text(this.title)
-          .fontColor('#ffffff')
+          .fontColor('#000000')
           .fontSize(20)
-          .fontWeight(700)
           .textAlign(TextAlign.Start)
           .margin({ left: 2 })
       }
@@ -162,7 +162,7 @@ struct Index {
               },
             })
 
-          Image($r('app.media.add2'))
+          Image($r('app.media.add3'))
             .width(26)
             .height(26)
             .onClick(() => {
@@ -170,15 +170,16 @@ struct Index {
               router.pushUrl({ url: 'pages/AddTask' })
             })
             .margin({ right: 16 })
-
-          Image(this.openBatchDel ? $r('app.media.waste') : $r('app.media.multi_choose'))
-            .width(26)
-            .height(26)
-            .onClick(() => {
-              console.log('批量删除');
-              this.openBatchDel = !this.openBatchDel;
-              this.chooseTaskIdx = [];
-            })
+          if (this.taskList.length > 0) {
+            Image(this.openBatchDel ? $r('app.media.waste') : $r('app.media.multi_choose'))
+              .width(26)
+              .height(26)
+              .onClick(() => {
+                console.log('批量删除');
+                this.openBatchDel = !this.openBatchDel;
+                this.chooseTaskIdx = [];
+              })
+          }
         }
       }
       .alignItems(VerticalAlign.Center)
@@ -187,7 +188,7 @@ struct Index {
     }
     .width('100%')
     .height(AppStorage.get('statusBarHeight') as number - 30)
-    .backgroundColor('rgb(130, 178, 154)')
+    .backgroundColor('#ffffff')
     .padding({
       left: 10,
       right: 10,
@@ -205,6 +206,7 @@ struct Index {
             Column() {
               if (item.num === 0) {
                 Task({
+                  taskList: this.taskList,
                   openBatchDel: this.openBatchDel,
                   chooseTaskIdx: this.chooseTaskIdx,
                   taskController: this.taskController,

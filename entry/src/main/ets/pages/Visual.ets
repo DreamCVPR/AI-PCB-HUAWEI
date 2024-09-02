@@ -7,10 +7,10 @@ import { BusinessError } from '@kit.BasicServicesKit';
 export struct Visual {
   @State message: string = '图表可视化页';
   controller: webview.WebviewController = new webview.WebviewController();
-  @StorageLink("token") token: object | null = null;
+  @StorageLink("token") token: string = '';
 
   aboutToAppear(): void {
-    if (!this.token)
+    if (this.token === '')
       router.replaceUrl({url: 'pages/Login'})
   }
 
