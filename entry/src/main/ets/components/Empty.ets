@@ -3,6 +3,9 @@
 @Entry
 @Component
 export struct Empty {
+
+  extraContent?: string = ''
+
   build() {
     Column() {
       Image($r('app.media.empty'))
@@ -10,6 +13,10 @@ export struct Empty {
         .height(100)
       Text('暂无数据')
         .fontSize(20)
+        .margin({top: 14})
+        .fontColor('rgb(160, 160, 160)')
+      Text(this.extraContent)
+        .fontSize(12)
         .margin({top: 14})
         .fontColor('rgb(160, 160, 160)')
     }
