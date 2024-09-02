@@ -251,7 +251,7 @@ export struct Task {
 
   build() {
     if (this.taskList.length === 0) {
-      Empty()
+      Empty({extraContent: '点击右上角创建检测任务'})
         .backgroundColor(0xDCDCDC)
     } else {
       Refresh({ refreshing: $$this.isRefreshing }) {

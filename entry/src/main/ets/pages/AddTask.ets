@@ -261,7 +261,7 @@ export struct AddTask {
               ForEach(this.imageList, (item: string) => {
                 ListItem() {
                   Row() {
-                    Image($r(item))
+                    Image(item)
                       .width(28)
                       .height(28)
                     Row() {
@@ -343,7 +343,7 @@ export struct AddTask {
             .borderRadius(4)
             .height(36)
             .width(120)
-            .enabled(!this.previewImg)
+            .enabled(!this.previewImg && this.isValidTaskName && this.isValidTaskDesc)
         }
       }
       .height('100%')
