@@ -1,14 +1,17 @@
 import router from '@ohos.router';
 import { baseUrl } from '../utils/request'
-import { getTaskImg } from '../api/taskImg'
+import { addImg, detect, getTaskImg, removeImg } from '../api/taskImg'
 import { SwiperDataSource } from '../utils/SwiperDataSource'
 import { Empty } from '../components/Empty';
 import { pasteboard } from '@kit.BasicServicesKit';
 import { promptAction } from '@kit.ArkUI';
+import { FileUtils } from '../utils/FileUtils';
+import { Loading } from '../components/Loading';
+
 
 @Entry
 @Component
-export struct TaskImg {
+struct TaskImg {
   @StorageLink("token") token: object | null = null;
 
   COMPRESS_FILE: string = "/file/compress/"
@@ -37,7 +40,7 @@ export struct TaskImg {
   @State originImgScale: Array<object> = [];
   @State originImgSize: Array<object> = [];
   @State originImgRealSize: Array<object> = [];
-  @State chooseLabelClass: Array<string> = [];
+  @State showLoading: boolean = true;
   @State showImgDefect: boolean = true;
   @State showImgDefectClassName: object = new Object({
     "mouse_bite": true,
@@ -49,16 +52,9 @@ export struct TaskImg {
   @State isImgEdge: boolean = true
   @State isRefreshing: boolean = false;
 
+  private originImgSwiperController: SwiperController = new SwiperController()
+  private fileUtils: FileUtils = new FileUtils()
 
-
-  settings: RenderingContextSettings = new RenderingContextSettings(true)
-  context: CanvasRenderingContext2D = new CanvasRenderingContext2D(this.settings)
-  img?: ImageBitmap
-  originImgSwiperController: SwiperController = new SwiperController()
-
-
-
-  // @State taskImg: JSON;
 
   aboutToAppear(): void {
     if (!this.token)
@@ -67,7 +63,7 @@ export struct TaskImg {
   }
 
   getTaskImg() {
-    getTaskImg({'taskId': this.taskId})
+    return getTaskImg({'taskId': this.taskId})
       .then((res: object) => {
         this.taskImgList = res['result']
         this.taskImgList.map((item: object, index: number) => {
@@ -82,9 +78,11 @@ export struct TaskImg {
         this.originImgRealSize = Array.from(this.taskImgList.keys()).map(v=>new Object())
         this.isRefreshing = false
         this.resetOriginImg()
+        this.showLoading = false
         console.log("获取taskImg成功:"+  JSON.stringify(res));
       })
       .catch((err: object) => {
+        this.showLoading = false
         console.log("获取taskImg失败:" + JSON.stringify(err))
       })
   }
@@ -135,6 +133,107 @@ export struct TaskImg {
         promptAction.showToast({ message: '复制链接失败' });
       }
     })
+  }
+
+  save2Album() {
+    if (this.chooseImgIndex !== undefined) {
+      this.fileUtils.saveImg(this.chooseImgIndex.map(index=>{
+        return baseUrl+this.ORIGIN_FILE+this.taskImgList[index]["imgUrl"]
+      }))
+      this.chooseImgIndex = undefined
+    }
+  }
+
+  move2OtherTask() {}
+
+  remove() {
+    if (this.chooseImgIndex !== undefined) {
+      this.showLoading = true
+      AlertDialog.show(
+        {
+          title: `是否删除${this.chooseImgIndex.length}张图片？`,
+          message: '删除后3天内可在“我的”回收站中找回，请确认是否删除',
+          autoCancel: true,
+          alignment: DialogAlignment.Center,
+          height: 230,
+          primaryButton: {
+            value: '取消',
+            fontColor: '#000000',
+            backgroundColor: '#ffffff',
+            action: () => {
+            }
+          },
+          secondaryButton: {
+            value: '确定',
+            fontColor: '#000000',
+            backgroundColor: '#ffffff',
+            action: () => {
+              removeImg({'imgIds': this.taskImgList.filter((v: object, index: number)=>this.chooseImgIndex?.includes(index)).map((value: object): number=>value["imgId"]).join(',')})
+                .then((res: object) => {
+                  this.chooseImgIndex = undefined
+                  this.getTaskImg()
+                  console.log("删除taskImg成功:"+  JSON.stringify(res));
+                })
+                .catch((err: object) => {
+                  this.showLoading = false
+                  this.chooseImgIndex = undefined
+                  console.log("删除taskImg失败:" + JSON.stringify(err))
+                })
+            }
+          },
+          cancel: () => {
+            this.showLoading = false
+          }
+        }
+      )
+    }
+  }
+
+  add() {
+    this.showLoading = true
+    this.fileUtils.chooseImage().then(imgList=>{
+      if (imgList[0].length > 0) {
+        addImg({'taskId': this.taskId, "files": imgList[0], "fileNames": imgList[1]})
+          .then((res: object) => {
+            this.getTaskImg()
+            console.log("增加taskImg成功:"+  JSON.stringify(res));
+          })
+          .catch((err: object) => {
+            this.showLoading = false
+            console.log("增加taskImg失败:" + JSON.stringify(err))
+          })
+      } else {
+        this.showLoading = false
+      }
+    })
+  }
+
+  detect() {
+    let img2Detect: object[] = []
+    if (this.chooseImgIndex == undefined) {
+      img2Detect = this.taskImgList.filter(item => item["isDetect"] == 0)
+    } else {
+      img2Detect = this.taskImgList.filter((item, index) => item["isDetect"] == 0 && this.chooseImgIndex?.includes(index))
+    }
+
+    if (img2Detect.length == 0) {
+      promptAction.showToast({ message: '当前没有未检测的图片' });
+    } else {
+      this.chooseImgIndex = undefined
+      promptAction.showToast({ message: '开始检测（已检测的图片不再检测）' });
+      this.task['taskState'] = 2
+      detect(img2Detect)
+        .then((res: object) => {
+          this.getTaskImg().then(res=>{
+            this.task['taskState'] = 0
+          })
+          console.log("增加taskImg成功:"+  JSON.stringify(res));
+        })
+        .catch((err: object) => {
+          this.showLoading = false
+          console.log("增加taskImg失败:" + JSON.stringify(err))
+        })
+    }
   }
 
   getScale(index: number) {
@@ -200,7 +299,6 @@ export struct TaskImg {
           }
         }
         .onClick((e)=>{
-          this.img = new ImageBitmap(baseUrl+this.ORIGIN_FILE+img["imgUrl"])
           this.originImgIndex = index
         })
         .gesture(
@@ -260,15 +358,6 @@ export struct TaskImg {
   @Builder OriginImg(img: object, index: number) {
     Stack() {
       this.Mask()
-      // Canvas(this.context)
-      //   .width('100%')
-      //   .height('100%')
-      //   .onReady(() =>{
-      //     this.context.drawImage(this.img,0,0, 130, 130)
-      //     let img = this.context.getImageData(50, 50, 130, 130)
-      //     this.context.putImageData(img, 150, 150)
-      //   })
-      //   .zIndex(2)
       Row() {
         Image(baseUrl+this.ORIGIN_FILE+img["imgUrl"])
           .alt($r('app.media.load_img'))
@@ -419,197 +508,260 @@ export struct TaskImg {
     }
   }
 
+  @Builder AddImg() {
+    if (this.chooseImgIndex == undefined && this.originImgIndex == -1 && this.task['taskState'] == 0) {
+      Image($r('app.media.upload'))
+        .width(36)
+        .height(36)
+        .borderRadius("50%")
+        .objectFit(ImageFit.None)
+        .position({"right": 37, "bottom": 130})
+        .backgroundColor(Color.White)
+        .shadow({radius: 7, color: Color.White})
+        .zIndex(10)
+        .onClick(()=>{
+          this.add()
+        })
+    }
+  }
+
+  @Builder Detect() {
+    if (this.chooseImgIndex == undefined && this.originImgIndex == -1 && this.task['taskState'] == 0) {
+      Image($r('app.media.detect'))
+        .width(60)
+        .height(60)
+        .borderRadius("50%")
+        .objectFit(ImageFit.None)
+        .position({"right": 25, "bottom": 50})
+        .backgroundColor("#19BCAB")
+        .shadow({radius: 7, color: "#19BCAB"})
+        .zIndex(10)
+        .onClick(()=>{
+          this.detect()
+        })
+    }
+  }
+
+  @Builder TopBar() {
+    Row() {
+      Flex() {
+        Image($r('app.media.left_arrow'))
+          .height(25)
+          .width(25)
+          .margin({ left: 2 })
+          .position({bottom: -1})
+          .onClick(()=>{
+            if (this.chooseImgIndex == undefined) {
+              if (this.originImgIndex == -1) {
+                router.back({
+                  url: "",
+                  params: { "refresh": true }
+                })
+              } else {
+                this.resetOriginImg()
+              }
+            } else {
+              this.chooseImgIndex = undefined
+            }
+          })
+        Text(this.originImgIndex > -1 ? (this.originImgIndex+1).toString().padStart(2, '0') : (this.chooseImgIndex == undefined ? this.task['taskName'] : '已选'+this.chooseImgIndex?.length.toString()+'项'))
+          .fontColor(Color.Black)
+          .fontSize(20)
+          .fontWeight(400)
+          .textAlign(TextAlign.Start)
+          .margin({ left: 10+27 })
+        Blank()
+        if (this.chooseImgIndex !== undefined) {
+          Text(this.chooseImgIndex.length == this.taskImgList.length ? '取消全选' : '全选')
+            .fontColor(Color.Black)
+            .fontSize(20)
+            .fontWeight(400)
+            .textAlign(TextAlign.Start)
+            .margin({ right: 4 })
+            .onClick(()=>{
+              if (this.chooseImgIndex !== undefined) {
+                if (this.chooseImgIndex.length == this.taskImgList.length) {
+                  this.chooseImgIndex = []
+                } else {
+                  this.chooseImgIndex = Array.from(this.taskImgList.keys())
+                }
+              }
+            })
+        } else if (this.originImgIndex > -1) {
+          Image($r('app.media.share'))
+            .height(25)
+            .width(25)
+            .margin({ right: 10 })
+            .onClick(()=>{
+              this.copyText(baseUrl+this.ORIGIN_FILE+this.taskImgList[this.originImgIndex]['imgUrl'])
+            })
+          Image(this.showImgDefect && this.taskImgList[this.originImgIndex]["isDetect"] == 1 ? $r('app.media.open_eye') : $r('app.media.close_eye'))
+            .height(25)
+            .width(25)
+            .margin({ right: 4 })
+            .onClick(()=>{
+              if (this.taskImgList[this.originImgIndex]["isDetect"] !== 1) {
+                promptAction.showToast({ message: '当前图片未经检测，无法查看瑕疵' });
+              } else {
+                this.showImgDefect = !this.showImgDefect
+              }
+            })
+        }
+      }
+    }
+    .width('100%')
+    .height(AppStorage.get('statusBarHeight') as number - 30)
+    .backgroundColor(Color.White)
+    .padding({
+      left: 10,
+      right: 10,
+      top: 30,
+      bottom: 0
+    })
+  }
+
+  @Builder ImgList() {
+    this.AddImg()
+    this.Detect()
+    Refresh({ refreshing: $$this.isRefreshing}) {
+      Row() {
+        Empty().visibility(this.taskImgList.length == 0 && !this.showLoading ? Visibility.Visible : Visibility.None)
+        List({ initialIndex: 0 }) {
+          ForEach(this.taskImgList, (item: object, index: number) => {
+            if (index % 2 == 0) {
+              this.ListRow(this.taskImgList, index)
+            }
+          })
+        }
+        .width('100%')
+        .padding({left: 8, right: 8, top: 10})
+        .height('100%')
+        .zIndex(1)
+        .scrollBar(BarState.Off)
+        .edgeEffect(EdgeEffect.Fade)
+      }.width("100%").height("100%")
+    }
+    .onRefreshing(() => {
+      this.getTaskImg()
+    })
+    .height("100%")
+    .width("100%")
+    .backgroundColor(0xDCDCDC)
+    .refreshOffset(64)
+    .pullToRefresh(this.chooseImgIndex == undefined)
+    .pullDownRatio(this.chooseImgIndex == undefined ? 1 : 0)
+  }
+
+  @Builder ImgInfo() {
+    if (this.originImgIndex > -1) {
+      // 左上角图片索引
+      Text((this.originImgIndex+1)?.toString()+'/'+this.taskImgList.length.toString())
+        .fontSize(15)
+        .backgroundColor("#616163")
+        .position({top: "2%", left: "2%"})
+        .fontColor("#C9C9CB")
+        .zIndex(3)
+        .padding(5)
+      // 底部标签类别
+      GridRow({columns: 5}) {
+        ForEach(Object.keys(this.CLASS_CN_NAME), (key: string, index: number)=>{
+          GridCol() {
+            this.LabelClass(key)
+          }
+        })
+      }
+      .width("100%")
+      .backgroundColor('rgba(0, 0, 0, 0)')
+      .position({bottom: 16})
+      .zIndex(3)
+      .padding(5)
+      .visibility(this.showImgDefect && this.taskImgList[this.originImgIndex]["isDetect"] == 1 ? Visibility.Visible : Visibility.Hidden)
+      // 原图
+      Swiper(this.originImgSwiperController) {
+        LazyForEach(new SwiperDataSource(this.taskImgList), (img: object, index: number) => {
+          this.OriginImg(img, index)
+        }, (item: string) => item)
+      }
+      .onChange((index: number) => {
+        this.resetOriginImg(index)
+      })
+      .hitTestBehavior(HitTestMode.None)
+      .width("100%")
+      .height("100%")
+      .cachedCount(2)
+      .index(this.originImgIndex)
+      .duration(100)
+      .itemSpace(0)
+      .loop(true)
+      .zIndex(2)
+    }
+  }
+
+  @Builder BottomBar() {
+    if (this.chooseImgIndex !== undefined) {
+      Stack({alignContent: Alignment.Center}) {
+        GridRow({columns: 5}) {
+          GridCol() { this.Tab($r('app.media.share'), '分享') }
+          .onClick(()=>{
+            let text: Array<string> = []
+            if (this.chooseImgIndex !== undefined) {
+              this.chooseImgIndex.forEach(index => {
+                text.push(baseUrl+ this.ORIGIN_FILE+this.taskImgList[index]['imgUrl'])
+              });
+            }
+            this.copyText(text.join('\n'))
+          })
+          GridCol() { this.Tab($r('app.media.download'), '保存到相册') }
+          .onClick(()=>{
+            this.save2Album()
+          })
+          GridCol() {}
+          GridCol() { this.Tab($r('app.media.move'), '移动') }
+          .onClick(()=>{
+            console.log("我点了移动")
+          })
+          GridCol() { this.Tab($r('app.media.remove'), '删除') }
+          .onClick(()=>{
+            this.remove()
+          })
+        }
+        .width('100%')
+        .height(56)
+        .margin({bottom: 5})
+        Image($r('app.media.detect'))
+          .width(60)
+          .height(60)
+          .borderRadius("50%")
+          .objectFit(ImageFit.None)
+          .margin({bottom: 46})
+          .backgroundColor("#19BCAB")
+          .onClick(()=>{
+            this.detect()
+          })
+      }
+      .enabled(this.chooseImgIndex.length > 0)
+      .opacity(this.chooseImgIndex.length > 0 ? 1 : 0.7)
+      .height(80)
+      .backgroundColor(Color.White)
+    }
+  }
+
   build() {
     Column() {
       Flex({ direction: FlexDirection.Column }) {
         // 顶部导航栏
-        Row() {
-          Flex() {
-            Image($r('app.media.left_arrow'))
-              .height(25)
-              .width(25)
-              .margin({ left: 2 })
-              .position({bottom: -1})
-              .onClick(()=>{
-                if (this.chooseImgIndex == undefined) {
-                  router.back()
-                } else {
-                  this.chooseImgIndex = undefined
-                }
-              })
-            Text(this.originImgIndex > -1 ? (this.originImgIndex+1).toString().padStart(2, '0') : (this.chooseImgIndex == undefined ? this.task['taskName'] : '已选'+this.chooseImgIndex?.length.toString()+'项'))
-              .fontColor(Color.Black)
-              .fontSize(20)
-              .fontWeight(400)
-              .textAlign(TextAlign.Start)
-              .margin({ left: 10+27 })
-            Blank()
-            if (this.chooseImgIndex !== undefined) {
-              Text(this.chooseImgIndex.length == this.taskImgList.length ? '取消全选' : '全选')
-                .fontColor(Color.Black)
-                .fontSize(20)
-                .fontWeight(400)
-                .textAlign(TextAlign.Start)
-                .margin({ right: 4 })
-                .onClick(()=>{
-                  if (this.chooseImgIndex !== undefined) {
-                    if (this.chooseImgIndex.length == this.taskImgList.length) {
-                      this.chooseImgIndex = []
-                    } else {
-                      this.chooseImgIndex = Array.from(this.taskImgList.keys())
-                    }
-                  }
-                })
-            } else if (this.originImgIndex > -1) {
-              Image($r('app.media.share'))
-                .height(25)
-                .width(25)
-                .margin({ right: 10 })
-                .onClick(()=>{
-                  this.copyText(baseUrl+this.ORIGIN_FILE+this.taskImgList[this.originImgIndex]['imgUrl'])
-                })
-              Image(this.showImgDefect ? $r('app.media.open_eye') : $r('app.media.close_eye'))
-                .height(25)
-                .width(25)
-                .margin({ right: 4 })
-                .onClick(()=>{
-                  this.showImgDefect = !this.showImgDefect
-                })
-            }
-          }
-        }
-        .width('100%')
-        .height(AppStorage.get('statusBarHeight') as number - 30)
-        .backgroundColor(Color.White)
-        .padding({
-          left: 10,
-          right: 10,
-          top: 30,
-          bottom: 0
-        })
+        this.TopBar()
         Flex({ direction: FlexDirection.Column }) {
+          Loading({ show: this.showLoading })
           Stack() {
             // 图片列表
-            Refresh({ refreshing: $$this.isRefreshing}) {
-              Row() {
-                if (this.taskImgList.length == 0) {
-                  Empty()
-                }
-                List({initialIndex: 0}) {
-                  ForEach(this.taskImgList, (item: object, index: number) => {
-                    if (index % 2 == 0) {
-                      this.ListRow(this.taskImgList, index)
-                    }
-                  })
-                }
-                .width('100%')
-                .padding({left: 8, right: 8, top: 10})
-                .height('100%')
-                .zIndex(1)
-                .scrollBar(BarState.Off)
-                .edgeEffect(EdgeEffect.Fade)
-              }.width("100%").height("100%")
-            }
-            .onRefreshing(() => {
-              this.getTaskImg()
-            })
-            .height("100%")
-            .width("100%")
-            .backgroundColor(0xDCDCDC)
-            .refreshOffset(64)
-            .pullToRefresh(true)
+            this.ImgList()
             // 图片详情
-            if (this.originImgIndex > -1) {
-              // 左上角图片索引
-              Text((this.originImgIndex+1)?.toString()+'/'+this.taskImgList.length.toString())
-                .fontSize(15)
-                .backgroundColor("#616163")
-                .position({top: "2%", left: "2%"})
-                .fontColor("#C9C9CB")
-                .zIndex(3)
-                .padding(5)
-              // 底部标签类别
-              GridRow({columns: 5}) {
-                ForEach(Object.keys(this.CLASS_CN_NAME), (key: string, index: number)=>{
-                  GridCol() {
-                    this.LabelClass(key)
-                  }
-                })
-              }
-              .width("100%")
-              .backgroundColor('rgba(0, 0, 0, 0)')
-              .position({bottom: 16})
-              .zIndex(3)
-              .padding(5)
-              .visibility(this.showImgDefect ? Visibility.Visible : Visibility.Hidden)
-              // 原图
-              Swiper(this.originImgSwiperController) {
-                LazyForEach(new SwiperDataSource(this.taskImgList), (img: object, index: number) => {
-                  this.OriginImg(img, index)
-                }, (item: string) => item)
-              }
-              .onChange((index: number) => {
-                this.resetOriginImg(index)
-              })
-              .hitTestBehavior(HitTestMode.None)
-              .width("100%")
-              .height("100%")
-              .cachedCount(2)
-              .index(this.originImgIndex)
-              .duration(100)
-              .itemSpace(0)
-              .loop(true)
-              .zIndex(2)
-            }
+            this.ImgInfo()
           }
           .backgroundColor(0xDCDCDC)
           // 底部导航栏
-          if (this.chooseImgIndex !== undefined) {
-            Stack({alignContent: Alignment.Center}) {
-              GridRow({columns: 5}) {
-                GridCol() { this.Tab($r('app.media.share'), '分享') }
-                .onClick(()=>{
-                  let text: Array<string> = []
-                  if (this.chooseImgIndex !== undefined) {
-                    this.chooseImgIndex.forEach(index => {
-                      text.push(baseUrl+ this.ORIGIN_FILE+this.taskImgList[index]['imgUrl'])
-                    });
-                  }
-                  this.copyText(text.join('\n'))
-                })
-                GridCol() { this.Tab($r('app.media.download'), '保存到相册') }
-                .onClick(()=>{
-                  console.log("我点了保存到相册")
-                })
-                GridCol() {}
-                GridCol() { this.Tab($r('app.media.move'), '移动') }
-                .onClick(()=>{
-                  console.log("我点了移动")
-                })
-                GridCol() { this.Tab($r('app.media.remove'), '删除') }
-                .onClick(()=>{
-                  console.log("我点了删除")
-                })
-              }
-              .width('100%')
-              .height(56)
-              .margin({bottom: 5})
-              Image($r('app.media.detect'))
-                .width(60)
-                .height(60)
-                .borderRadius("50%")
-                .objectFit(ImageFit.None)
-                .margin({bottom: 46})
-                .backgroundColor("#19BCAB")
-                .onClick(()=>{
-                  console.log("我点了检测")
-                })
-            }
-            .enabled(this.chooseImgIndex.length > 0)
-            .opacity(this.chooseImgIndex.length > 0 ? 1 : 0.7)
-            .height(80)
-            .backgroundColor(Color.White)
-          }
+          this.BottomBar()
         }.width('100%').height('100%')
       }.width('100%').height('100%')
     }.width('100%').height('100%')
