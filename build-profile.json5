@@ -5,13 +5,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:\\Users\\admin\\.ohos\\config\\default_AI-PCB-HUAWEI_Y8QyY2d_xDlKgPjrPTrB_Yki6LoluGvbsgySk6kKVdk=.cer",
-          "storePassword": "0000001B88086C9D26DE50642FC59F7ABA0D83D64D71E7FD13371403803F2224D21DEB8E3576E90AD5330B",
+          "certpath": "C:\\Users\\a\\.ohos\\config\\default_AI-PCB-HUAWEI_tk1CMnfiH9D8gdVTmgMX8kDI9NX7fD7FLmoErbWXHM0=.cer",
+          "storePassword": "0000001BA6624A0010F7AF90BECBCD9D3F0DD4EF35474D29CB0AF8123471033F4B57DE6ADA24C4B8F082F2",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001B7EFF704BE2778DAFBA01BBF16C1692257AE97D14302A3365DE50D11E45C20FF20C14921A686621",
-          "profile": "C:\\Users\\admin\\.ohos\\config\\default_AI-PCB-HUAWEI_Y8QyY2d_xDlKgPjrPTrB_Yki6LoluGvbsgySk6kKVdk=.p7b",
+          "keyPassword": "0000001B5620AC4C1A16DB67E070CB41E35B805A5A0DF8710BC76443B6AABC40FF10EB43AFC2769E27B5E7",
+          "profile": "C:\\Users\\a\\.ohos\\config\\default_AI-PCB-HUAWEI_tk1CMnfiH9D8gdVTmgMX8kDI9NX7fD7FLmoErbWXHM0=.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\admin\\.ohos\\config\\default_AI-PCB-HUAWEI_Y8QyY2d_xDlKgPjrPTrB_Yki6LoluGvbsgySk6kKVdk=.p12"
+          "storeFile": "C:\\Users\\a\\.ohos\\config\\default_AI-PCB-HUAWEI_tk1CMnfiH9D8gdVTmgMX8kDI9NX7fD7FLmoErbWXHM0=.p12"
         }
       }
     ],
