@@ -36,9 +36,14 @@ export class TaskElem {
   gmtCreate: string = ''
   countDetectImg: number = 0
   countAllImg: number = 0
+  taskCoverImg: string = ''
+  countDefect: number = 0
+  cateDefect: Array<string> = []
+  colorDefect: Array<string> = []
 
   constructor(taskId: number, taskName: string, taskDesc: string, harmonyUserId: string,
-    taskState: number, gmtCreate: string, countDetectImg: number, countAllImg: number) {
+    taskState: number, gmtCreate: string, countDetectImg: number, countAllImg: number,
+    taskCoverImg: string, countDefect: number, cateDefect: Array<string>, colorDefect: Array<string>) {
       this.taskId = taskId;
       this.taskName = taskName;
       this.taskDesc = taskDesc;
@@ -47,6 +52,10 @@ export class TaskElem {
       this.gmtCreate = gmtCreate;
       this.countDetectImg = countDetectImg;
       this.countAllImg = countAllImg;
+      this.taskCoverImg = taskCoverImg
+      this.countDefect = countDefect;
+      this.cateDefect = cateDefect;
+      this.colorDefect = colorDefect;
   }
 }
 
