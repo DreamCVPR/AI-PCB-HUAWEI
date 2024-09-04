@@ -9,6 +9,10 @@ import util from '@ohos.util';
 import image from '@ohos.multimedia.image';
 import { LoadingDialog, router } from '@kit.ArkUI';
 import { Empty } from '../components/Empty';
+import { Loading } from '../components/Loading';
+import { Notice } from '../components/Notice';
+import { NoticeController } from '../controllers/NoticeController';
+import { noticeTime, requestTime } from '../common/settings';
 
 @Entry
 @Component
@@ -22,23 +26,20 @@ export struct AddTask {
   @State openManage: boolean = false;
   @State previewImg: boolean = false;
   @State currentImg: string = '';
+  @State showLoading: boolean = false;
+  private noticeController: NoticeController = new NoticeController()
   @StorageLink("token") token: object | null = null;
 
-  dialogControllerProgress: CustomDialogController = new CustomDialogController({
-    builder: LoadingDialog({
-      content: '处理中...',
-    }),
-  })
 
 
   clear () {
+    this.isValidTaskName = false;
+    this.isValidTaskDesc = false;
+    this.previewImg = false;
     this.taskName = '';
     this.taskDesc = '';
     this.imageList = [];
     this.imgBase64 = [];
-    this.isValidTaskName = false;
-    this.isValidTaskDesc = false;
-    this.previewImg = false;
   }
 
   aboutToAppear(): void {
@@ -100,7 +101,7 @@ export struct AddTask {
 
   // 提交任务
   async confirm() {
-    this.dialogControllerProgress.open();
+    this.showLoading = true;
     await this.transBase64();
     let fileNames: Array<string> = [];
     for (let i = 0; i < this.imageList.length; i++) {
@@ -115,14 +116,29 @@ export struct AddTask {
       'files': this.imgBase64,
       'fileNames': fileNames
     })
-      .then((data: Response) => {
-        console.log("增加任务成功:"+  JSON.stringify(data));
-        this.dialogControllerProgress.close();
-        this?.back();
-        this.clear();
+      .then((res: Response) => {
+        this.showLoading = false;
+        if (res.status == 200) {
+          this.noticeController.success('新建任务成功');
+          setTimeout(() => {
+            this.noticeController.close();
+            this.clear();
+            this?.back();
+          }, requestTime)
+        }
+        else {
+          this.noticeController.fail('新建任务失败');
+          setTimeout(() => {
+            this.noticeController.close();
+          }, noticeTime)
+        }
       })
       .catch((err: Response) => {
-        console.log("增加任务失败:" + JSON.stringify(err))
+        this.showLoading = false;
+        this.noticeController.fail('新建任务失败');
+        setTimeout(() => {
+          this.noticeController.close();
+        }, noticeTime)
       })
 
   }
@@ -325,7 +341,7 @@ export struct AddTask {
         Flex({ justifyContent: FlexAlign.SpaceAround }) {
           Button('取消', { type: ButtonType.Normal, stateEffect: true })
             .onClick(() => {
-              this.clear()
+              this.clear();
               this.back();
             })
             .fontColor(Color.Black)
@@ -343,12 +359,11 @@ export struct AddTask {
                 this.confirm();
               }
             })
-            .enabled(this.isValidTaskName && this.isValidTaskDesc)
+            .enabled(!this.previewImg && this.isValidTaskName && this.isValidTaskDesc)
             .backgroundColor('#0A59F7')
             .borderRadius(4)
             .height(36)
             .width(120)
-            .enabled(!this.previewImg && this.isValidTaskName && this.isValidTaskDesc)
         }
       }
       .margin({ top: 80 })
@@ -359,6 +374,8 @@ export struct AddTask {
   build() {
 
     Flex({direction: FlexDirection.Column}) {
+      Loading({ show: this.showLoading })
+      Notice({noticeController: this.noticeController})
       Stack({alignContent: Alignment.TopStart}) {
         this.Body()
 

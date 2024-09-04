@@ -3,7 +3,10 @@ import { Response, TaskElem } from '../common/classes'
 import { delTask, getTasks, startDet } from '../api/service'
 import { TaskController } from '../controllers/TaskController';
 import { Empty } from '../components/Empty';
-import { LoadingDialog } from '@kit.ArkUI';
+import { Loading } from '../components/Loading';
+import { noticeTime, requestTime } from '../common/settings';
+import { Notice } from '../components/Notice';
+import { NoticeController } from '../controllers/NoticeController';
 
 
 @Component
@@ -12,19 +15,16 @@ export struct Task {
   @Link chooseTaskIdx: Array<number>;
   @Link taskList: Array<TaskElem>;
 
+  @State showLoading: boolean = false;
   @State message: string = '任务列表';
   @State isRefreshing: boolean = false;
   @State selectedId: number = -1;
 
   @StorageLink("token") token: string = '';
 
+  private noticeController: NoticeController = new NoticeController()
   public taskController: TaskController | null = null;
 
-  dialogControllerProgress: CustomDialogController = new CustomDialogController({
-    builder: LoadingDialog({
-      content: '处理中...',
-    }),
-  })
   // 生命钩子函数
   aboutToAppear(){
     if (this.token === '')
@@ -179,17 +179,29 @@ export struct Task {
                     fontColor: '#000000',
                     backgroundColor: '#ffffff',
                     action: () => {
-                      this.dialogControllerProgress.open();
                       delTask({
                         taskIds: item.taskId
                       })
                         .then((res: Response) => {
-                          console.log('删除任务成功', JSON.stringify(res));
-                          this.dialogControllerProgress.close();
-                          this.getTasks();
+                          if (res.status == 200) {
+                            this.noticeController.success(`已删除1项任务`);
+                            setTimeout(() => {
+                              this.noticeController.close();
+                              this.getTasks();
+                            }, requestTime)
+                          }
+                          else {
+                            this.noticeController.success(`删除任务失败`);
+                            setTimeout(() => {
+                              this.noticeController.close();
+                            }, noticeTime)
+                          }
                       })
                         .catch((err: Response) => {
-                          console.log('删除任务失败', JSON.stringify(err));
+                          this.noticeController.success(`删除任务失败`);
+                          setTimeout(() => {
+                            this.noticeController.close();
+                          }, noticeTime)
                         })
                     }
                   },
@@ -213,17 +225,33 @@ export struct Task {
       taskId: selectedId
     })
       .then((res: Response) => {
-        console.log('开始检测', JSON.stringify(res));
-        this.getTasks();
-        this.selectedId = -1;
+        if (res.status == 200) {
+          this.noticeController.success('开始检测')
+          setTimeout(() => {
+              this.noticeController.close();
+              this.getTasks();
+              this.selectedId = -1;
+          }, requestTime)
+        }
+        else {
+          this.noticeController.success(JSON.stringify(res.message))
+          setTimeout(() => {
+            this.noticeController.close();
+            this.selectedId = -1;
+          }, noticeTime)
+        }
       })
       .catch((err: Response) => {
-        console.log("检测失败:" + JSON.stringify(err))
+        this.noticeController.fail('检测失败')
+        setTimeout(() => {
+            this.noticeController.close();
+        }, noticeTime)
       })
   }
 
   // 获取任务列表
   getTasks (params: object | null = null) {
+    this.showLoading = true;
     getTasks(params)
       .then((res: Response) => {
         console.log("获取任务成功:"+  JSON.stringify(res));
@@ -242,67 +270,79 @@ export struct Task {
           )
           tempList.push(taskObj)
         }
-        this.taskList = [...tempList]
+        this.taskList = [...tempList];
+        setTimeout(() => {
+          this.showLoading = false;
+        }, requestTime)
       })
       .catch((err: Response) => {
-        console.log("获取任务失败:" + JSON.stringify(err))
+        setTimeout(() => {
+          this.showLoading = false;
+          this.noticeController.fail('查询任务失败');
+          setTimeout(() => {
+            this.noticeController.close();
+          }, noticeTime)
+        }, requestTime)
       })
   }
 
   build() {
-    if (this.taskList.length === 0) {
-      Empty({extraContent: '点击右上角创建检测任务'})
-        .backgroundColor(0xDCDCDC)
-    } else {
-      Refresh({ refreshing: $$this.isRefreshing }) {
-        List({ space: 20, initialIndex: 0 }) {
-          ForEach(this.taskList, (item: TaskElem) => {
-            this.TaskItem(item)
+    Column() {
+      Loading({ show: this.showLoading })
+      Notice({noticeController: this.noticeController})
+      if (this.taskList.length === 0) {
+        Empty({ extraContent: '点击右上角创建检测任务' })
+          .backgroundColor(0xDCDCDC)
+      } else {
+        Refresh({ refreshing: $$this.isRefreshing }) {
+          List({ space: 20, initialIndex: 0 }) {
+            ForEach(this.taskList, (item: TaskElem) => {
+              this.TaskItem(item)
+            })
+          }
+          .listDirection(Axis.Vertical)
+          .scrollBar(BarState.Off)
+          .friction(0.6)
+          .divider({
+            strokeWidth: 2,
+            color: 'rgb(240, 250, 239)',
+            startMargin: 20,
+            endMargin: 20
           })
+          .edgeEffect(EdgeEffect.Spring)
+          .onScrollIndex((firstIndex: number, lastIndex: number, centerIndex: number) => {
+            console.info('first' + firstIndex)
+            console.info('last' + lastIndex)
+            console.info('center' + centerIndex)
+          })
+          .onScrollVisibleContentChange((start: VisibleListContentInfo, end: VisibleListContentInfo) => {
+            console.log(' start index: ' + start.index +
+              ' start item group area: ' + start.itemGroupArea +
+              ' start index in group: ' + start.itemIndexInGroup)
+            console.log(' end index: ' + end.index +
+              ' end item group area: ' + end.itemGroupArea +
+              ' end index in group: ' + end.itemIndexInGroup)
+          })
+          .onDidScroll((scrollOffset: number, scrollState: ScrollState) => {
+            console.info(`onScroll scrollState = ScrollState` + scrollState + `, scrollOffset = ` + scrollOffset)
+          })
+          .width('100%')
+          .padding({ left: 8, right: 8, top: 10 })
+          .height('100%')
         }
-        .listDirection(Axis.Vertical)
-        .scrollBar(BarState.Off)
-        .friction(0.6)
-        .divider({
-          strokeWidth: 2,
-          color: 'rgb(240, 250, 239)',
-          startMargin: 20,
-          endMargin: 20
-        })
-        .edgeEffect(EdgeEffect.Spring)
-        .onScrollIndex((firstIndex: number, lastIndex: number, centerIndex: number) => {
-          console.info('first' + firstIndex)
-          console.info('last' + lastIndex)
-          console.info('center' + centerIndex)
-        })
-        .onScrollVisibleContentChange((start: VisibleListContentInfo, end: VisibleListContentInfo) => {
-          console.log(' start index: ' + start.index +
-            ' start item group area: ' + start.itemGroupArea +
-            ' start index in group: ' + start.itemIndexInGroup)
-          console.log(' end index: ' + end.index +
-            ' end item group area: ' + end.itemGroupArea +
-            ' end index in group: ' + end.itemIndexInGroup)
-        })
-        .onDidScroll((scrollOffset: number, scrollState: ScrollState) => {
-          console.info(`onScroll scrollState = ScrollState` + scrollState + `, scrollOffset = ` + scrollOffset)
-        })
-        .width('100%')
-        .padding({ left: 8, right: 8, top: 10 })
         .height('100%')
+        .width('100%')
+        .backgroundColor(0xDCDCDC)
+        .onRefreshing(() => {
+          this.getTasks();
+          setTimeout(() => {
+            this.isRefreshing = false;
+          }, requestTime)
+          console.log('onRefreshing test')
+        })
+        .refreshOffset(64)
+        .pullToRefresh(true)
       }
-      .height('100%')
-      .width('100%')
-      .backgroundColor(0xDCDCDC)
-      .onRefreshing(() => {
-        this.getTasks();
-        // this.isRefreshing = false
-        setTimeout(() => {
-          this.isRefreshing = false
-        }, 1000)
-        console.log('onRefreshing test')
-      })
-      .refreshOffset(64)
-      .pullToRefresh(true)
     }
   }
 }
