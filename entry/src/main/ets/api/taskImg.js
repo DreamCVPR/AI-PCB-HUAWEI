@@ -8,3 +8,27 @@ export function getTaskImg (parameter) {
         data: parameter
     })
 }
+
+export function removeImg (parameter) {
+    return requests({
+        url: '/taskImg/remove',
+        method: 'post',
+        data: parameter
+    })
+}
+
+export function addImg (parameter) {
+    return requests({
+        url: '/taskImg/add',
+        method: 'post',
+        data: parameter
+    })
+}
+
+export function detect (parameter) {
+    return requests({
+        url: '/taskImg/detect',
+        method: 'post',
+        data: parameter
+    })
+}
