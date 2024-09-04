@@ -1,7 +1,11 @@
 import { login } from '../api/account';
 import { LoadingDialog, router } from '@kit.ArkUI';
-import { Alert } from '../components/Alert';
+
 import { UserInfo } from '../common/classes';
+import { Notice } from '../components/Notice'
+import { Loading } from '../components/Loading'
+import { NoticeController } from '../controllers/NoticeController';
+import { noticeTime, requestTime } from '../common/settings';
 
 // 初始化存储的token
 PersistentStorage.persistProp('token', '')
@@ -14,10 +18,13 @@ export struct Login {
   @State password: string = ''
   @State isValidUsername: boolean = false;
   @State isValidPassword: boolean = false;
+  @State showLoading: boolean = false;
   @StorageLink("token") token: string = '';
   @StorageLink("userInfo") userInfo: UserInfo | null = null;
 
+  private noticeController: NoticeController = new NoticeController()
   logo: string = 'app.media.logo'
+
 
   dialogControllerProgress: CustomDialogController = new CustomDialogController({
     builder: LoadingDialog({
@@ -32,6 +39,8 @@ export struct Login {
 
   build() {
     Column() {
+      Loading({show: this.showLoading})
+      Notice({noticeController: this.noticeController})
       Row() {
         Image($r(this.logo))
           .width(80)
@@ -73,7 +82,7 @@ export struct Login {
         Button('登录', {stateEffect: this.isValidUsername && this.isValidPassword})
           .width(200)
           .onClick(() => {
-            this.dialogControllerProgress.open();
+            this.showLoading = true;
             if (this.isValidUsername && this.isValidPassword) {
               login({
                 loginName: this.username,
@@ -81,15 +90,33 @@ export struct Login {
               })
                 .then((res: object) => {
                   console.log("登入成功:" + JSON.stringify(res));
-                  this.token = res["result"]["token"];
-                  this.userInfo = res["result"]
-                  console.log("userInfo", JSON.stringify(this.userInfo))
-                  this.dialogControllerProgress.close();
-                  router.replaceUrl({ url: "pages/Index" })
+                  if (res['status'] === 200) {
+                    this.token = res["result"]["token"];
+                    this.userInfo = res["result"]
+                    console.log("userInfo", JSON.stringify(this.userInfo))
+                    setTimeout(() => {
+                      this.showLoading = false;
+                      router.replaceUrl({ url: "pages/Index" })
+                    }, requestTime)
+                  }
+                  else {
+                    setTimeout(() => {
+                      this.showLoading = false;
+                      this.noticeController.fail(res['message']);
+                      setTimeout(() => {
+                        this.noticeController.close();
+                      }, noticeTime)
+                    }, requestTime)
+                  }
                 })
                 .catch((err: object) => {
-                  console.log("登入失败:" + JSON.stringify(err))
-                  this.dialogControllerProgress.close();
+                  setTimeout(() => {
+                    this.showLoading = false;
+                    this.noticeController.fail('登入失败');
+                    setTimeout(() => {
+                      this.noticeController.close();
+                    }, noticeTime)
+                  }, requestTime)
                 })
             }
           })

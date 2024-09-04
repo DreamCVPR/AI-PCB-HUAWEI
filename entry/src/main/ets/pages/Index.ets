@@ -2,9 +2,13 @@ import { LoadingDialog, router } from '@kit.ArkUI';
 import { Settings } from './Settings'
 import { Visual } from '../pages/Visual'
 import { Task } from './Task'
-import { NVElem, CommonConstants, RouRefresh, Response, TaskElem } from '../common/classes'
+import { NVElem, RouRefresh, Response, TaskElem } from '../common/classes'
 import { TaskController } from '../controllers/TaskController'
-import { delTask, getTasks } from '../api/service';
+import { delTask } from '../api/service';
+import { NoticeController } from '../controllers/NoticeController';
+import { noticeTime, requestTime } from '../common/settings';
+import { Loading } from '../components/Loading';
+import { Notice } from '../components/Notice';
 
 
 @Entry
@@ -12,6 +16,8 @@ import { delTask, getTasks } from '../api/service';
 struct Index {
   private tabController: TabsController = new TabsController()
   private taskController: TaskController = new TaskController()
+  private noticeController: NoticeController = new NoticeController()
+  @State showLoading: boolean = false;
   @State currentIndex: number = 0;
   @State showTask: boolean = false;
   @State helpPopup: boolean = false;
@@ -46,12 +52,6 @@ struct Index {
   @StorageLink("token") token: string = ''
 
 
-  dialogControllerProgress: CustomDialogController = new CustomDialogController({
-    builder: LoadingDialog({
-      content: '处理中...',
-    }),
-  })
-
   aboutToAppear(): void {
     if (this.token === '')
       router.replaceUrl({url: 'pages/Login'})
@@ -82,23 +82,17 @@ struct Index {
       MenuItem({startIcon: $r('app.media.deting'), content: '检测中'})
         .onClick(() => {
           console.log('按照“检测中”状态进行查询')
-          this.dialogControllerProgress?.open()
           this.taskController.getTasks(Object({taskState: 2}))
-          this.dialogControllerProgress?.close()
         })
       MenuItem({startIcon: $r('app.media.deted'), content: '空闲'})
         .onClick(() => {
           console.log('按照“空闲”状态进行查询')
-          this.dialogControllerProgress?.open()
           this.taskController.getTasks(Object({taskState: 0}))
-          this.dialogControllerProgress?.close()
         })
       MenuItem({startIcon: $r('app.media.time'), content: '创建时间'})
         .onClick(() => {
           console.log('按照“创建时间”状态进行查询')
-          this.dialogControllerProgress?.open()
           this.taskController.getTasks();
-          this.dialogControllerProgress?.close()
         })
     }
   }
@@ -189,20 +183,32 @@ struct Index {
                 backgroundColor: '#ffffff',
                 enabled: this.chooseTaskIdx.length > 0,
                 action: () => {
-                  this.dialogControllerProgress.open();
                   let taskIds = this.chooseTaskIdx.join(',')
                   delTask({
                     taskIds: taskIds
                   })
                     .then((res: Response) => {
-                      console.log('删除任务成功', JSON.stringify(res));
+                      if (res.status == 200) {
+                        this.noticeController.success(`已删除${taskIds.length}项任务`);
+                        setTimeout(() => {
+                          this.noticeController.close();
+                          this.taskController.getTasks();
+                        }, requestTime)
+                      }
+                      else {
+                        this.noticeController.success(`删除失败`);
+                        setTimeout(() => {
+                          this.noticeController.close();
+                        }, noticeTime)
+                      }
                       this.chooseTaskIdx = [];
                       this.openBatchDel = false;
-                      this.dialogControllerProgress.close();
-                      this.taskController?.getTasks();
                     })
                     .catch((err: Response) => {
-                      console.log('删除任务失败', JSON.stringify(err));
+                      this.noticeController.success(`删除失败`);
+                      setTimeout(() => {
+                        this.noticeController.close();
+                      }, noticeTime)
                     })
                 }
               },
@@ -380,6 +386,8 @@ struct Index {
 
   build() {
     Column() {
+      Loading({ show: this.showLoading })
+      Notice({noticeController: this.noticeController})
       Flex({ direction: FlexDirection.Column }) {
         // 导航栏
         this.Nav()

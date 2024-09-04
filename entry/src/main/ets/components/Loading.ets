@@ -3,7 +3,7 @@
 @Component
 export struct Loading {
 
-  @Prop show: boolean = true
+  @Prop show: boolean = false
 
   build() {
     Flex({alignItems: ItemAlign.Center}) {
@@ -15,7 +15,7 @@ export struct Loading {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('rgba(255, 255, 255, 0.5)')
+    .backgroundColor('rgba(255, 255, 255, 0.2)')
     .visibility(this.show ? Visibility.Visible : Visibility.None)
     .position({top: 0, left: 0})
     .zIndex(100)

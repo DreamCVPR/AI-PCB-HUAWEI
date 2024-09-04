@@ -1,6 +1,6 @@
-// 用于Index父组件调用Task子组件, 增加任务后重新刷新
 import { Task } from '../pages/Task'
 
+// 用于Index父组件调用Task子组件, 增加任务后重新刷新
 export class TaskController {
   private taskComponent: Task | null = null;
 
