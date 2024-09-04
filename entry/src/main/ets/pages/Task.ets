@@ -366,9 +366,11 @@ export struct Task {
     let totalCate: Array<string> = [];
     let totalColor: Array<string> = [];
     Object.keys(flawInfo).forEach((v, i) => {
-      totalCate.push(cateFlowMap[v]);
-      totalColor.push(colorFlowMap[v])
-      totalNum += flawInfo[v];
+      if (flawInfo[v] > 0) {
+        totalCate.push(cateFlowMap[v]);
+        totalColor.push(colorFlowMap[v])
+        totalNum += flawInfo[v];
+      }
     })
 
     return new Object({
