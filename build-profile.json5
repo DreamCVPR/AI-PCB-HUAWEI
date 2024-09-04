@@ -1,63 +1,11 @@
 {
   "app": {
     "signingConfigs": [
-      {
-        "name": "3333333",
-        "type": "HarmonyOS",
-        "material": {
-          "certpath": "C:/Users/24717/.ohos/config/3333333_AI-PCB-HUAWEI_RQHga6RfvG7e9XUQtFYmN82_JO7jyzSYBbbUWSNosp8=.cer",
-          "storePassword": "0000001BFC17C6C40BFFD22BF2BB90DE6EB943085588372AF8634BF029B89AED82BF3A251D596229121B3D",
-          "keyAlias": "debugKey",
-          "keyPassword": "0000001B7FE62A32AC4486D1A2E6428F9C5FB659CA412E66A9D7C9D27DCEED3EEA6C536ED8639FBF8B591C",
-          "profile": "C:/Users/24717/.ohos/config/3333333_AI-PCB-HUAWEI_RQHga6RfvG7e9XUQtFYmN82_JO7jyzSYBbbUWSNosp8=.p7b",
-          "signAlg": "SHA256withECDSA",
-          "storeFile": "C:/Users/24717/.ohos/config/3333333_AI-PCB-HUAWEI_RQHga6RfvG7e9XUQtFYmN82_JO7jyzSYBbbUWSNosp8=.p12"
-        }
-      },
-      {
-        "name": "default",
-        "type": "HarmonyOS",
-        "material": {
-          "certpath": "C:/Users/24717/.ohos/config/default_AI-PCB-HUAWEI_RQHga6RfvG7e9XUQtFYmN82_JO7jyzSYBbbUWSNosp8=.cer",
-          "storePassword": "0000001BB860AFEF2FC8DE9F719F08BA9352B7F4EB4FDF5C4CE2064BFBF6CE0F5A78E11DB5261CB2F3DCF4",
-          "keyAlias": "debugKey",
-          "keyPassword": "0000001B5E0A50B05C49EC4AB383CB95AABF4233F74A0CA6E698575482D471D0A7B9D675484DB1AFD7B131",
-          "profile": "C:/Users/24717/.ohos/config/default_AI-PCB-HUAWEI_RQHga6RfvG7e9XUQtFYmN82_JO7jyzSYBbbUWSNosp8=.p7b",
-          "signAlg": "SHA256withECDSA",
-          "storeFile": "C:/Users/24717/.ohos/config/default_AI-PCB-HUAWEI_RQHga6RfvG7e9XUQtFYmN82_JO7jyzSYBbbUWSNosp8=.p12"
-        }
-      },
-      {
-        "name": "22222",
-        "type": "HarmonyOS",
-        "material": {
-          "certpath": "C:/Users/24717/.ohos/config/22222_AI-PCB-HUAWEI_RQHga6RfvG7e9XUQtFYmN82_JO7jyzSYBbbUWSNosp8=.cer",
-          "storePassword": "0000001BF478E5F27510A9797BD3CA157B1EA842654BD905468294494AAABD47868EA8212D11F1888755A1",
-          "keyAlias": "debugKey",
-          "keyPassword": "0000001BEEC24DA7F704D70C4BC42AE8AF1D9A8FDED0EC9E07E4756D0AF5796EFBA8DBD3A19F6ABB0BDD75",
-          "profile": "C:/Users/24717/.ohos/config/22222_AI-PCB-HUAWEI_RQHga6RfvG7e9XUQtFYmN82_JO7jyzSYBbbUWSNosp8=.p7b",
-          "signAlg": "SHA256withECDSA",
-          "storeFile": "C:/Users/24717/.ohos/config/22222_AI-PCB-HUAWEI_RQHga6RfvG7e9XUQtFYmN82_JO7jyzSYBbbUWSNosp8=.p12"
-        }
-      },
-      {
-        "name": "4",
-        "type": "HarmonyOS",
-        "material": {
-          "certpath": "C:\\Users\\24717\\.ohos\\config\\4_AI-PCB-HUAWEI_RQHga6RfvG7e9XUQtFYmN82_JO7jyzSYBbbUWSNosp8=.cer",
-          "storePassword": "0000001B9FEBA491DEDF7E0E738AC3E68B118EFAFE1F9E7C9B04EECD8A9EA3DC8388D717C452330E3548CD",
-          "keyAlias": "debugKey",
-          "keyPassword": "0000001BEF5203E626EA9ACCB5DE09EAC0DC2D32B76FDE51D21BCAE4C8F917B49336371100C918C1E9261D",
-          "profile": "C:\\Users\\24717\\.ohos\\config\\4_AI-PCB-HUAWEI_RQHga6RfvG7e9XUQtFYmN82_JO7jyzSYBbbUWSNosp8=.p7b",
-          "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\24717\\.ohos\\config\\4_AI-PCB-HUAWEI_RQHga6RfvG7e9XUQtFYmN82_JO7jyzSYBbbUWSNosp8=.p12"
-        }
-      }
     ],
     "products": [
       {
         "name": "default",
-        "signingConfig": "4",
+        "signingConfig": "default",
         "compatibleSdkVersion": "5.0.0(12)",
         "runtimeOS": "HarmonyOS",
         "buildOption": {
