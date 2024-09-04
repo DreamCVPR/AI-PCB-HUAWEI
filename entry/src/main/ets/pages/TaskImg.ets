@@ -6,6 +6,7 @@ import { Empty } from '../components/Empty';
 import { pasteboard } from '@kit.BasicServicesKit';
 import { promptAction } from '@kit.ArkUI';
 import { FileUtils } from '../utils/FileUtils';
+import { InteractionUtils } from '../utils/InteractionUtils';
 import { Loading } from '../components/Loading';
 
 
@@ -53,13 +54,12 @@ struct TaskImg {
   @State isRefreshing: boolean = false;
 
   private originImgSwiperController: SwiperController = new SwiperController()
-  private fileUtils: FileUtils = new FileUtils()
 
 
   aboutToAppear(): void {
     if (!this.token)
       router.replaceUrl({url: 'pages/Login'})
-    this.getTaskImg()
+    this.getTaskImg().then(()=>this.originImgRealSize = Array.from(this.taskImgList.keys()).map(v=>new Object()))
   }
 
   getTaskImg() {
@@ -75,7 +75,6 @@ struct TaskImg {
           return item
         });
         this.originImgSize = Array.from(this.taskImgList.keys()).map(v=>new Object())
-        this.originImgRealSize = Array.from(this.taskImgList.keys()).map(v=>new Object())
         this.isRefreshing = false
         this.resetOriginImg()
         this.showLoading = false
@@ -137,7 +136,7 @@ struct TaskImg {
 
   save2Album() {
     if (this.chooseImgIndex !== undefined) {
-      this.fileUtils.saveImg(this.chooseImgIndex.map(index=>{
+      FileUtils.saveImg(this.chooseImgIndex.map(index=>{
         return baseUrl+this.ORIGIN_FILE+this.taskImgList[index]["imgUrl"]
       }))
       this.chooseImgIndex = undefined
@@ -149,53 +148,34 @@ struct TaskImg {
   remove() {
     if (this.chooseImgIndex !== undefined) {
       this.showLoading = true
-      AlertDialog.show(
-        {
-          title: `是否删除${this.chooseImgIndex.length}张图片？`,
-          message: '删除后3天内可在“我的”回收站中找回，请确认是否删除',
-          autoCancel: true,
-          alignment: DialogAlignment.Center,
-          height: 230,
-          primaryButton: {
-            value: '取消',
-            fontColor: '#000000',
-            backgroundColor: '#ffffff',
-            action: () => {
-            }
-          },
-          secondaryButton: {
-            value: '确定',
-            fontColor: '#000000',
-            backgroundColor: '#ffffff',
-            action: () => {
-              removeImg({'imgIds': this.taskImgList.filter((v: object, index: number)=>this.chooseImgIndex?.includes(index)).map((value: object): number=>value["imgId"]).join(',')})
-                .then((res: object) => {
-                  this.chooseImgIndex = undefined
-                  this.getTaskImg()
-                  console.log("删除taskImg成功:"+  JSON.stringify(res));
-                })
-                .catch((err: object) => {
-                  this.showLoading = false
-                  this.chooseImgIndex = undefined
-                  console.log("删除taskImg失败:" + JSON.stringify(err))
-                })
-            }
-          },
-          cancel: () => {
-            this.showLoading = false
-          }
-        }
+      InteractionUtils.confirm(
+        `是否删除${this.chooseImgIndex.length}张图片？`,
+        '删除后3天内可在“我的”回收站中找回，请确认是否删除',
+        ()=>{
+          removeImg({'imgIds': this.taskImgList.filter((v: object, index: number)=>this.chooseImgIndex?.includes(index)).map((value: object): number=>value["imgId"]).join(',')})
+            .then((res: object) => {
+              this.chooseImgIndex = undefined
+              this.getTaskImg().then(()=>this.originImgRealSize = Array.from(this.taskImgList.keys()).map(v=>new Object()))
+              console.log("删除taskImg成功:"+  JSON.stringify(res));
+            })
+            .catch((err: object) => {
+              this.showLoading = false
+              this.chooseImgIndex = undefined
+              console.log("删除taskImg失败:" + JSON.stringify(err))
+            })
+        },
+        ()=>this.showLoading = false
       )
     }
   }
 
   add() {
     this.showLoading = true
-    this.fileUtils.chooseImage().then(imgList=>{
+    FileUtils.chooseImage().then(imgList=>{
       if (imgList[0].length > 0) {
         addImg({'taskId': this.taskId, "files": imgList[0], "fileNames": imgList[1]})
           .then((res: object) => {
-            this.getTaskImg()
+            this.getTaskImg().then(()=>this.originImgRealSize = Array.from(this.taskImgList.keys()).map(v=>new Object()))
             console.log("增加taskImg成功:"+  JSON.stringify(res));
           })
           .catch((err: object) => {
@@ -220,19 +200,25 @@ struct TaskImg {
       promptAction.showToast({ message: '当前没有未检测的图片' });
     } else {
       this.chooseImgIndex = undefined
-      promptAction.showToast({ message: '开始检测（已检测的图片不再检测）' });
-      this.task['taskState'] = 2
-      detect(img2Detect)
-        .then((res: object) => {
-          this.getTaskImg().then(res=>{
-            this.task['taskState'] = 0
-          })
-          console.log("增加taskImg成功:"+  JSON.stringify(res));
-        })
-        .catch((err: object) => {
-          this.showLoading = false
-          console.log("增加taskImg失败:" + JSON.stringify(err))
-        })
+      InteractionUtils.confirm(
+        `开始检测${img2Detect.length}张图片`,
+        '已检测的图片不再检测',
+        ()=>{
+          this.task['taskState'] = 2
+          detect(img2Detect)
+            .then((res: object) => {
+              this.getTaskImg().then(()=>{
+                this.task['taskState'] = 0
+              })
+              console.log("增加taskImg成功:"+  JSON.stringify(res));
+            })
+            .catch((err: object) => {
+              console.log("增加taskImg失败:" + JSON.stringify(err))
+            })
+        },
+        ()=>{},
+        200
+      )
     }
   }
 
@@ -291,7 +277,7 @@ struct TaskImg {
             .fontWeight(FontWeight.Bold)
             .fontColor(Color.White)
             .position({bottom: 1, left: 3})
-          if (img["isDetect"]) {
+          if (this.taskImgList[index]["isDetect"]) {
             Image($r('app.media.yes'))
               .height(15)
               .width(15)
@@ -467,8 +453,12 @@ struct TaskImg {
     }.width('100%')
   }
 
+  @Builder Background(color: ResourceColor, opacity: number) {
+    Row() {}.backgroundColor(color).opacity(opacity).width("100%").height("100%")
+  }
+
   @Builder LabelClass(className: string) {
-    Flex({ justifyContent: FlexAlign.Center }) {
+    Flex({ justifyContent: FlexAlign.Center, alignItems: ItemAlign.Center }) {
       Circle()
         .width(15)
         .height(15)
@@ -483,7 +473,10 @@ struct TaskImg {
         .margin({left: 10})
     }
     .width("100%")
-    .opacity(this.showImgDefectClassName[className] ? 1 : 0.5)
+    .height(30)
+    .background(this.Background(this.LABEL_COLOR[className], 0.2))
+    .opacity(this.showImgDefectClassName[className] ? 1 : 0.4)
+    .shadow({radius: 1, color: this.LABEL_COLOR[className]})
     .onClick(()=>{
       this.showImgDefectClassName[className] = !this.showImgDefectClassName[className]
     })
