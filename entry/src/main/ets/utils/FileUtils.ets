@@ -14,6 +14,28 @@ import util from '@ohos.util';
 export class FileUtils {
   private static PERMISSIONS: Array<Permissions> = ['ohos.permission.INTERNET', "ohos.permission.WRITE_IMAGEVIDEO"];
 
+  // /**
+  //  * 保存组件PixelMap至图库
+  //  * @param imgUrlList
+  //  */
+  // static async savePixelMap(imgUrlList: Array<string>) {
+  //   const count = new Object({
+  //     "imgCount": imgUrlList.length,
+  //     "saveCount": 0
+  //   })
+  //   await FileUtils.grantPermission().then(async () => {
+  //     imgUrlList.forEach((url: string, index: number) => {
+  //       FileUtils.loadImageWithUrl(url, index+1, count)
+  //     });
+  //   }).catch((err: BusinessError) => {
+  //     console.info(`grantPermission faild  ${JSON.stringify(err.code)}`);
+  //   })
+  // }
+
+  /**
+   * 下载网络链接中的图片至图库
+   * @param imgUrlList
+   */
   static async saveImg(imgUrlList: Array<string>) {
     const count = new Object({
       "imgCount": imgUrlList.length,
@@ -28,12 +50,15 @@ export class FileUtils {
     })
   }
 
-  // 打开相册, 选择图像([imgBase64List, imgNameList])
-  static async chooseImage(): Promise<string[][]> {
+  /**
+   * 选择相册中的图片
+   * @returns [imgBase64List, imgNameList]
+   */
+  static async chooseImage(maxSelectNumber: number = 10): Promise<string[][]> {
     try {
       let PhotoSelectOptions = new picker.PhotoSelectOptions();
       PhotoSelectOptions.MIMEType = picker.PhotoViewMIMETypes.IMAGE_TYPE;
-      PhotoSelectOptions.maxSelectNumber = 10;
+      PhotoSelectOptions.maxSelectNumber = maxSelectNumber;
       let photoPicker = new picker.PhotoViewPicker();
       return await photoPicker.select(PhotoSelectOptions).then(async (PhotoSelectResult) => {
         console.info('PhotoViewPicker.select successfully, PhotoSelectResult uri: ' + JSON.stringify(PhotoSelectResult));
