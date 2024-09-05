@@ -176,37 +176,39 @@ export struct Task {
                 .width('80%')
                 .margin({ left: 12 })
               }
-
               // Blank()
               Column() {
                 if (item.taskState == 2) {
                   Button({ type: ButtonType.Normal, stateEffect: false }) {
                     Row() {
                       LoadingProgress().width(20).height(20).margin({ left: 8 }).color('#ffffff')
-                      Text('检测中').fontColor('#ffffff').margin({ left: 8, right: 8 }).enabled(false)
+                      Text('检测中').fontColor('#ffffff').margin({ left: 8, right: 8 })
                     }
-                    .width(96)
-                    .height(36)
                   }
+                  .height(36)
+                  .width(110)
+                  .fontSize(14)
                   .borderRadius(4)
                   .margin({ right: 12 })
-                  .backgroundColor('rgb(233, 196, 107)')
+                  .backgroundColor('rgb(252, 163, 017)')
+                  .enabled(false)
                 } else if (item.taskState == 1) {
                   Button({ type: ButtonType.Normal, stateEffect: false }) {
                     Row() {
                       LoadingProgress().width(20).height(20).margin({ left: 8 }).color('#ffffff')
                       Text('上传中').fontColor('#ffffff').margin({ left: 8, right: 8 })
-                        .fontSize(14)
                     }
-                    .height(36)
-                    .width(110)
                   }
+                  .height(36)
+                  .width(110)
+                  .fontSize(14)
                   .borderRadius(4)
                   .margin({ right: 12 })
                   .backgroundColor('rgb(021, 151, 165)')
+                  .enabled(false)
                 } else if (item.taskState == 0) {
                   Button(
-                    `检测 ${item.countDetectImg}/${item.countAllImg}`,
+                    `已检测 ${item.countDetectImg}/${item.countAllImg}`,
                     { type: ButtonType.Normal, stateEffect: item.countDetectImg < item.countAllImg ? true : false }
                   )
                     .onClick(() => {
@@ -245,13 +247,13 @@ export struct Task {
                     })
                     .borderRadius(4)
                     .height(36)
-                    .width(120)
+                    .width(110)
                     .backgroundColor('rgb(7, 193, 96)')
                     .enabled(item.countDetectImg < item.countAllImg)
-                    .fontSize(14)
+                    .fontSize(16)
                 }
               }
-              .position({x: '66%', y: '70%'})
+              .position({x: '68%', y: '70%'})
             }
             .height('100%')
           }
