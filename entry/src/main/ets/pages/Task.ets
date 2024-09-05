@@ -263,7 +263,6 @@ export struct Task {
           "url": "pages/TaskImg",
           "params": item
         })
-        // TODO: 进入任务详情页
       })
       .gesture(
         // 长按提示是否删除

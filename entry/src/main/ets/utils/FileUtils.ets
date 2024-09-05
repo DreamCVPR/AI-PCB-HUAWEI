@@ -12,7 +12,7 @@ import util from '@ohos.util';
 
 
 export class FileUtils {
-  private static PERMISSIONS: Array<Permissions> = ['ohos.permission.INTERNET', "ohos.permission.WRITE_IMAGEVIDEO"];
+  private static PERMISSIONS: Array<Permissions> = ["ohos.permission.WRITE_IMAGEVIDEO"];
 
   static COMPRESS_FILE: string = "/file/compress/"
   static ORIGIN_FILE: string = "/file/download/"
@@ -22,14 +22,18 @@ export class FileUtils {
    * @param pixelMap 组件的像素图
    */
   static async savePixelMap(pixelMap: image.PixelMap) {
-    let imagePackerApi = image.createImagePacker();
-    let packOpts: image.PackingOption = { format: 'image/jpeg', quality: 100};
-    imagePackerApi.packing(pixelMap, packOpts).then((buffer: ArrayBuffer) => {
-      FileUtils.writeBuffer(buffer).then(()=>{
-        promptAction.showToast({ message: `图片已保存` });
+    await FileUtils.grantPermission().then(async () => {
+      let imagePackerApi = image.createImagePacker();
+      let packOpts: image.PackingOption = { format: 'image/jpeg', quality: 100};
+      imagePackerApi.packing(pixelMap, packOpts).then((buffer: ArrayBuffer) => {
+        FileUtils.writeBuffer(buffer).then(()=>{
+          promptAction.showToast({ message: `图片已保存` });
+        })
+      }).catch((err: BusinessError) => {
+        console.error(`Failed to pack the image.Code ${err.code},message is ${err.message}`);
       })
     }).catch((err: BusinessError) => {
-      console.error(`Failed to pack the image.Code ${err.code},message is ${err.message}`);
+      console.info(`grantPermission faild  ${JSON.stringify(err.code)}`);
     })
   }
 

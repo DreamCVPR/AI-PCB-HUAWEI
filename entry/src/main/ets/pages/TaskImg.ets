@@ -8,6 +8,7 @@ import { promptAction } from '@kit.ArkUI';
 import { FileUtils } from '../utils/FileUtils';
 import { InteractionUtils } from '../utils/InteractionUtils';
 import { Loading } from '../components/Loading';
+import { cateFlowMap, colorFlowMap } from '../common/settings';
 
 import { BusinessError } from '@kit.BasicServicesKit';
 
@@ -20,20 +21,8 @@ struct TaskImg {
 
   COMPRESS_FILE: string = FileUtils.COMPRESS_FILE
   ORIGIN_FILE: string = FileUtils.ORIGIN_FILE
-  CLASS_CN_NAME: object = new Object({
-    "mouse_bite": "鼠咬",
-    "short": "短路",
-    "spur": "毛刺",
-    "spurious_copper": "伪铜",
-    "open_circuit": "开路"
-  })
-  LABEL_COLOR: object = new Object({
-    "mouse_bite": "#1CFD45",
-    "short": "#7DD9FE",
-    "spur": "#BCAEFB",
-    "spurious_copper": "#FD5992",
-    "open_circuit": "#F53E50"
-  })
+  CLASS_CN_NAME: object = cateFlowMap
+  LABEL_COLOR: object = colorFlowMap
 
   @State task: object = (router.getParams() as object);
   @State taskId: number = (router.getParams() as object)['taskId'];
@@ -60,9 +49,11 @@ struct TaskImg {
 
 
   aboutToAppear(): void {
-    if (!this.token)
-      router.replaceUrl({url: 'pages/Login'})
     this.getTaskImg().then(()=>this.originImgRealSize = Array.from(this.taskImgList.keys()).map(v=>new Object()))
+  }
+
+  onPageShow(): void {
+
   }
 
   getTaskImg() {
@@ -213,9 +204,10 @@ struct TaskImg {
               this.getTaskImg().then(()=>{
                 this.task['taskState'] = 0
               })
-              console.log("增加taskImg成功:"+  JSON.stringify(res));
+              console.log("检测成功");
             })
             .catch((err: object) => {
+              this.task['taskState'] = 0
               console.log("增加taskImg失败:" + JSON.stringify(err))
             })
         },
@@ -466,7 +458,7 @@ struct TaskImg {
         .width(15)
         .height(15)
         .fill(this.LABEL_COLOR[className])
-        .fillOpacity(0.3)
+        .fillOpacity(0.5)
         .strokeWidth(1)
         .stroke(this.LABEL_COLOR[className])
       Text(this.CLASS_CN_NAME[className])
@@ -477,7 +469,7 @@ struct TaskImg {
     }
     .width("100%")
     .height(30)
-    .background(this.Background(this.LABEL_COLOR[className], 0.2))
+    .background(this.Background(this.LABEL_COLOR[className], 0.3))
     .opacity(this.showImgDefectClassName[className] ? 1 : 0.4)
     .shadow({radius: 1, color: this.LABEL_COLOR[className]})
     .onClick(()=>{
@@ -489,10 +481,23 @@ struct TaskImg {
     if (this.taskImgList[imgIndex]["isDetect"] == 1) {
       if (this.originImgSize[imgIndex]['originSize']) {
         ForEach(this.taskImgList[imgIndex]["detectionClasses"], (className: string, index: number) => {
+          Text(this.taskImgList[imgIndex]["detectionScores"][index].toFixed(2))
+            .fontSize(`${12 * (scale ? scale : this.getScale(imgIndex))}${units}`)
+            .fontColor(Color.Black)
+            .position(this.getImgLabelPos(
+              originPos ? originPos : this.getImgOriginPos(imgIndex),
+              this.taskImgList[imgIndex]["detectionBoxes"][index][1],
+              this.taskImgList[imgIndex]["detectionBoxes"][index][0] < 14 ? this.taskImgList[imgIndex]["detectionBoxes"][index][2]-this.taskImgList[imgIndex]["detectionBoxes"][index][0]+2 : this.taskImgList[imgIndex]["detectionBoxes"][index][0]-14,
+              scale ? scale : this.getScale(imgIndex), units))
+            .visibility(this.showImgDefect && this.showImgDefectClassName[className] ? Visibility.Visible : Visibility.Hidden)
           Rect()
             .width(`${(this.taskImgList[imgIndex]["detectionBoxes"][index][3]-this.taskImgList[imgIndex]["detectionBoxes"][index][1])*(scale ? scale : this.getScale(imgIndex))}${units}`)
             .height(`${(this.taskImgList[imgIndex]["detectionBoxes"][index][2]-this.taskImgList[imgIndex]["detectionBoxes"][index][0])*(scale ? scale : this.getScale(imgIndex))}${units}`)
-            .position(this.getImgLabelPos(originPos ? originPos : this.getImgOriginPos(imgIndex), this.taskImgList[imgIndex]["detectionBoxes"][index][1], this.taskImgList[imgIndex]["detectionBoxes"][index][0], (scale ? scale : this.getScale(imgIndex)), units))
+            .position(this.getImgLabelPos(
+              originPos ? originPos : this.getImgOriginPos(imgIndex),
+              this.taskImgList[imgIndex]["detectionBoxes"][index][1],
+              this.taskImgList[imgIndex]["detectionBoxes"][index][0],
+              scale ? scale : this.getScale(imgIndex), units))
             .zIndex(4)
             .fill(this.LABEL_COLOR[className])
             .fillOpacity(0.3)
