@@ -28,9 +28,10 @@ export struct Notice {
           .height(40)
           .textAlign(TextAlign.Center)
       }
-        .borderRadius(6)
-        .shadow({ radius: 16, color: Color.Gray, offsetX: 0, offsetY: 6 })
+        .borderRadius(8)
+        .shadow({ radius: 16, color: Color.Gray, offsetX: 0, offsetY: 0 })
         .padding({left: 8, right: 8})
+        .backgroundColor('#ffffff')
     }
     .width('100%')
   }

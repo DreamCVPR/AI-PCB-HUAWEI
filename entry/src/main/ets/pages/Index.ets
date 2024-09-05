@@ -162,7 +162,7 @@ struct Index {
         .onClick(() => {
           AlertDialog.show(
             {
-              title: '是否删除?',
+              title: `已选择${this.chooseTaskIdx.length}项任务，是否删除?`,
               message: '',
               autoCancel: true,
               alignment: DialogAlignment.Center,
@@ -189,7 +189,7 @@ struct Index {
                   })
                     .then((res: Response) => {
                       if (res.status == 200) {
-                        this.noticeController.success(`已删除${taskIds.length}项任务`);
+                        this.noticeController.success(`已删除${this.chooseTaskIdx.length}项任务`);
                         setTimeout(() => {
                           this.noticeController.close();
                           this.taskController.getTasks();

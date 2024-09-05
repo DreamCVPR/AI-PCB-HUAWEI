@@ -4,7 +4,7 @@ import { delTask, getTasks, startDet } from '../api/service'
 import { TaskController } from '../controllers/TaskController';
 import { Empty } from '../components/Empty';
 import { Loading } from '../components/Loading';
-import { noticeTime, requestTime } from '../common/settings';
+import { cateFlowMap, noticeTime, requestTime, colorFlowMap } from '../common/settings';
 import { Notice } from '../components/Notice';
 import { NoticeController } from '../controllers/NoticeController';
 
@@ -35,116 +35,228 @@ export struct Task {
     this.getTasks();
   }
 
-  @Builder TaskItem(item: TaskElem) {
-      Row() {
-        Flex({alignItems: ItemAlign.Center}) {
-          if (this.openBatchDel) {
-            Checkbox()
-              .select(this.chooseTaskIdx.includes(item.taskId))
-              .selectedColor(0x39a2db)
-              .shape(CheckBoxShape.ROUNDED_SQUARE)
-              .onClick(() => {
-                if (this.chooseTaskIdx.includes(item.taskId)) {
-                  this.chooseTaskIdx = this.chooseTaskIdx.filter((i: number) => i != item.taskId)
-                } else {
-                  this.chooseTaskIdx.push(item.taskId)
+
+  @Builder itemEnd(index: number) {
+    Row() {
+      Image($r('app.media.delete4'))
+        .width(40)
+        .height(40)
+        .onClick(() => {
+          AlertDialog.show(
+            {
+              title: '是否删除该任务?',
+              message: '',
+              autoCancel: true,
+              alignment: DialogAlignment.Center,
+              gridCount: 4,
+              offset: { dx: 0, dy: -20 },
+              primaryButton: {
+                value: '取消',
+                fontColor: '#000000',
+                backgroundColor: '#ffffff',
+                action: () => {
+                  this.selectedId = -1;
                 }
-                console.log('this.chooseTaskIdx: ' + this.chooseTaskIdx)
-              })
-              .position({ top: 2, right: 2 })
-              .borderColor(Color.White)
-          }
-        Column() {
-          Text(item.taskName)
-            .margin({bottom: 10})
-            .fontSize(24)
-            .fontWeight(600)
-            .textAlign(TextAlign.Start)
-          Text(item.taskDesc)
-            .fontSize(14)
-            .fontColor('rgb(127, 127, 127)')
-            .textAlign(TextAlign.Start)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
-            .maxLines(1)
-        }
-        .alignItems(HorizontalAlign.Start)
-        .width(120)
-        .margin({left: 20})
-        Blank()
-          if (item.taskState == 2) {
-            Button({type: ButtonType.Normal, stateEffect: false}) {
-              Row() {
-                LoadingProgress().width(20).height(20).margin({left: 8}).color('#ffffff')
-                Text('检测中').fontColor('#ffffff').margin({left: 8, right:8}).enabled(false)
-              }
-              .width(96)
-              .height(36)
-            }
-              .borderRadius(4)
-              .margin({right: 12})
-              .backgroundColor('rgb(233, 196, 107)')
-          }
-          else if (item.taskState == 1) {
-            Button({type: ButtonType.Normal, stateEffect: false}) {
-              Row() {
-                LoadingProgress().width(20).height(20).margin({left: 8}).color('#ffffff')
-                Text('上传中').fontColor('#ffffff').margin({left: 8, right:8})
-              }
-              .height(36)
-              .width(96)
-            }
-              .borderRadius(4)
-              .margin({right: 12})
-              .backgroundColor('rgb(021, 151, 165)')
-          }
-          else if (item.taskState == 0) {
-            Button(
-              `检测 ${item.countDetectImg}/${item.countAllImg}`,
-              {type: ButtonType.Normal, stateEffect: item.countDetectImg < item.countAllImg ? true: false}
-            )
-              .onClick(() => {
-                if (item.countDetectImg < item.countAllImg) {
-                  this.selectedId = item.taskId;
-                  AlertDialog.show(
-                    {
-                      title: '是否开始检测?',
-                      message: '',
-                      autoCancel: true,
-                      alignment: DialogAlignment.Center,
-                      gridCount: 4,
-                      offset: { dx: 0, dy: -20 },
-                      primaryButton: {
-                        value: '取消',
-                        fontColor: '#000000',
-                        backgroundColor: '#ffffff',
-                        action: () => {
-                          this.selectedId = -1;
-                        }
-                      },
-                      secondaryButton: {
-                        value: '确定',
-                        fontColor: '#000000',
-                        backgroundColor: '#ffffff',
-                        action: () => {
-                          this.startDet(item.taskId);
-                        }
-                      },
-                      cancel: () => {
-                        this.selectedId = -1;
+              },
+              secondaryButton: {
+                value: '确定',
+                fontColor: '#000000',
+                backgroundColor: '#ffffff',
+                action: () => {
+                  delTask({
+                    taskIds: this.taskList[index].taskId
+                  })
+                    .then((res: Response) => {
+                      if (res.status == 200) {
+                        this.noticeController.success(`已删除1项任务`);
+                        setTimeout(() => {
+                          this.noticeController.close();
+                          this.getTasks();
+                        }, requestTime)
                       }
-                    }
-                  )
+                      else {
+                        this.noticeController.success(`删除任务失败`);
+                        setTimeout(() => {
+                          this.noticeController.close();
+                        }, noticeTime)
+                      }
+                    })
+                    .catch((err: Response) => {
+                      this.noticeController.success(`删除任务失败`);
+                      setTimeout(() => {
+                        this.noticeController.close();
+                      }, noticeTime)
+                    })
                 }
-              })
-              .borderRadius(4)
-              .margin({right: 12})
-              .height(36)
-              .width(96)
-              .backgroundColor('rgb(7, 193, 96)')
-              .enabled(item.countDetectImg < item.countAllImg)
+              },
+              cancel: () => {
+                this.selectedId = -1;
+              }
+            }
+          )
+        })
+    }
+    .margin({right: 10})
+  }
+
+  // 任务单项
+  @Builder TaskItem(item: TaskElem, index: number) {
+      ListItem() {
+          Badge({
+            count: item?.countDefect,
+            position: {x: 0, y: -6},
+            style: { badgeSize: 20, badgeColor: '#FA2A2D' }
+          })
+          {
+            Flex({ alignItems: ItemAlign.Center }) {
+              if (this.openBatchDel) {
+                Checkbox()
+                  .select(this.chooseTaskIdx.includes(item.taskId))
+                  .selectedColor(0x39a2db)
+                  .shape(CheckBoxShape.ROUNDED_SQUARE)
+                  .onClick(() => {
+                    if (this.chooseTaskIdx.includes(item.taskId)) {
+                      this.chooseTaskIdx = this.chooseTaskIdx.filter((i: number) => i != item.taskId)
+                    } else {
+                      this.chooseTaskIdx.push(item.taskId)
+                    }
+                    console.log('this.chooseTaskIdx: ' + this.chooseTaskIdx)
+                  })
+                  .position({ top: 4, right: 4 })
+                  .borderColor(Color.White)
+                  .zIndex(999)
+              }
+              Row() {
+                Column() {
+                    Text(item.taskName)
+                      .margin({ bottom: 10 })
+                      .fontSize(24)
+                      .fontWeight(600)
+                      .textAlign(TextAlign.Start)
+                      .maxLines(1)
+                      .textOverflow({ overflow: TextOverflow.Ellipsis })
+
+                    Flex({justifyContent: FlexAlign.Start}) {
+                      ForEach(item.cateDefect, (cate: string, idx: number) => {
+                          Text(cate)
+                            .fontSize(12)
+                            .backgroundColor(item.colorDefect[idx])
+                            .fontColor(Color.White)
+                            .padding({left: 4, right: 4, bottom: 4, top: 4})
+                            .borderRadius(4)
+                            .margin({right: 6})
+                      })
+                    }
+
+                  Text(`任务描述: ${item.taskDesc}`)
+                    .fontSize(14)
+                    .fontColor('rgb(127, 127, 127)')
+                    .textAlign(TextAlign.Start)
+                    .textOverflow({ overflow: TextOverflow.Ellipsis })
+                    .maxLines(2)
+                    .margin({bottom: 4, top: 6})
+                    .width('70%')
+
+                  Text(`瑕疵总数: ${item?.countDefect ? item.countDefect : 0}`)
+                    .fontSize(14)
+                    .fontColor('rgb(127, 127, 127)')
+                    .textAlign(TextAlign.Start)
+                    .textOverflow({ overflow: TextOverflow.Ellipsis })
+                    .maxLines(1)
+                    .margin({bottom: 4})
+                  Text(`创建日期: ${item.gmtCreate}`)
+                    .fontSize(14)
+                    .fontColor('rgb(127, 127, 127)')
+                    .textAlign(TextAlign.Start)
+                    .textOverflow({ overflow: TextOverflow.Ellipsis })
+                    .maxLines(1)
+                    .margin({bottom: 4})
+                }
+                .alignItems(HorizontalAlign.Start)
+                .width('80%')
+                .margin({ left: 12 })
+              }
+              // Blank()
+              Column() {
+                if (item.taskState == 2) {
+                  Button({ type: ButtonType.Normal, stateEffect: false }) {
+                    Row() {
+                      LoadingProgress().width(20).height(20).margin({ left: 8 }).color('#ffffff')
+                      Text('检测中').fontColor('#ffffff').margin({ left: 8, right: 8 })
+                    }
+                  }
+                  .height(36)
+                  .width(110)
+                  .fontSize(14)
+                  .borderRadius(4)
+                  .margin({ right: 12 })
+                  .backgroundColor('rgb(252, 163, 017)')
+                  .enabled(false)
+                } else if (item.taskState == 1) {
+                  Button({ type: ButtonType.Normal, stateEffect: false }) {
+                    Row() {
+                      LoadingProgress().width(20).height(20).margin({ left: 8 }).color('#ffffff')
+                      Text('上传中').fontColor('#ffffff').margin({ left: 8, right: 8 })
+                    }
+                  }
+                  .height(36)
+                  .width(110)
+                  .fontSize(14)
+                  .borderRadius(4)
+                  .margin({ right: 12 })
+                  .backgroundColor('rgb(021, 151, 165)')
+                  .enabled(false)
+                } else if (item.taskState == 0) {
+                  Button(
+                    `已检测 ${item.countDetectImg}/${item.countAllImg}`,
+                    { type: ButtonType.Normal, stateEffect: item.countDetectImg < item.countAllImg ? true : false }
+                  )
+                    .onClick(() => {
+                      if (item.countDetectImg < item.countAllImg) {
+                        this.selectedId = item.taskId;
+                        AlertDialog.show(
+                          {
+                            title: '是否开始检测?',
+                            message: '',
+                            autoCancel: true,
+                            alignment: DialogAlignment.Center,
+                            gridCount: 4,
+                            offset: { dx: 0, dy: -20 },
+                            primaryButton: {
+                              value: '取消',
+                              fontColor: '#000000',
+                              backgroundColor: '#ffffff',
+                              action: () => {
+                                this.selectedId = -1;
+                              }
+                            },
+                            secondaryButton: {
+                              value: '确定',
+                              fontColor: '#000000',
+                              backgroundColor: '#ffffff',
+                              action: () => {
+                                this.startDet(item.taskId);
+                              }
+                            },
+                            cancel: () => {
+                              this.selectedId = -1;
+                            }
+                          }
+                        )
+                      }
+                    })
+                    .borderRadius(4)
+                    .height(36)
+                    .width(110)
+                    .backgroundColor('rgb(7, 193, 96)')
+                    .enabled(item.countDetectImg < item.countAllImg)
+                    .fontSize(16)
+                }
+              }
+              .position({x: '68%', y: '70%'})
+            }
+            .height('100%')
           }
-        }
-        .height('100%')
       }
       .onClick(() => {
         router.pushUrl({
@@ -213,10 +325,16 @@ export struct Task {
             }
           })
       )
-      .width('100%')
-      .height(100)
+      // .width('100%')
+      .height(140)
       .backgroundColor(0xFFFFFF)
-      .borderRadius(12)
+      .borderRadius(8)
+      .shadow({ radius: 12, color: '#ffffff', offsetX: 0, offsetY: 0 })
+      .swipeAction({
+        end: {
+          builder: () => { this.itemEnd(index)}
+        }
+      })
   }
 
   // 检测某一任务
@@ -245,8 +363,29 @@ export struct Task {
         this.noticeController.fail('检测失败')
         setTimeout(() => {
             this.noticeController.close();
+            this.selectedId = -1;
         }, noticeTime)
       })
+  }
+
+  // 计算单任务的瑕疵类别和总量
+  computeFlawNum(flawInfo: Map<string, number>): object {
+    let totalNum = 0;
+    let totalCate: Array<string> = [];
+    let totalColor: Array<string> = [];
+    Object.keys(flawInfo).forEach((v, i) => {
+      if (flawInfo[v] > 0) {
+        totalCate.push(cateFlowMap[v]);
+        totalColor.push(colorFlowMap[v])
+        totalNum += flawInfo[v];
+      }
+    })
+
+    return new Object({
+      'countDefect': totalNum,
+      'cateDefect': totalCate,
+      'colorDefect': totalColor
+    })
   }
 
   // 获取任务列表
@@ -258,6 +397,9 @@ export struct Task {
         let tempList: Array<TaskElem> = [];
         for (let i = 0; i < res.result.length; i++) {
           let taskInfo = res.result[i];
+
+          let flawInfo = this.computeFlawNum(taskInfo['countDefect'])
+
           let taskObj: TaskElem = new TaskElem(
             taskInfo['taskId'],
             taskInfo['taskName'],
@@ -267,8 +409,12 @@ export struct Task {
             taskInfo['gmtCreate'],
             taskInfo['countDetectImg'],
             taskInfo['countAllImg'],
+            taskInfo['taskCoverImg'],
+            flawInfo['countDefect'],
+            flawInfo['cateDefect'],
+            flawInfo['colorDefect']
           )
-          tempList.push(taskObj)
+          tempList.push(taskObj);
         }
         this.taskList = [...tempList];
         setTimeout(() => {
@@ -295,39 +441,23 @@ export struct Task {
           .backgroundColor(0xDCDCDC)
       } else {
         Refresh({ refreshing: $$this.isRefreshing }) {
-          List({ space: 20, initialIndex: 0 }) {
-            ForEach(this.taskList, (item: TaskElem) => {
-              this.TaskItem(item)
+          List({ space: 18, initialIndex: 0 }) {
+            ForEach(this.taskList, (item: TaskElem, index: number) => {
+              this.TaskItem(item, index)
             })
           }
           .listDirection(Axis.Vertical)
           .scrollBar(BarState.Off)
           .friction(0.6)
           .divider({
-            strokeWidth: 2,
+            strokeWidth: 1,
             color: 'rgb(240, 250, 239)',
             startMargin: 20,
             endMargin: 20
           })
           .edgeEffect(EdgeEffect.Spring)
-          .onScrollIndex((firstIndex: number, lastIndex: number, centerIndex: number) => {
-            console.info('first' + firstIndex)
-            console.info('last' + lastIndex)
-            console.info('center' + centerIndex)
-          })
-          .onScrollVisibleContentChange((start: VisibleListContentInfo, end: VisibleListContentInfo) => {
-            console.log(' start index: ' + start.index +
-              ' start item group area: ' + start.itemGroupArea +
-              ' start index in group: ' + start.itemIndexInGroup)
-            console.log(' end index: ' + end.index +
-              ' end item group area: ' + end.itemGroupArea +
-              ' end index in group: ' + end.itemIndexInGroup)
-          })
-          .onDidScroll((scrollOffset: number, scrollState: ScrollState) => {
-            console.info(`onScroll scrollState = ScrollState` + scrollState + `, scrollOffset = ` + scrollOffset)
-          })
+          .padding({ left: 8, right: 8, top: 10, bottom: 10 })
           .width('100%')
-          .padding({ left: 8, right: 8, top: 10 })
           .height('100%')
         }
         .height('100%')
@@ -340,7 +470,7 @@ export struct Task {
           }, requestTime)
           console.log('onRefreshing test')
         })
-        .refreshOffset(64)
+        .refreshOffset(120)
         .pullToRefresh(true)
       }
     }
