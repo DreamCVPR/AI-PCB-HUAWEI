@@ -1,0 +1,39 @@
+<!-- local.html -->
+<!DOCTYPE html>
+<head >
+    <script src="../echarts.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="./chart.css">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body >
+<div class="container">
+    <div class="chartPieContainer">
+        <div class="chartPie" id="chartPie"></div>
+        <div class="chartPieInformation">
+            <div class="chartPieInformationRow">
+                <div class="chartPieInformationBox" id="box1">
+                    <div class="boxValue">1111</div>
+                    <div class="boxName">检测次数</div>
+                </div>
+                <div class="chartPieInformationBox" id="box2">
+                    <div class="boxValue">2222</div>
+                    <div class="boxName">PCB总量</div>
+                </div>
+            </div>
+            <div class="chartPieInformationRow">
+                <div class="chartPieInformationBox" id="box3">
+                    <div class="boxValue">3333</div>
+                    <div class="boxName">瑕疵总数</div>
+                </div>
+                <div class="chartPieInformationBox" id="box4">
+                    <div class="boxValue">44%</div>
+                    <div class="boxName" style="color:red">鼠咬(MAX)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="chartRadar" id="chartRadar"></div>
+</div>
+    <script type="text/javascript" src="./chart.js" ></script>
+</body>
+</html>
