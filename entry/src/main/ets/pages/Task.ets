@@ -104,7 +104,7 @@ export struct Task {
       ListItem() {
           Badge({
             count: item?.countDefect,
-            position: BadgePosition.RightTop,
+            position: {x: 0, y: -6},
             style: { badgeSize: 20, badgeColor: '#FA2A2D' }
           })
           {
@@ -122,18 +122,19 @@ export struct Task {
                     }
                     console.log('this.chooseTaskIdx: ' + this.chooseTaskIdx)
                   })
-                  .position({ top: 15, right: 4 })
+                  .position({ top: 4, right: 4 })
                   .borderColor(Color.White)
                   .zIndex(999)
               }
               Row() {
                 Column() {
-                  Row() {
                     Text(item.taskName)
                       .margin({ bottom: 10 })
                       .fontSize(24)
                       .fontWeight(600)
                       .textAlign(TextAlign.Start)
+                      .maxLines(1)
+                      .textOverflow({ overflow: TextOverflow.Ellipsis })
 
                     Flex({justifyContent: FlexAlign.Start}) {
                       ForEach(item.cateDefect, (cate: string, idx: number) => {
@@ -143,33 +144,37 @@ export struct Task {
                             .fontColor(Color.White)
                             .padding({left: 4, right: 4, bottom: 4, top: 4})
                             .borderRadius(4)
-                            .margin({left: 6})
+                            .margin({right: 6})
                       })
                     }
-                  }
 
                   Text(`任务描述: ${item.taskDesc}`)
                     .fontSize(14)
                     .fontColor('rgb(127, 127, 127)')
                     .textAlign(TextAlign.Start)
                     .textOverflow({ overflow: TextOverflow.Ellipsis })
-                    .maxLines(1)
+                    .maxLines(2)
+                    .margin({bottom: 4, top: 6})
+                    .width('70%')
+
                   Text(`瑕疵总数: ${item?.countDefect ? item.countDefect : 0}`)
                     .fontSize(14)
                     .fontColor('rgb(127, 127, 127)')
                     .textAlign(TextAlign.Start)
                     .textOverflow({ overflow: TextOverflow.Ellipsis })
                     .maxLines(1)
+                    .margin({bottom: 4})
                   Text(`创建日期: ${item.gmtCreate}`)
                     .fontSize(14)
                     .fontColor('rgb(127, 127, 127)')
                     .textAlign(TextAlign.Start)
                     .textOverflow({ overflow: TextOverflow.Ellipsis })
                     .maxLines(1)
+                    .margin({bottom: 4})
                 }
                 .alignItems(HorizontalAlign.Start)
                 .width('80%')
-                .margin({ left: 20 })
+                .margin({ left: 12 })
               }
 
               // Blank()
@@ -246,8 +251,7 @@ export struct Task {
                     .fontSize(14)
                 }
               }
-              .position({x: '65%', y: '50%'})
-              // .margin({top: 20})
+              .position({x: '66%', y: '70%'})
             }
             .height('100%')
           }
@@ -320,9 +324,9 @@ export struct Task {
           })
       )
       // .width('100%')
-      .height(100)
+      .height(140)
       .backgroundColor(0xFFFFFF)
-      .borderRadius(6)
+      .borderRadius(8)
       .shadow({ radius: 12, color: '#ffffff', offsetX: 0, offsetY: 0 })
       .swipeAction({
         end: {
@@ -357,6 +361,7 @@ export struct Task {
         this.noticeController.fail('检测失败')
         setTimeout(() => {
             this.noticeController.close();
+            this.selectedId = -1;
         }, noticeTime)
       })
   }
