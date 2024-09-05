@@ -4,9 +4,10 @@ import { delTask, getTasks, startDet } from '../api/service'
 import { TaskController } from '../controllers/TaskController';
 import { Empty } from '../components/Empty';
 import { Loading } from '../components/Loading';
-import { cateFlowMap, noticeTime, requestTime, colorFlowMap } from '../common/settings';
+import { cateFlowMap, noticeTime, requestTime, colorFlowMap, ThemeColor } from '../common/settings';
 import { Notice } from '../components/Notice';
 import { NoticeController } from '../controllers/NoticeController';
+import { Background } from '../builder/Background';
 
 
 @Component
@@ -102,233 +103,246 @@ export struct Task {
   // 任务单项
   @Builder TaskItem(item: TaskElem, index: number) {
       ListItem() {
-          Badge({
-            count: item?.countDefect,
-            position: {x: 0, y: -6},
-            style: { badgeSize: 20, badgeColor: '#FA2A2D' }
-          })
-          {
-            Flex({ alignItems: ItemAlign.Center }) {
-              if (this.openBatchDel) {
-                Checkbox()
-                  .select(this.chooseTaskIdx.includes(item.taskId))
-                  .selectedColor(0x39a2db)
-                  .shape(CheckBoxShape.ROUNDED_SQUARE)
-                  .onClick(() => {
-                    if (this.chooseTaskIdx.includes(item.taskId)) {
-                      this.chooseTaskIdx = this.chooseTaskIdx.filter((i: number) => i != item.taskId)
-                    } else {
-                      this.chooseTaskIdx.push(item.taskId)
-                    }
-                    console.log('this.chooseTaskIdx: ' + this.chooseTaskIdx)
-                  })
-                  .position({ top: 4, right: 4 })
-                  .borderColor(Color.White)
-                  .zIndex(999)
-              }
-              Row() {
-                Column() {
+          Row() {
+            Badge({
+              count: item?.countDefect,
+              position: {x: 0, y: -20},
+              style: { badgeSize: 20, badgeColor: '#FA2A2D' }
+            })
+            {
+              Flex({ alignItems: ItemAlign.Center }) {
+                if (this.openBatchDel) {
+                  Checkbox()
+                    .select(this.chooseTaskIdx.includes(item.taskId))
+                    .selectedColor(ThemeColor.CheckBoxSelectColor)
+                    .unselectedColor(ThemeColor.CheckBoxUnSelectedColor)
+                    .shape(CheckBoxShape.ROUNDED_SQUARE)
+                    .onClick(() => {
+                      if (this.chooseTaskIdx.includes(item.taskId)) {
+                        this.chooseTaskIdx = this.chooseTaskIdx.filter((i: number) => i != item.taskId)
+                      } else {
+                        this.chooseTaskIdx.push(item.taskId)
+                      }
+                      console.log('this.chooseTaskIdx: ' + this.chooseTaskIdx)
+                    })
+                    .position({ top: 4, right: 4 })
+                    .borderColor(Color.White)
+                    .zIndex(999)
+                }
+                Row() {
+                  Column() {
                     Text(item.taskName)
+                      .fontColor(ThemeColor.FontColor)
                       .margin({ bottom: 10 })
                       .fontSize(24)
                       .fontWeight(600)
                       .textAlign(TextAlign.Start)
                       .maxLines(1)
                       .textOverflow({ overflow: TextOverflow.Ellipsis })
+                      .textShadow(ThemeColor.TextShadow)
 
                     Flex({justifyContent: FlexAlign.Start}) {
                       ForEach(item.cateDefect, (cate: string, idx: number) => {
-                          Text(cate)
-                            .fontSize(12)
-                            .backgroundColor(item.colorDefect[idx])
-                            .fontColor(Color.White)
-                            .padding({left: 4, right: 4, bottom: 4, top: 4})
-                            .borderRadius(4)
-                            .margin({right: 6})
+                        Text(cate)
+                          .fontSize(12)
+                          .backgroundColor(item.colorDefect[idx])
+                          .fontColor(Color.White)
+                          .padding({left: 4, right: 4, bottom: 4, top: 4})
+                          .borderRadius(4)
+                          .margin({right: 6})
                       })
                     }
 
-                  Text(`任务描述: ${item.taskDesc}`)
-                    .fontSize(14)
-                    .fontColor('rgb(127, 127, 127)')
-                    .textAlign(TextAlign.Start)
-                    .textOverflow({ overflow: TextOverflow.Ellipsis })
-                    .maxLines(2)
-                    .margin({bottom: 4, top: 6})
-                    .width('70%')
+                    Text(`任务描述: ${item.taskDesc}`)
+                      .fontSize(14)
+                      .fontColor(ThemeColor.FontColor)
+                      .textAlign(TextAlign.Start)
+                      .textOverflow({ overflow: TextOverflow.Ellipsis })
+                      .maxLines(2)
+                      .margin({bottom: 4, top: 6})
+                      .width('70%')
+                      .textShadow(ThemeColor.TextShadow)
 
-                  Text(`瑕疵总数: ${item?.countDefect ? item.countDefect : 0}`)
-                    .fontSize(14)
-                    .fontColor('rgb(127, 127, 127)')
-                    .textAlign(TextAlign.Start)
-                    .textOverflow({ overflow: TextOverflow.Ellipsis })
-                    .maxLines(1)
-                    .margin({bottom: 4})
-                  Text(`创建日期: ${item.gmtCreate}`)
-                    .fontSize(14)
-                    .fontColor('rgb(127, 127, 127)')
-                    .textAlign(TextAlign.Start)
-                    .textOverflow({ overflow: TextOverflow.Ellipsis })
-                    .maxLines(1)
-                    .margin({bottom: 4})
+                    Text(`瑕疵总数: ${item?.countDefect ? item.countDefect : 0}`)
+                      .fontSize(14)
+                      .fontColor(ThemeColor.FontColor)
+                      .textAlign(TextAlign.Start)
+                      .textOverflow({ overflow: TextOverflow.Ellipsis })
+                      .maxLines(1)
+                      .margin({bottom: 4})
+                      .textShadow(ThemeColor.TextShadow)
+
+                    Text(`创建日期: ${item.gmtCreate}`)
+                      .fontSize(14)
+                      .fontColor(ThemeColor.FontColor)
+                      .textAlign(TextAlign.Start)
+                      .textOverflow({ overflow: TextOverflow.Ellipsis })
+                      .maxLines(1)
+                      .margin({bottom: 4})
+                      .textShadow(ThemeColor.TextShadow)
+                  }
+                  .alignItems(HorizontalAlign.Start)
+                  .width('80%')
+                  .margin({ left: 12 })
                 }
-                .alignItems(HorizontalAlign.Start)
-                .width('80%')
-                .margin({ left: 12 })
-              }
-              // Blank()
-              Column() {
-                if (item.taskState == 2) {
-                  Button({ type: ButtonType.Normal, stateEffect: false }) {
-                    Row() {
-                      LoadingProgress().width(20).height(20).margin({ left: 8 }).color('#ffffff')
-                      Text('检测中').fontColor('#ffffff').margin({ left: 8, right: 8 })
-                    }
-                  }
-                  .height(36)
-                  .width(110)
-                  .fontSize(14)
-                  .borderRadius(4)
-                  .margin({ right: 12 })
-                  .backgroundColor('rgb(252, 163, 017)')
-                  .enabled(false)
-                } else if (item.taskState == 1) {
-                  Button({ type: ButtonType.Normal, stateEffect: false }) {
-                    Row() {
-                      LoadingProgress().width(20).height(20).margin({ left: 8 }).color('#ffffff')
-                      Text('上传中').fontColor('#ffffff').margin({ left: 8, right: 8 })
-                    }
-                  }
-                  .height(36)
-                  .width(110)
-                  .fontSize(14)
-                  .borderRadius(4)
-                  .margin({ right: 12 })
-                  .backgroundColor('rgb(021, 151, 165)')
-                  .enabled(false)
-                } else if (item.taskState == 0) {
-                  Button(
-                    `已检测 ${item.countDetectImg}/${item.countAllImg}`,
-                    { type: ButtonType.Normal, stateEffect: item.countDetectImg < item.countAllImg ? true : false }
-                  )
-                    .onClick(() => {
-                      if (item.countDetectImg < item.countAllImg) {
-                        this.selectedId = item.taskId;
-                        AlertDialog.show(
-                          {
-                            title: '是否开始检测?',
-                            message: '',
-                            autoCancel: true,
-                            alignment: DialogAlignment.Center,
-                            gridCount: 4,
-                            offset: { dx: 0, dy: -20 },
-                            primaryButton: {
-                              value: '取消',
-                              fontColor: '#000000',
-                              backgroundColor: '#ffffff',
-                              action: () => {
-                                this.selectedId = -1;
-                              }
-                            },
-                            secondaryButton: {
-                              value: '确定',
-                              fontColor: '#000000',
-                              backgroundColor: '#ffffff',
-                              action: () => {
-                                this.startDet(item.taskId);
-                              }
-                            },
-                            cancel: () => {
-                              this.selectedId = -1;
-                            }
-                          }
-                        )
+                // Blank()
+                Column() {
+                  if (item.taskState == 2) {
+                    Button({ type: ButtonType.Normal, stateEffect: false }) {
+                      Row() {
+                        LoadingProgress().width(20).height(20).margin({ left: 8 }).color('#ffffff')
+                        Text('检测中').fontColor('#ffffff').margin({ left: 8, right: 8 })
                       }
-                    })
-                    .borderRadius(4)
+                    }
                     .height(36)
                     .width(110)
-                    .backgroundColor('rgb(7, 193, 96)')
-                    .enabled(item.countDetectImg < item.countAllImg)
-                    .fontSize(16)
-                }
-              }
-              .position({x: '68%', y: '70%'})
-            }
-            .height('100%')
-          }
-      }
-      .onClick(() => {
-        router.pushUrl({
-          "url": "pages/TaskImg",
-          "params": item
-        })
-      })
-      .gesture(
-        // 长按提示是否删除
-        LongPressGesture({repeat: false, duration: 1000})
-          .onAction((event: GestureEvent | undefined) => {
-            if (event) {
-              AlertDialog.show(
-                {
-                  title: '是否删除该任务?',
-                  message: '',
-                  autoCancel: true,
-                  alignment: DialogAlignment.Center,
-                  gridCount: 4,
-                  offset: { dx: 0, dy: -20 },
-                  primaryButton: {
-                    value: '取消',
-                    fontColor: '#000000',
-                    backgroundColor: '#ffffff',
-                    action: () => {
-                      this.selectedId = -1;
+                    .fontSize(14)
+                    .borderRadius(4)
+                    .margin({ right: 12 })
+                    .backgroundColor('rgb(252, 163, 017)')
+                    .enabled(false)
+                  } else if (item.taskState == 1) {
+                    Button({ type: ButtonType.Normal, stateEffect: false }) {
+                      Row() {
+                        LoadingProgress().width(20).height(20).margin({ left: 8 }).color('#ffffff')
+                        Text('上传中').fontColor('#ffffff').margin({ left: 8, right: 8 })
+                      }
                     }
-                  },
-                  secondaryButton: {
-                    value: '确定',
-                    fontColor: '#000000',
-                    backgroundColor: '#ffffff',
-                    action: () => {
-                      delTask({
-                        taskIds: item.taskId
+                    .height(36)
+                    .width(110)
+                    .fontSize(14)
+                    .borderRadius(4)
+                    .margin({ right: 12 })
+                    .backgroundColor('rgb(021, 151, 165)')
+                    .enabled(false)
+                  } else if (item.taskState == 0) {
+                    Button(
+                      `已检测 ${item.countDetectImg}/${item.countAllImg}`,
+                      { type: ButtonType.Normal, stateEffect: item.countDetectImg < item.countAllImg ? true : false }
+                    )
+                      .onClick(() => {
+                        if (item.countDetectImg < item.countAllImg) {
+                          this.selectedId = item.taskId;
+                          AlertDialog.show(
+                            {
+                              title: '是否开始检测?',
+                              message: '',
+                              autoCancel: true,
+                              alignment: DialogAlignment.Center,
+                              gridCount: 4,
+                              offset: { dx: 0, dy: -20 },
+                              primaryButton: {
+                                value: '取消',
+                                fontColor: '#000000',
+                                backgroundColor: '#ffffff',
+                                action: () => {
+                                  this.selectedId = -1;
+                                }
+                              },
+                              secondaryButton: {
+                                value: '确定',
+                                fontColor: '#000000',
+                                backgroundColor: '#ffffff',
+                                action: () => {
+                                  this.startDet(item.taskId);
+                                }
+                              },
+                              cancel: () => {
+                                this.selectedId = -1;
+                              }
+                            }
+                          )
+                        }
                       })
-                        .then((res: Response) => {
-                          if (res.status == 200) {
-                            this.noticeController.success(`已删除1项任务`);
-                            setTimeout(() => {
-                              this.noticeController.close();
-                              this.getTasks();
-                            }, requestTime)
-                          }
-                          else {
-                            this.noticeController.success(`删除任务失败`);
-                            setTimeout(() => {
-                              this.noticeController.close();
-                            }, noticeTime)
-                          }
-                      })
-                        .catch((err: Response) => {
-                          this.noticeController.success(`删除任务失败`);
-                          setTimeout(() => {
-                            this.noticeController.close();
-                          }, noticeTime)
-                        })
-                    }
-                  },
-                  cancel: () => {
-                    this.selectedId = -1;
+                      .borderRadius(4)
+                      .height(36)
+                      .width(110)
+                      .backgroundColor('rgb(7, 193, 96)')
+                      .enabled(item.countDetectImg < item.countAllImg)
+                      .fontSize(16)
+                      .shadow(ThemeColor.Shadow)
                   }
                 }
-              )
+                .position({x: '68%', y: '70%'})
+              }
+              .padding({top: -20})
+              .height('100%')
             }
+          }
+          .onClick(() => {
+            router.pushUrl({
+              "url": "pages/TaskImg",
+              "params": item
+            })
           })
-      )
-      // .width('100%')
-      .height(140)
-      .backgroundColor(0xFFFFFF)
-      .borderRadius(8)
-      .shadow({ radius: 12, color: '#ffffff', offsetX: 0, offsetY: 0 })
+          .gesture(
+            // 长按提示是否删除
+            LongPressGesture({repeat: false, duration: 1000})
+              .onAction((event: GestureEvent | undefined) => {
+                if (event) {
+                  AlertDialog.show(
+                    {
+                      title: '是否删除该任务?',
+                      message: '',
+                      autoCancel: true,
+                      alignment: DialogAlignment.Center,
+                      gridCount: 4,
+                      offset: { dx: 0, dy: -20 },
+                      primaryButton: {
+                        value: '取消',
+                        fontColor: '#000000',
+                        backgroundColor: '#ffffff',
+                        action: () => {
+                          this.selectedId = -1;
+                        }
+                      },
+                      secondaryButton: {
+                        value: '确定',
+                        fontColor: '#000000',
+                        backgroundColor: '#ffffff',
+                        action: () => {
+                          delTask({
+                            taskIds: item.taskId
+                          })
+                            .then((res: Response) => {
+                              if (res.status == 200) {
+                                this.noticeController.success(`已删除1项任务`);
+                                setTimeout(() => {
+                                  this.noticeController.close();
+                                  this.getTasks();
+                                }, requestTime)
+                              }
+                              else {
+                                this.noticeController.success(`删除任务失败`);
+                                setTimeout(() => {
+                                  this.noticeController.close();
+                                }, noticeTime)
+                              }
+                            })
+                            .catch((err: Response) => {
+                              this.noticeController.success(`删除任务失败`);
+                              setTimeout(() => {
+                                this.noticeController.close();
+                              }, noticeTime)
+                            })
+                        }
+                      },
+                      cancel: () => {
+                        this.selectedId = -1;
+                      }
+                    }
+                  )
+                }
+              })
+          )
+          // .width('100%')
+          .height(150)
+          .borderRadius(8)
+          .shadow(ThemeColor.Shadow)
+          .padding({top: 16, bottom: 10})
+          .background(Background(getContext(this), item.taskId.toString()))
+      }
+      .padding(4)
       .swipeAction({
         end: {
           builder: () => { this.itemEnd(index)}
@@ -437,7 +451,7 @@ export struct Task {
       Notice({noticeController: this.noticeController})
       if (this.taskList.length === 0) {
         Empty({ extraContent: '点击右上角创建检测任务' })
-          .backgroundColor(0xDCDCDC)
+          .backgroundColor(ThemeColor.BackgroundColor)
       } else {
         Refresh({ refreshing: $$this.isRefreshing }) {
           List({ space: 18, initialIndex: 0 }) {
@@ -461,7 +475,7 @@ export struct Task {
         }
         .height('100%')
         .width('100%')
-        .backgroundColor(0xDCDCDC)
+        .backgroundColor(ThemeColor.BackgroundColor)
         .onRefreshing(() => {
           this.getTasks();
           setTimeout(() => {

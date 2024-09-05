@@ -5,6 +5,7 @@
     "pages/Settings",
     "pages/Visual",
     "pages/TaskImg",
-    "pages/AddTask"
+    "pages/AddTask",
+    "pages/TaskList"
   ]
 }

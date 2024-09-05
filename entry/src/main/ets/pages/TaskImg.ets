@@ -8,7 +8,7 @@ import { promptAction } from '@kit.ArkUI';
 import { FileUtils } from '../utils/FileUtils';
 import { InteractionUtils } from '../utils/InteractionUtils';
 import { Loading } from '../components/Loading';
-import { cateFlowMap, colorFlowMap } from '../common/settings';
+import { cateFlowMap, colorFlowMap, ThemeColor } from '../common/settings';
 
 import { BusinessError } from '@kit.BasicServicesKit';
 
@@ -47,13 +47,8 @@ struct TaskImg {
 
   private originImgSwiperController: SwiperController = new SwiperController()
 
-
   aboutToAppear(): void {
     this.getTaskImg().then(()=>this.originImgRealSize = Array.from(this.taskImgList.keys()).map(v=>new Object()))
-  }
-
-  onPageShow(): void {
-
   }
 
   getTaskImg() {
@@ -149,7 +144,10 @@ struct TaskImg {
           removeImg({'imgIds': this.taskImgList.filter((v: object, index: number)=>this.chooseImgIndex?.includes(index)).map((value: object): number=>value["imgId"]).join(',')})
             .then((res: object) => {
               this.chooseImgIndex = undefined
-              this.getTaskImg().then(()=>this.originImgRealSize = Array.from(this.taskImgList.keys()).map(v=>new Object()))
+              router.replaceUrl({
+                "url": "pages/TaskImg",
+                "params": this.task
+              })
               console.log("删除taskImg成功:"+  JSON.stringify(res));
             })
             .catch((err: object) => {
@@ -304,7 +302,8 @@ struct TaskImg {
           })
           Checkbox()
             .select(this.chooseImgIndex.includes(index))
-            .selectedColor(0x39a2db)
+            .selectedColor(ThemeColor.CheckBoxSelectColor)
+            .unselectedColor(ThemeColor.CheckBoxUnSelectedColor)
             .shape(CheckBoxShape.ROUNDED_SQUARE)
             .onClick(() => {
               if (this.chooseImgIndex !== undefined) {
@@ -317,7 +316,6 @@ struct TaskImg {
             })
             .zIndex(2)
             .position({top: 2, right: 2})
-            .unselectedColor(Color.White)
         }
       }
     }
@@ -518,7 +516,7 @@ struct TaskImg {
         .objectFit(ImageFit.None)
         .position({"right": 37, "bottom": 130})
         .backgroundColor(Color.White)
-        .shadow({radius: 6, color: Color.Gray, offsetY: 3})
+        .shadow(ThemeColor.Shadow)
         .zIndex(10)
         .onClick(()=>{
           this.add()
@@ -534,8 +532,8 @@ struct TaskImg {
         .borderRadius("50%")
         .objectFit(ImageFit.None)
         .position({"right": 25, "bottom": 50})
-        .backgroundColor("#19BCAB")
-        .shadow({radius: 6, color: Color.Gray, offsetY: 3})
+        .backgroundColor("#F5AEB3")
+        .shadow(ThemeColor.Shadow)
         .zIndex(10)
         .onClick(()=>{
           this.detect()
@@ -563,6 +561,7 @@ struct TaskImg {
           .width(25)
           .margin({ left: 2 })
           .position({bottom: -1})
+          .fillColor(ThemeColor.FontColor)
           .onClick(()=>{
             if (this.chooseImgIndex == undefined) {
               if (this.originImgIndex == -1) {
@@ -578,7 +577,8 @@ struct TaskImg {
             }
           })
         Text(this.originImgIndex > -1 ? (this.originImgIndex+1).toString().padStart(2, '0') : (this.chooseImgIndex == undefined ? this.task['taskName'] : '已选'+this.chooseImgIndex?.length.toString()+'项'))
-          .fontColor(Color.Black)
+          .fontColor(ThemeColor.FontColor)
+          .textShadow(ThemeColor.TextShadow)
           .fontSize(20)
           .fontWeight(400)
           .textAlign(TextAlign.Start)
@@ -586,7 +586,8 @@ struct TaskImg {
         Blank()
         if (this.chooseImgIndex !== undefined) {
           Text(this.chooseImgIndex.length == this.taskImgList.length ? '取消全选' : '全选')
-            .fontColor(Color.Black)
+            .fontColor(ThemeColor.FontColor)
+            .textShadow(ThemeColor.TextShadow)
             .fontSize(20)
             .fontWeight(400)
             .textAlign(TextAlign.Start)
@@ -605,6 +606,7 @@ struct TaskImg {
             .height(25)
             .width(25)
             .margin({ right: 10 })
+            .fillColor(ThemeColor.FontColor)
             .onClick(()=>{
               componentSnapshot.createFromBuilder(()=>{this.DrawOriginImg(this.originImgIndex)}, 320, true, {scale : 1, waitUntilRenderFinished : true})
                 .then((pixelMap: image.PixelMap) => {
@@ -621,12 +623,14 @@ struct TaskImg {
             .height(25)
             .width(25)
             .margin({ right: 10 })
+            .fillColor(ThemeColor.FontColor)
             .onClick(()=>{
               this.copyText(baseUrl+this.ORIGIN_FILE+this.taskImgList[this.originImgIndex]['imgUrl'])
             })
           Image(this.showImgDefect && this.taskImgList[this.originImgIndex]["isDetect"] == 1 ? $r('app.media.open_eye') : $r('app.media.close_eye'))
             .height(25)
             .width(25)
+            .fillColor(ThemeColor.FontColor)
             .margin({ right: 4 })
             .onClick(()=>{
               if (this.taskImgList[this.originImgIndex]["isDetect"] !== 1) {
@@ -640,7 +644,7 @@ struct TaskImg {
     }
     .width('100%')
     .height(AppStorage.get('statusBarHeight') as number - 30)
-    .backgroundColor(Color.White)
+    .backgroundColor(ThemeColor.ThemeColor)
     .padding({
       left: 10,
       right: 10,
@@ -675,7 +679,7 @@ struct TaskImg {
     })
     .height("100%")
     .width("100%")
-    .backgroundColor(0xDCDCDC)
+    .backgroundColor(ThemeColor.BackgroundColor)
     .refreshOffset(64)
     .pullToRefresh(this.chooseImgIndex == undefined)
     .pullDownRatio(this.chooseImgIndex == undefined ? 1 : 0)
@@ -746,7 +750,13 @@ struct TaskImg {
           GridCol() {}
           GridCol() { this.Tab($r('app.media.move'), '移动') }
           .onClick(()=>{
-            console.log("我点了移动")
+            router.pushUrl({
+              "url": "pages/TaskList",
+              "params": new Object({
+                "taskId": this.taskId,
+                "imgIds": this.taskImgList.filter((v, i)=>this.chooseImgIndex?.includes(i)).map((v: object): string=>v["imgId"]).join(",")
+              })
+            })
           })
           GridCol() { this.Tab($r('app.media.remove'), '删除') }
           .onClick(()=>{
@@ -762,7 +772,7 @@ struct TaskImg {
           .borderRadius("50%")
           .objectFit(ImageFit.None)
           .margin({bottom: 46})
-          .backgroundColor("#19BCAB")
+          .backgroundColor("#F5AEB3")
           .onClick(()=>{
             this.detect()
           })
@@ -787,7 +797,7 @@ struct TaskImg {
             // 图片详情
             this.ImgInfo()
           }
-          .backgroundColor(0xDCDCDC)
+          .backgroundColor(ThemeColor.BackgroundColor)
           // 底部导航栏
           this.BottomBar()
         }.width('100%').height('100%')

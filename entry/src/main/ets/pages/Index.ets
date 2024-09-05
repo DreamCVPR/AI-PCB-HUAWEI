@@ -6,7 +6,7 @@ import { NVElem, RouRefresh, Response, TaskElem } from '../common/classes'
 import { TaskController } from '../controllers/TaskController'
 import { delTask } from '../api/service';
 import { NoticeController } from '../controllers/NoticeController';
-import { noticeTime, requestTime } from '../common/settings';
+import { noticeTime, requestTime, ThemeColor } from '../common/settings';
 import { Loading } from '../components/Loading';
 import { Notice } from '../components/Notice';
 
@@ -66,13 +66,13 @@ struct Index {
         .margin({ bottom: 4 })
         .objectFit(ImageFit.Contain)
         .fillColor(
-          this.currentIndex === this.tabs[index].num ? '#000000': '#aaaaaa')
+          this.currentIndex === this.tabs[index].num ? ThemeColor.ThemeColor: '#aaaaaa')
       Text(this.tabs[index].text)
         .fontSize(12)
         .fontWeight(500)
         .lineHeight(14)
         .fontColor(
-          this.currentIndex === this.tabs[index].num ? '#000000': '#aaaaaa'
+          this.currentIndex === this.tabs[index].num ? ThemeColor.ThemeColor: '#aaaaaa'
         )
     }.width('100%')
   }
@@ -140,7 +140,8 @@ struct Index {
       Row() {
         Row() {
           Text(`${this.title}(${this.taskList.length})`)
-            .fontColor('#000000')
+            .fontColor(ThemeColor.FontColor)
+            .textShadow(ThemeColor.TextShadow)
             .fontSize(20)
             .textAlign(TextAlign.Start)
             .margin({ left: 2, top: 4 })
@@ -151,7 +152,8 @@ struct Index {
 
         Row() {
           Text(this.openBatchDel ? '完成' : '')
-            .fontColor('#000000')
+            .fontColor(ThemeColor.FontColor)
+            .textShadow(ThemeColor.TextShadow)
             .fontSize(20)
             .textAlign(TextAlign.Start)
         }
@@ -224,7 +226,7 @@ struct Index {
             .width(30)
             .height(30)
             .margin({ right: 8 })
-            .fillColor('#000000')
+            .fillColor(ThemeColor.FontColor)
             .bindMenu(
               this.TaskMenu
             )
@@ -236,7 +238,7 @@ struct Index {
       }
       .width('100%')
       .height(AppStorage.get('statusBarHeight') as number - 30)
-      .backgroundColor('#ffffff')
+      .backgroundColor(ThemeColor.ThemeColor)
       .padding({
         left: 10,
         right: 10,
@@ -248,7 +250,7 @@ struct Index {
       Row() {
         Row() {
           Text(`${this.title}`)
-            .fontColor('#000000')
+            .fontColor(ThemeColor.FontColor)
             .fontSize(20)
             .textAlign(TextAlign.Start)
             .margin({ left: 2, top: 4 })
@@ -259,7 +261,7 @@ struct Index {
 
         Row() {
           Text('')
-            .fontColor('#000000')
+            .fontColor(ThemeColor.FontColor)
             .fontSize(20)
             .textAlign(TextAlign.Start)
         }
@@ -278,7 +280,7 @@ struct Index {
       }
       .width('100%')
       .height(AppStorage.get('statusBarHeight') as number - 30)
-      .backgroundColor('#ffffff')
+      .backgroundColor(ThemeColor.ThemeColor)
       .padding({
         left: 10,
         right: 10,
@@ -343,14 +345,14 @@ struct Index {
                   openBatchDel: this.openBatchDel,
                   chooseTaskIdx: this.chooseTaskIdx,
                   taskController: this.taskController,
-                });
+                })
               } else if (item.num === 1) {
                 Visual();
               } else if (item.num === 2) {
                 Settings();
               }
             }.width('100%')
-          }.tabBar(this.TabBuilder(item.num))
+          }.tabBar(this.TabBuilder(item.num)).flexGrow(1)
         })
 
       }

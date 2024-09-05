@@ -21,3 +21,36 @@ export const colorFlowMap: object = new Object({
   "open_circuit": "rgb(230, 111, 081)",
   "short": "rgb(038, 070, 083)"
 })
+
+class _ShadowOptions implements  ShadowOptions {
+  radius: number | Resource = 5
+  type?: ShadowType | undefined
+  color?: string | Resource | Color | undefined
+  offsetX?: number | Resource | undefined
+  offsetY?: number | Resource | undefined
+  fill?: boolean | undefined
+
+  constructor(radius: number | Resource, type: ShadowType | undefined, color: string | Resource | Color | undefined,
+    offsetX: number | Resource | undefined, offsetY: number | Resource | undefined, fill: boolean | undefined) {
+    this.radius = radius
+    this.type = type
+    this.color = color
+    this.offsetX = offsetX
+    this.offsetY = offsetY
+    this.fill = fill
+  }
+}
+
+export class ThemeColor {
+  static ThemeColor = "#FA2A2D"
+  static LoadingColor = "#906F3E35"
+  static FontColor = "#ffffff"
+  static CaretColor = "#F7453B"
+  static BackgroundColor = "#DCDCDC"
+  static ButtonColor = "#F64737"
+  static CheckBoxSelectColor = "#F64639"
+  static CheckBoxUnSelectedColor = "#ffffff"
+  static DisableColor(color: string) { return "#50"+color.replace("#", "") }
+  static TextShadow = new _ShadowOptions(10, undefined, "rgba(0, 0, 0, 0.5)", undefined, 3, undefined)
+  static Shadow = new _ShadowOptions(25, undefined, "rgba(0, 0, 0, 0.2)", undefined, undefined, undefined)
+}

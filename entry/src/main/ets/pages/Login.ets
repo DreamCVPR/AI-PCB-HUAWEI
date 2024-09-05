@@ -10,6 +10,7 @@ import { noticeTime, requestTime } from '../common/settings';
 // 初始化存储的token
 PersistentStorage.persistProp('token', '')
 PersistentStorage.persistProp('userInfo', {})
+PersistentStorage.persistProp('backgroundFileName', {})
 
 @Entry
 @Component

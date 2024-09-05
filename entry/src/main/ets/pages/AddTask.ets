@@ -12,7 +12,7 @@ import { Empty } from '../components/Empty';
 import { Loading } from '../components/Loading';
 import { Notice } from '../components/Notice';
 import { NoticeController } from '../controllers/NoticeController';
-import { noticeTime, requestTime } from '../common/settings';
+import { noticeTime, requestTime, ThemeColor } from '../common/settings';
 
 @Entry
 @Component
@@ -188,6 +188,7 @@ export struct AddTask {
               Column() {
                 TextInput({ placeholder: '请输入任务名', text: this.taskName })
                   .height(40).width('100%')
+                  .caretColor(ThemeColor.CaretColor)
                   .onChange((value: string) => {
                     if (value.length > 16)
                       this.isValidTaskName = false; else
@@ -224,6 +225,7 @@ export struct AddTask {
                 TextArea({ placeholder: '请输入任务描述', text: this.taskDesc })
                   .height(60)
                   .width('100%')
+                  .caretColor(ThemeColor.CaretColor)
                   .textOverflow(TextOverflow.Ellipsis)
                   .onChange((value: string) => {
                     if (value.length > 64)
@@ -253,6 +255,8 @@ export struct AddTask {
                 })
                 .align(Alignment.Start)
                 .enabled(!this.previewImg)
+                .backgroundColor(ThemeColor.ButtonColor)
+                .fontColor(ThemeColor.FontColor)
               Blank()
               Text(this.openManage ? '退出管理' : '管理')
                 .onClick(() => {
@@ -360,7 +364,8 @@ export struct AddTask {
               }
             })
             .enabled(!this.previewImg && this.isValidTaskName && this.isValidTaskDesc)
-            .backgroundColor('#0A59F7')
+            .backgroundColor(ThemeColor.ButtonColor)
+            .fontColor(ThemeColor.FontColor)
             .borderRadius(4)
             .height(36)
             .width(120)
