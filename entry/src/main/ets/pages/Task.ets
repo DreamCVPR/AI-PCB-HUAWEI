@@ -122,8 +122,9 @@ export struct Task {
                     }
                     console.log('this.chooseTaskIdx: ' + this.chooseTaskIdx)
                   })
-                  .position({ top: 2, right: 2 })
+                  .position({ top: 15, right: 4 })
                   .borderColor(Color.White)
+                  .zIndex(999)
               }
               Row() {
                 Column() {
