@@ -9,14 +9,17 @@ import { FileUtils } from '../utils/FileUtils';
 import { InteractionUtils } from '../utils/InteractionUtils';
 import { Loading } from '../components/Loading';
 
+import { BusinessError } from '@kit.BasicServicesKit';
 
+import image from '@ohos.multimedia.image';
+import { componentSnapshot } from '@kit.ArkUI';
 @Entry
 @Component
 struct TaskImg {
   @StorageLink("token") token: object | null = null;
 
-  COMPRESS_FILE: string = "/file/compress/"
-  ORIGIN_FILE: string = "/file/download/"
+  COMPRESS_FILE: string = FileUtils.COMPRESS_FILE
+  ORIGIN_FILE: string = FileUtils.ORIGIN_FILE
   CLASS_CN_NAME: object = new Object({
     "mouse_bite": "鼠咬",
     "short": "短路",
@@ -199,12 +202,12 @@ struct TaskImg {
     if (img2Detect.length == 0) {
       promptAction.showToast({ message: '当前没有未检测的图片' });
     } else {
-      this.chooseImgIndex = undefined
       InteractionUtils.confirm(
         `开始检测${img2Detect.length}张图片`,
         '已检测的图片不再检测',
         ()=>{
           this.task['taskState'] = 2
+          this.chooseImgIndex = undefined
           detect(img2Detect)
             .then((res: object) => {
               this.getTaskImg().then(()=>{
@@ -239,8 +242,8 @@ struct TaskImg {
     return new Object({"left": componentCenterPos["x"]-nowRealSize["width"]/2, "top": componentCenterPos["y"]-nowRealSize["height"]/2})
   }
 
-  getImgLabelPos(originPos: object, offsetX: number, offsetY: number, scale: number) {
-    return new Object({"left": originPos["left"]+offsetX*scale, "top": originPos["top"]+offsetY*scale})
+  getImgLabelPos(originPos: object, offsetX: number, offsetY: number, scale: number, units: string = "vp") {
+    return new Object({"left": `${originPos["left"]+offsetX*scale}${units}`, "top": `${originPos["top"]+offsetY*scale}${units}`})
   }
 
   @Builder Mask(opacity: number = 0.95, zIndex: number = 1) {
@@ -482,19 +485,19 @@ struct TaskImg {
     })
   }
 
-  @Builder Label(imgIndex: number) {
+  @Builder Label(imgIndex: number, scale: number | undefined = undefined, originPos: object | undefined = undefined, units: string = "vp") {
     if (this.taskImgList[imgIndex]["isDetect"] == 1) {
       if (this.originImgSize[imgIndex]['originSize']) {
         ForEach(this.taskImgList[imgIndex]["detectionClasses"], (className: string, index: number) => {
           Rect()
-            .width((this.taskImgList[imgIndex]["detectionBoxes"][index][3]-this.taskImgList[imgIndex]["detectionBoxes"][index][1])*this.getScale(imgIndex))
-            .height((this.taskImgList[imgIndex]["detectionBoxes"][index][2]-this.taskImgList[imgIndex]["detectionBoxes"][index][0])*this.getScale(imgIndex))
-            .position(this.getImgLabelPos(this.getImgOriginPos(imgIndex), this.taskImgList[imgIndex]["detectionBoxes"][index][1], this.taskImgList[imgIndex]["detectionBoxes"][index][0], this.getScale(imgIndex)))
+            .width(`${(this.taskImgList[imgIndex]["detectionBoxes"][index][3]-this.taskImgList[imgIndex]["detectionBoxes"][index][1])*(scale ? scale : this.getScale(imgIndex))}${units}`)
+            .height(`${(this.taskImgList[imgIndex]["detectionBoxes"][index][2]-this.taskImgList[imgIndex]["detectionBoxes"][index][0])*(scale ? scale : this.getScale(imgIndex))}${units}`)
+            .position(this.getImgLabelPos(originPos ? originPos : this.getImgOriginPos(imgIndex), this.taskImgList[imgIndex]["detectionBoxes"][index][1], this.taskImgList[imgIndex]["detectionBoxes"][index][0], (scale ? scale : this.getScale(imgIndex)), units))
             .zIndex(4)
             .fill(this.LABEL_COLOR[className])
             .fillOpacity(0.3)
             .stroke(this.LABEL_COLOR[className])
-            .strokeWidth(0.2)
+            .strokeWidth(0.1)
             .visibility(this.showImgDefect && this.showImgDefectClassName[className] ? Visibility.Visible : Visibility.Hidden)
         })
       }
@@ -510,7 +513,7 @@ struct TaskImg {
         .objectFit(ImageFit.None)
         .position({"right": 37, "bottom": 130})
         .backgroundColor(Color.White)
-        .shadow({radius: 7, color: Color.White})
+        .shadow({radius: 6, color: Color.Gray, offsetY: 3})
         .zIndex(10)
         .onClick(()=>{
           this.add()
@@ -527,12 +530,24 @@ struct TaskImg {
         .objectFit(ImageFit.None)
         .position({"right": 25, "bottom": 50})
         .backgroundColor("#19BCAB")
-        .shadow({radius: 7, color: "#19BCAB"})
+        .shadow({radius: 6, color: Color.Gray, offsetY: 3})
         .zIndex(10)
         .onClick(()=>{
           this.detect()
         })
     }
+  }
+
+  @Builder DrawOriginImg(index: number) {
+    Row() {
+      Image(baseUrl+this.ORIGIN_FILE+this.taskImgList[index]["imgUrl"])
+        .width("100%")
+        .height("100%")
+        .objectFit(ImageFit.ScaleDown)
+      this.Label(index, 1, new Object({"top": 0, "left": 0}), "px")
+    }
+    .width(`${this.originImgRealSize[index]["width"]}px`)
+    .height(`${this.originImgRealSize[index]["height"]}px`)
   }
 
   @Builder TopBar() {
@@ -581,6 +596,22 @@ struct TaskImg {
               }
             })
         } else if (this.originImgIndex > -1) {
+          Image($r('app.media.screenshot'))
+            .height(25)
+            .width(25)
+            .margin({ right: 10 })
+            .onClick(()=>{
+              componentSnapshot.createFromBuilder(()=>{this.DrawOriginImg(this.originImgIndex)}, 320, true, {scale : 1, waitUntilRenderFinished : true})
+                .then((pixelMap: image.PixelMap) => {
+                  FileUtils.savePixelMap(pixelMap)
+                })
+                .catch((err: BusinessError) => {
+                  console.error(`Failed to pack the image.Code ${err.code},message is ${err.message}`);
+                })
+                .catch((err:Error) => {
+                  console.log("error: " + err)
+                })
+            })
           Image($r('app.media.share'))
             .height(25)
             .width(25)
@@ -665,9 +696,8 @@ struct TaskImg {
       }
       .width("100%")
       .backgroundColor('rgba(0, 0, 0, 0)')
-      .position({bottom: 16})
+      .position({bottom: 22})
       .zIndex(3)
-      .padding(5)
       .visibility(this.showImgDefect && this.taskImgList[this.originImgIndex]["isDetect"] == 1 ? Visibility.Visible : Visibility.Hidden)
       // 原图
       Swiper(this.originImgSwiperController) {

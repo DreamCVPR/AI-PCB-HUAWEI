@@ -14,23 +14,24 @@ import util from '@ohos.util';
 export class FileUtils {
   private static PERMISSIONS: Array<Permissions> = ['ohos.permission.INTERNET', "ohos.permission.WRITE_IMAGEVIDEO"];
 
-  // /**
-  //  * 保存组件PixelMap至图库
-  //  * @param imgUrlList
-  //  */
-  // static async savePixelMap(imgUrlList: Array<string>) {
-  //   const count = new Object({
-  //     "imgCount": imgUrlList.length,
-  //     "saveCount": 0
-  //   })
-  //   await FileUtils.grantPermission().then(async () => {
-  //     imgUrlList.forEach((url: string, index: number) => {
-  //       FileUtils.loadImageWithUrl(url, index+1, count)
-  //     });
-  //   }).catch((err: BusinessError) => {
-  //     console.info(`grantPermission faild  ${JSON.stringify(err.code)}`);
-  //   })
-  // }
+  static COMPRESS_FILE: string = "/file/compress/"
+  static ORIGIN_FILE: string = "/file/download/"
+
+  /**
+   * 保存组件至图库
+   * @param pixelMap 组件的像素图
+   */
+  static async savePixelMap(pixelMap: image.PixelMap) {
+    let imagePackerApi = image.createImagePacker();
+    let packOpts: image.PackingOption = { format: 'image/jpeg', quality: 100};
+    imagePackerApi.packing(pixelMap, packOpts).then((buffer: ArrayBuffer) => {
+      FileUtils.writeBuffer(buffer).then(()=>{
+        promptAction.showToast({ message: `图片已保存` });
+      })
+    }).catch((err: BusinessError) => {
+      console.error(`Failed to pack the image.Code ${err.code},message is ${err.message}`);
+    })
+  }
 
   /**
    * 下载网络链接中的图片至图库
@@ -124,17 +125,9 @@ export class FileUtils {
           if (http.ResponseCode.OK === data.responseCode) {
             let imageBuffer: ArrayBuffer = data.result as ArrayBuffer;
             try {
-              // 获取相册路径
-              const context = getContext(FileUtils);
-              let helper = photoAccessHelper.getPhotoAccessHelper(context);
-              let uri = await helper.createAsset(photoAccessHelper.PhotoType.IMAGE, 'jpg')
-              let file = await fileIo.open(uri, fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE)
-              // 写入文件
-              await fileIo.write(file.fd, imageBuffer);
-              // 关闭文件
-              await fileIo.close(file.fd);
+              await FileUtils.writeBuffer(imageBuffer)
               if (++count["saveCount"] == count["imgCount"]) {
-                promptAction.showToast({ message: `图片保存成功` });
+                promptAction.showToast({ message: `图片已保存` });
               }
             } catch (error) {
               promptAction.showToast({ message: `图片${index}保存失败，${JSON.stringify(error)}` });
@@ -144,6 +137,18 @@ export class FileUtils {
           }
         }
       })
+  }
+
+   private static async writeBuffer(buffer: ArrayBuffer) {
+    // 获取相册路径
+    const context = getContext(FileUtils);
+    let helper = photoAccessHelper.getPhotoAccessHelper(context);
+    let uri = await helper.createAsset(photoAccessHelper.PhotoType.IMAGE, 'jpg')
+    let file = await fileIo.open(uri, fileIo.OpenMode.READ_WRITE | fileIo.OpenMode.CREATE)
+    // 写入文件
+    await fileIo.write(file.fd, buffer);
+    // 关闭文件
+    await fileIo.close(file.fd);
   }
 
   private static async transBase64(imageList: Array<string>) {
