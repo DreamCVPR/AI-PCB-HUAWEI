@@ -1,4 +1,6 @@
 import http from '@ohos.net.http'
+import router from '@ohos.router'
+import promptAction from '@ohos.promptAction';
 
 // 后端API地址
 export const baseUrl = 'http://192.168.0.114:7777/api'
@@ -6,7 +8,7 @@ export const baseUrl = 'http://192.168.0.114:7777/api'
 // 通用请求实现
 export async function requests(options) {
 
-    let {url, method, data} = options
+    let {url, method, data, message} = options
     if (url.substring(0, 4) !== "http") {
         url = baseUrl + url
     }
@@ -34,8 +36,25 @@ export async function requests(options) {
                 // usingProtocol: http.HttpProtocol.HTTP1_1, // 可选，协议类型默认值由系统自动指定
             }, (err, data) => {
             if (!err) {
-                resolve(JSON.parse(data.result))
+                const res = JSON.parse(data.result)
+                if (res["status"] == "200") {
+                    if (message) {
+                        promptAction.showToast({ message: message, duration: 3000 });
+                    }
+                    resolve(res)
+                } else {
+                    promptAction.showToast({ message: res["message"], duration: 3000 });
+                    if (data.header["token_status"] !== "1") {
+                        AppStorage.set('token', '');
+                        router.clear()
+                        if (router.getState().path+router.getState().name !== 'pages/Login') {
+                            router.replaceUrl({ url: 'pages/Login' })
+                        }
+                    }
+                    reject(false)
+                }
             } else {
+                promptAction.showToast({ message: "系统异常，请稍后再试" });
                 console.info('errorssss:' + JSON.stringify(err));
                 reject(false)
             }

@@ -25,6 +25,14 @@ export function addImg (parameter) {
     })
 }
 
+export function changeTask (parameter) {
+    return requests({
+        url: '/taskImg/changeTask',
+        method: 'post',
+        data: parameter
+    })
+}
+
 export function detect (parameter) {
     return requests({
         url: '/taskImg/detect',

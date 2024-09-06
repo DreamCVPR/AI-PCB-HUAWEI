@@ -1,4 +1,5 @@
 // 页面加载
+import { ThemeColor } from '../common/settings'
 
 @Component
 export struct Loading {
@@ -8,7 +9,7 @@ export struct Loading {
   build() {
     Flex({alignItems: ItemAlign.Center}) {
       LoadingProgress()
-        .color("#64A4E0")
+        .color(ThemeColor.LoadingColor)
         .layoutWeight(1)
         .width("10%")
         .height("10%")

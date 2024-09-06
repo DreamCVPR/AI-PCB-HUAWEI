@@ -2,7 +2,7 @@
 
 export class InteractionUtils {
 
-  static confirm(title: string, message: string, confirmAction: Function, cancelAction: Function = new Function(), height: number = 230) {
+  static confirm(title: string, message: string, confirmAction: Function = new Function(), cancelAction: Function = new Function(), height: number = 230) {
     AlertDialog.show(
       {
         title: title,

@@ -2,6 +2,7 @@ import router from '@ohos.router';
 import { webview } from '@kit.ArkWeb';
 import { BusinessError } from '@kit.BasicServicesKit';
 
+
 @Entry
 @Component
 export struct Visual {
@@ -10,44 +11,23 @@ export struct Visual {
   @StorageLink("token") token: string = '';
 
   aboutToAppear(): void {
-    if (this.token === '')
-      router.replaceUrl({url: 'pages/Login'})
+    if (this.token === '') {
+      router.replaceUrl({ url: 'pages/Login' });
+    } else {
+      // 通过重新实例化控制器来清除缓存
+      this.controller = new webview.WebviewController();
+    }
   }
 
   build() {
     RelativeContainer() {
       Column() {
-        Web({ src: $rawfile('chart/chart.html'), controller: this.controller })
+        Web({ src: $rawfile('chart/chart.hml'), controller: this.controller })
           .javaScriptAccess(true)
           .onPageEnd(e => {
-            try {
-              this.controller.runJavaScript('test()')
-                .then((result) => {
-                  console.log('result: ' + result);
-                })
-                .catch((error: BusinessError) => {
-                  console.error("error: " + error);
-                })
-              if (e) {
-                console.info('url: ', e.url);
-              }
-            } catch (error) {
-              console.error(`ErrorCode: ${(error as BusinessError).code},  Message: ${(error as BusinessError).message}`);
-            }
+            console.log("New page loaded: " + e.url);
           })
       }
     }
-
-
-    //   Text(this.message)
-    //     .id('HelloWorld')
-    //     .fontSize(50)
-    //     .fontWeight(FontWeight.Bold)
-    //     .alignRules({
-    //       center: { anchor: '__container__', align: VerticalAlign.Center },
-    //       middle: { anchor: '__container__', align: HorizontalAlign.Center }
-    //     })
-    // }
-
   }
 }

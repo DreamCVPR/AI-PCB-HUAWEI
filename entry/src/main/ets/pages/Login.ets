@@ -10,6 +10,7 @@ import { noticeTime, requestTime } from '../common/settings';
 // 初始化存储的token
 PersistentStorage.persistProp('token', '')
 PersistentStorage.persistProp('userInfo', {})
+PersistentStorage.persistProp('backgroundFileName', {})
 
 @Entry
 @Component
@@ -93,29 +94,15 @@ export struct Login {
                   if (res['status'] === 200) {
                     this.token = res["result"]["token"];
                     this.userInfo = res["result"]
-                    console.log("userInfo", JSON.stringify(this.userInfo))
                     setTimeout(() => {
                       this.showLoading = false;
                       router.replaceUrl({ url: "pages/Index" })
-                    }, requestTime)
-                  }
-                  else {
-                    setTimeout(() => {
-                      this.showLoading = false;
-                      this.noticeController.fail(res['message']);
-                      setTimeout(() => {
-                        this.noticeController.close();
-                      }, noticeTime)
                     }, requestTime)
                   }
                 })
                 .catch((err: object) => {
                   setTimeout(() => {
                     this.showLoading = false;
-                    this.noticeController.fail('登入失败');
-                    setTimeout(() => {
-                      this.noticeController.close();
-                    }, noticeTime)
                   }, requestTime)
                 })
             }
