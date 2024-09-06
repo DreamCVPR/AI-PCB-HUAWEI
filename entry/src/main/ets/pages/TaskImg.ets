@@ -8,12 +8,13 @@ import { promptAction } from '@kit.ArkUI';
 import { FileUtils } from '../utils/FileUtils';
 import { InteractionUtils } from '../utils/InteractionUtils';
 import { Loading } from '../components/Loading';
-import { cateFlowMap, colorFlowMap, ThemeColor } from '../common/settings';
+import { cateFlowMap, colorFlowMap, DisableBackground, ThemeColor } from '../common/settings';
 
 import { BusinessError } from '@kit.BasicServicesKit';
 
 import image from '@ohos.multimedia.image';
 import { componentSnapshot } from '@kit.ArkUI';
+
 @Entry
 @Component
 struct TaskImg {
@@ -446,10 +447,6 @@ struct TaskImg {
     }.width('100%')
   }
 
-  @Builder Background(color: ResourceColor, opacity: number) {
-    Row() {}.backgroundColor(color).opacity(opacity).width("100%").height("100%")
-  }
-
   @Builder LabelClass(className: string) {
     Flex({ justifyContent: FlexAlign.Center, alignItems: ItemAlign.Center }) {
       Circle()
@@ -467,7 +464,7 @@ struct TaskImg {
     }
     .width("100%")
     .height(30)
-    .background(this.Background(this.LABEL_COLOR[className], 0.3))
+    .background(DisableBackground(this.LABEL_COLOR[className], 0.3))
     .opacity(this.showImgDefectClassName[className] ? 1 : 0.4)
     .shadow({radius: 1, color: this.LABEL_COLOR[className]})
     .onClick(()=>{

@@ -14,6 +14,10 @@ import util from '@ohos.util';
 export class FileUtils {
   private static PERMISSIONS: Array<Permissions> = ["ohos.permission.WRITE_IMAGEVIDEO"];
 
+  private static PERMISSION_NAMES: object = new Object({
+    "ohos.permission.WRITE_IMAGEVIDEO": "访问本地图库"
+  })
+
   static COMPRESS_FILE: string = "/file/compress/"
   static ORIGIN_FILE: string = "/file/download/"
 
@@ -22,7 +26,7 @@ export class FileUtils {
    * @param pixelMap 组件的像素图
    */
   static async savePixelMap(pixelMap: image.PixelMap) {
-    await FileUtils.grantPermission().then(async () => {
+    await FileUtils.grantPermission().then(async (res) => {
       let imagePackerApi = image.createImagePacker();
       let packOpts: image.PackingOption = { format: 'image/jpeg', quality: 100};
       imagePackerApi.packing(pixelMap, packOpts).then((buffer: ArrayBuffer) => {
@@ -46,10 +50,12 @@ export class FileUtils {
       "imgCount": imgUrlList.length,
       "saveCount": 0
     })
-    await FileUtils.grantPermission().then(async () => {
-      imgUrlList.forEach((url: string, index: number) => {
-        FileUtils.loadImageWithUrl(url, index+1, count)
-      });
+    await FileUtils.grantPermission().then(async (res) => {
+      if (res) {
+        imgUrlList.forEach((url: string, index: number) => {
+          FileUtils.loadImageWithUrl(url, index+1, count)
+        });
+      }
     }).catch((err: BusinessError) => {
       console.info(`grantPermission faild  ${JSON.stringify(err.code)}`);
     })
@@ -104,12 +110,14 @@ export class FileUtils {
         let length: number = grantStatus.length;
         for (let i = 0; i < length; i++) {
           if (grantStatus[i] !== 0) {
+            promptAction.showToast({message: "请授权开启"+ FileUtils.PERMISSION_NAMES[FileUtils.PERMISSIONS[0]] + "的权限", duration: 3000})
             return false;
           }
         }
       }
       return true;
     } catch (error) {
+      promptAction.showToast({message: "授权异常："+ JSON.stringify(error), duration: 3000})
       return false;
     }
   }

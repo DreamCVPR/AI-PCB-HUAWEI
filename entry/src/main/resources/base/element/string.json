@@ -10,11 +10,11 @@
     },
     {
       "name": "EntryAbility_label",
-      "value": "label"
+      "value": "PCB质检"
     },
     {
       "name": "reason",
-      "value": "download"
+      "value": "用于保存图片至相册"
     }
   ]
 }

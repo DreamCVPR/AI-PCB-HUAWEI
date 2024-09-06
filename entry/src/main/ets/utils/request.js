@@ -54,7 +54,7 @@ export async function requests(options) {
                     reject(false)
                 }
             } else {
-                promptAction.showToast({ message: "系统异常，请稍后再试" });
+                promptAction.showToast({ message: "APP异常：" + JSON.stringify(err["message"]), duration: 3000 });
                 console.info('errorssss:' + JSON.stringify(err));
                 reject(false)
             }

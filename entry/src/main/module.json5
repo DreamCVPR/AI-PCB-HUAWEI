@@ -81,7 +81,7 @@
         "name": "ohos.permission.WRITE_IMAGEVIDEO",
         "usedScene": {
           "abilities": ["EntryAbility"],
-          "when": "inuse"
+          "when": "always"
         },
         "reason": "$string:reason"
       }
