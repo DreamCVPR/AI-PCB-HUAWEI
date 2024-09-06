@@ -6,6 +6,7 @@ import { UserInfo } from '../common/classes';
 export struct Settings {
   @State introduce: string = ''
 
+  @Link openEdit: boolean;
   private userInfo?: UserInfo;
 
   aboutToAppear(): void {
