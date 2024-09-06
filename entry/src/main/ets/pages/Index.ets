@@ -9,6 +9,7 @@ import { NoticeController } from '../controllers/NoticeController';
 import { noticeTime, requestTime, ThemeColor } from '../common/settings';
 import { Loading } from '../components/Loading';
 import { Notice } from '../components/Notice';
+import { InteractionUtils } from '../utils/InteractionUtils';
 
 
 @Entry
@@ -163,62 +164,68 @@ struct Index {
         .width('40%')
         .enabled(this.openBatchDel)
         .onClick(() => {
-          AlertDialog.show(
-            {
-              title: `已选择${this.chooseTaskIdx.length}项任务，是否删除?`,
-              message: '',
-              autoCancel: true,
-              alignment: DialogAlignment.Center,
-              gridCount: 4,
-              offset: { dx: 0, dy: -20 },
-              primaryButton: {
-                value: '取消',
-                fontColor: '#000000',
-                backgroundColor: '#ffffff',
-                action: () => {
-                  this.chooseTaskIdx = [];
-                  this.openBatchDel = false;
-                }
-              },
-              secondaryButton: {
-                value: '确定',
-                fontColor: '#000000',
-                backgroundColor: '#ffffff',
-                enabled: this.chooseTaskIdx.length > 0,
-                action: () => {
-                  let taskIds = this.chooseTaskIdx.join(',')
-                  delTask({
-                    taskIds: taskIds
-                  })
-                    .then((res: Response) => {
-                      if (res.status == 200) {
-                        this.noticeController.success(`已删除${this.chooseTaskIdx.length}项任务`);
-                        setTimeout(() => {
-                          this.noticeController.close();
-                          this.taskController.getTasks();
-                        }, requestTime)
-                      }
-                      else {
+          if (this.chooseTaskIdx.length > 0) {
+            AlertDialog.show(
+              {
+                title: `已选择${this.chooseTaskIdx.length}项任务，是否删除?`,
+                message: '删除后3天内可在”我的“回收站中找回，请确认是否删除',
+                autoCancel: true,
+                alignment: DialogAlignment.Center,
+                gridCount: 4,
+                offset: { dx: 0, dy: -20 },
+                primaryButton: {
+                  value: '取消',
+                  fontColor: '#000000',
+                  backgroundColor: '#ffffff',
+                  action: () => {
+                    this.chooseTaskIdx = [];
+                    this.openBatchDel = false;
+                  }
+                },
+                secondaryButton: {
+                  value: '确定',
+                  fontColor: '#000000',
+                  backgroundColor: '#ffffff',
+                  enabled: this.chooseTaskIdx.length > 0,
+                  action: () => {
+                    let taskIds = this.chooseTaskIdx.join(',')
+                    delTask({
+                      taskIds: taskIds
+                    })
+                      .then((res: Response) => {
+                        if (res.status == 200) {
+                          this.noticeController.success(`已删除${this.chooseTaskIdx.length}项任务`);
+                          setTimeout(() => {
+                            this.noticeController.close();
+                            this.taskController.getTasks();
+                          }, requestTime)
+                        }
+                        else {
+                          this.noticeController.success(`删除失败`);
+                          setTimeout(() => {
+                            this.noticeController.close();
+                          }, noticeTime)
+                        }
+                        this.chooseTaskIdx = [];
+                        this.openBatchDel = false;
+                      })
+                      .catch((err: Response) => {
                         this.noticeController.success(`删除失败`);
                         setTimeout(() => {
                           this.noticeController.close();
                         }, noticeTime)
-                      }
-                      this.chooseTaskIdx = [];
-                      this.openBatchDel = false;
-                    })
-                    .catch((err: Response) => {
-                      this.noticeController.success(`删除失败`);
-                      setTimeout(() => {
-                        this.noticeController.close();
-                      }, noticeTime)
-                    })
-                }
-              },
-              cancel: () => {
+                      })
+                  }
+                },
+                cancel: () => {
 
-              }
-            })
+                }
+              })
+          }
+          else {
+            this.chooseTaskIdx = [];
+            this.openBatchDel = false;
+          }
         })
 
         // Blank()
