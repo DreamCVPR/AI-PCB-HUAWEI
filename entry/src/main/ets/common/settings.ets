@@ -47,7 +47,7 @@ export class ThemeColor {
   static FontColor = "#ffffff"
   static CaretColor = "#F7453B"
   static BackgroundColor = "#DCDCDC"
-  static ButtonColor = "#F64737"
+  static ButtonColor = "rgb(78, 110, 242)"
   static CheckBoxSelectColor = "#F64639"
   static CheckBoxUnSelectedColor = "#ffffff"
   static DisableColor(color: string) { return "#50"+color.replace("#", "") }

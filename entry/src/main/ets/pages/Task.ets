@@ -69,24 +69,12 @@ export struct Task {
                   })
                     .then((res: Response) => {
                       if (res.status == 200) {
-                        this.noticeController.success(`已删除1项任务`);
                         setTimeout(() => {
-                          this.noticeController.close();
                           this.getTasks();
                         }, requestTime)
                       }
-                      else {
-                        this.noticeController.success(`删除任务失败`);
-                        setTimeout(() => {
-                          this.noticeController.close();
-                        }, noticeTime)
-                      }
                     })
                     .catch((err: Response) => {
-                      this.noticeController.success(`删除任务失败`);
-                      setTimeout(() => {
-                        this.noticeController.close();
-                      }, noticeTime)
                     })
                 }
               },
@@ -200,7 +188,6 @@ export struct Task {
                     .borderRadius(4)
                     .margin({ right: 12 })
                     .backgroundColor('rgb(252, 163, 017)')
-                    .enabled(false)
                   } else if (item.taskState == 1) {
                     Button({ type: ButtonType.Normal, stateEffect: false }) {
                       Row() {
@@ -214,7 +201,6 @@ export struct Task {
                     .borderRadius(4)
                     .margin({ right: 12 })
                     .backgroundColor('rgb(021, 151, 165)')
-                    .enabled(false)
                   } else if (item.taskState == 0) {
                     Button(
                       `已检测 ${item.countDetectImg}/${item.countAllImg}`,
@@ -258,7 +244,7 @@ export struct Task {
                       .height(36)
                       .width(110)
                       .backgroundColor('rgb(7, 193, 96)')
-                      .enabled(item.countDetectImg < item.countAllImg)
+                      // .enabled(item.countDetectImg < item.countAllImg)
                       .fontSize(16)
                       .shadow(ThemeColor.Shadow)
                   }
@@ -340,7 +326,7 @@ export struct Task {
           .borderRadius(8)
           .shadow(ThemeColor.Shadow)
           .padding({top: 16, bottom: 10})
-          .background(Background(getContext(this), item.taskId.toString()))
+          .background(Background(getContext(this), item.taskId.toString(), 0.1))
       }
       .padding(4)
       .swipeAction({
@@ -354,30 +340,17 @@ export struct Task {
   startDet (selectedId: number) {
     startDet({
       taskId: selectedId
-    })
+    }, '开始检测')
       .then((res: Response) => {
         if (res.status == 200) {
-          this.noticeController.success('开始检测')
           setTimeout(() => {
-              this.noticeController.close();
               this.getTasks();
-              this.selectedId = -1;
           }, requestTime)
         }
-        else {
-          this.noticeController.success(JSON.stringify(res.message))
-          setTimeout(() => {
-            this.noticeController.close();
-            this.selectedId = -1;
-          }, noticeTime)
-        }
+        this.selectedId = -1;
       })
       .catch((err: Response) => {
-        this.noticeController.fail('检测失败')
-        setTimeout(() => {
-            this.noticeController.close();
-            this.selectedId = -1;
-        }, noticeTime)
+        this.selectedId = -1;
       })
   }
 
@@ -435,13 +408,7 @@ export struct Task {
         }, requestTime)
       })
       .catch((err: Response) => {
-        setTimeout(() => {
-          this.showLoading = false;
-          this.noticeController.fail('查询任务失败');
-          setTimeout(() => {
-            this.noticeController.close();
-          }, noticeTime)
-        }, requestTime)
+        this.showLoading = false;
       })
   }
 

@@ -115,30 +115,18 @@ export struct AddTask {
       'task_desc': this.taskDesc,
       'files': this.imgBase64,
       'fileNames': fileNames
-    })
+    }, '新建任务成功')
       .then((res: Response) => {
         this.showLoading = false;
         if (res.status == 200) {
-          this.noticeController.success('新建任务成功');
           setTimeout(() => {
-            this.noticeController.close();
             this.clear();
             this?.back();
           }, requestTime)
         }
-        else {
-          this.noticeController.fail('新建任务失败');
-          setTimeout(() => {
-            this.noticeController.close();
-          }, noticeTime)
-        }
       })
       .catch((err: Response) => {
         this.showLoading = false;
-        this.noticeController.fail('新建任务失败');
-        setTimeout(() => {
-          this.noticeController.close();
-        }, noticeTime)
       })
 
   }
