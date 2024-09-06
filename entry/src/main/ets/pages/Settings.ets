@@ -5,6 +5,7 @@ import { UserInfo } from '../common/classes';
 @Component
 export struct Settings {
 
+  @Link openEdit: boolean;
   private userInfo?: UserInfo;
 
   aboutToAppear(): void {

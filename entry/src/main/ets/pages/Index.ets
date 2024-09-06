@@ -23,6 +23,7 @@ struct Index {
   @State helpPopup: boolean = false;
   @State title: string = '任务';
   @State openBatchDel: boolean = false;
+  @State openEdit: boolean = false;
   @State chooseTaskIdx: Array<number> = [];
   @State taskList: Array<TaskElem> = [];
   @State tabs: Array<NVElem> = [
@@ -304,7 +305,29 @@ struct Index {
         .enabled(this.openBatchDel)
 
         // Blank()
-        Row()
+        Row() {
+        if (!this.openEdit) {
+          Image($r('app.media.edit'))
+            .width(30)
+            .height(30)
+            .margin({ right: 8 })
+            .fillColor(ThemeColor.NavConfig['FontColor'])
+            .onClick(() => {
+              this.openEdit = !this.openEdit;
+            })
+        }
+        else {
+          Text('保存')
+            .fontColor(ThemeColor.NavConfig['FontColor'])
+            .textShadow(ThemeColor.TextShadow)
+            .fontSize(20)
+            .textAlign(TextAlign.Start)
+            .margin({ left: 2, top: 4 })
+            .onClick(() => {
+              this.openEdit = !this.openEdit;
+            })
+          }
+        }
         .alignItems(VerticalAlign.Center)
         .justifyContent(FlexAlign.End)
         .width('30%')
@@ -339,7 +362,9 @@ struct Index {
               } else if (item.num === 1) {
                 Visual();
               } else if (item.num === 2) {
-                Settings();
+                Settings({
+                  openEdit: this.openEdit
+                });
               }
             }.width('100%')
           }.tabBar(this.TabBuilder(item.num)).flexGrow(1)
