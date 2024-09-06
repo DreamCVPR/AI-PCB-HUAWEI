@@ -48,13 +48,13 @@ export class ThemeColor {
     FontColor: '#000000'
   })
   static LoadingColor = "#906F3E35"
-  static FontColor = "#ffffff"
+  static FontColor = "#202020"
   static CaretColor = "#F7453B"
   static BackgroundColor = "#DCDCDC"
   static ButtonColor = "rgb(78, 110, 242)"
   static CheckBoxSelectColor = "#F64639"
   static CheckBoxUnSelectedColor = "#ffffff"
   static DisableColor(color: string) { return "#50"+color.replace("#", "") }
-  static TextShadow = new _ShadowOptions(10, undefined, "rgba(0, 0, 0, 0.5)", undefined, 3, undefined)
+  static TextShadow = new _ShadowOptions(0.2, undefined, "rgba(0, 0, 0, 0.1)", undefined, 2, undefined)
   static Shadow = new _ShadowOptions(25, undefined, "rgba(0, 0, 0, 0.2)", undefined, undefined, undefined)
 }

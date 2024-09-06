@@ -113,7 +113,7 @@ export struct Task {
                       }
                       console.log('this.chooseTaskIdx: ' + this.chooseTaskIdx)
                     })
-                    .position({ top: 4, right: 4 })
+                    .position({ top: -12, right: 4 })
                     .borderColor(Color.White)
                     .zIndex(999)
                 }
@@ -256,10 +256,18 @@ export struct Task {
             }
           }
           .onClick(() => {
-            router.pushUrl({
-              "url": "pages/TaskImg",
-              "params": item
-            })
+            if (!this.openBatchDel) {
+              router.pushUrl({
+                "url": "pages/TaskImg",
+                "params": item
+              })
+            } else {
+              if (this.chooseTaskIdx.includes(item.taskId)) {
+                this.chooseTaskIdx = this.chooseTaskIdx.filter((i: number) => i != item.taskId)
+              } else {
+                this.chooseTaskIdx.push(item.taskId)
+              }
+            }
           })
           .gesture(
             // 长按提示是否删除
