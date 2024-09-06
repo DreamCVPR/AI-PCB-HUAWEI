@@ -9,7 +9,6 @@ import { NoticeController } from '../controllers/NoticeController';
 import { noticeTime, requestTime, ThemeColor } from '../common/settings';
 import { Loading } from '../components/Loading';
 import { Notice } from '../components/Notice';
-import { InteractionUtils } from '../utils/InteractionUtils';
 
 
 @Entry
