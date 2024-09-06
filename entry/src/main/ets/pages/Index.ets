@@ -9,6 +9,7 @@ import { NoticeController } from '../controllers/NoticeController';
 import { noticeTime, requestTime, ThemeColor } from '../common/settings';
 import { Loading } from '../components/Loading';
 import { Notice } from '../components/Notice';
+import { PersonalController } from '../controllers/PersonalController';
 
 
 @Entry
@@ -17,6 +18,7 @@ struct Index {
   private tabController: TabsController = new TabsController()
   private taskController: TaskController = new TaskController()
   private noticeController: NoticeController = new NoticeController()
+  private personalController: PersonalController = new PersonalController()
   @State showLoading: boolean = false;
   @State currentIndex: number = 0;
   @State showTask: boolean = false;
@@ -317,6 +319,7 @@ struct Index {
             .textAlign(TextAlign.Start)
             .margin({ left: 2, top: 4 })
             .onClick(() => {
+              this.personalController?.onSave();
               this.openEdit = !this.openEdit;
             })
           }
@@ -356,7 +359,8 @@ struct Index {
                 Visual();
               } else if (item.num === 2) {
                 Settings({
-                  openEdit: this.openEdit
+                  openEdit: this.openEdit,
+                  personalController: this.personalController,
                 });
               }
             }.width('100%')
