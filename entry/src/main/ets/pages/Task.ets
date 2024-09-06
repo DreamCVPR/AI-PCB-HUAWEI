@@ -326,7 +326,7 @@ export struct Task {
           .borderRadius(8)
           .shadow(ThemeColor.Shadow)
           .padding({top: 16, bottom: 10})
-          .background(Background(getContext(this), item.taskId.toString(), 0.1))
+          .background(Background(getContext(this), item.taskId.toString()))
       }
       .padding(4)
       .swipeAction({

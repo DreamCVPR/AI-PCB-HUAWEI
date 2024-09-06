@@ -21,7 +21,7 @@ function getFileName(context: common.Context, key: string): string {
 }
 
 @Builder
-export function Background(context: common.Context, key: string = "", opacity: number = 0.5) {
+export function Background(context: common.Context, key: string = "", opacity: number = 0.3) {
   Row() {
     Image($rawfile(`background/${getFileName(context, key)}`))
       .objectFit(ImageFit.Cover)
