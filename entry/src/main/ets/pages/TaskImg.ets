@@ -561,7 +561,7 @@ struct TaskImg {
           .width(25)
           .margin({ left: 2 })
           .position({bottom: -1})
-          .fillColor(ThemeColor.FontColor)
+          .fillColor(ThemeColor.NavConfig['FontColor'])
           .onClick(()=>{
             if (this.chooseImgIndex == undefined) {
               if (this.originImgIndex == -1) {
@@ -577,7 +577,7 @@ struct TaskImg {
             }
           })
         Text(this.originImgIndex > -1 ? (this.originImgIndex+1).toString().padStart(2, '0') : (this.chooseImgIndex == undefined ? this.task['taskName'] : '已选'+this.chooseImgIndex?.length.toString()+'项'))
-          .fontColor(ThemeColor.FontColor)
+          .fontColor(ThemeColor.NavConfig['FontColor'])
           .textShadow(ThemeColor.TextShadow)
           .fontSize(20)
           .fontWeight(400)
@@ -586,7 +586,7 @@ struct TaskImg {
         Blank()
         if (this.chooseImgIndex !== undefined) {
           Text(this.chooseImgIndex.length == this.taskImgList.length ? '取消全选' : '全选')
-            .fontColor(ThemeColor.FontColor)
+            .fontColor(ThemeColor.NavConfig['FontColor'])
             .textShadow(ThemeColor.TextShadow)
             .fontSize(20)
             .fontWeight(400)
@@ -606,7 +606,7 @@ struct TaskImg {
             .height(25)
             .width(25)
             .margin({ right: 10 })
-            .fillColor(ThemeColor.FontColor)
+            .fillColor(ThemeColor.NavConfig['FontColor'])
             .onClick(()=>{
               componentSnapshot.createFromBuilder(()=>{this.DrawOriginImg(this.originImgIndex)}, 320, true, {scale : 1, waitUntilRenderFinished : true})
                 .then((pixelMap: image.PixelMap) => {
@@ -623,7 +623,7 @@ struct TaskImg {
             .height(25)
             .width(25)
             .margin({ right: 10 })
-            .fillColor(ThemeColor.FontColor)
+            .fillColor(ThemeColor.NavConfig['FontColor'])
             .onClick(()=>{
               this.copyText(baseUrl+this.ORIGIN_FILE+this.taskImgList[this.originImgIndex]['imgUrl'])
             })
@@ -644,7 +644,7 @@ struct TaskImg {
     }
     .width('100%')
     .height(AppStorage.get('statusBarHeight') as number - 30)
-    .backgroundColor(ThemeColor.ThemeColor)
+    .backgroundColor(ThemeColor.NavConfig['BackgroundColor'])
     .padding({
       left: 10,
       right: 10,

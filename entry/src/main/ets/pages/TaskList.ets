@@ -31,7 +31,7 @@ struct TaskList {
     Row() {
       Flex() {
         Image($r('app.media.left_arrow'))
-          .fillColor(ThemeColor.FontColor)
+          .fillColor(ThemeColor.NavConfig['FontColor'])
           .height(25)
           .width(25)
           .margin({ left: 2 })
@@ -40,14 +40,14 @@ struct TaskList {
             router.back()
           })
         Text("选择目标任务")
-          .fontColor(ThemeColor.FontColor)
+          .fontColor(ThemeColor.NavConfig['FontColor'])
           .fontSize(20)
           .fontWeight(400)
           .textAlign(TextAlign.Start)
           .margin({ left: 10+27 })
         Blank()
         Image($r('app.media.left_arrow'))
-          .fillColor(ThemeColor.FontColor)
+          .fillColor(ThemeColor.NavConfig['FontColor'])
           .height(25)
           .width(25)
           .margin({ left: 2 })
@@ -59,7 +59,7 @@ struct TaskList {
     }
     .width('100%')
     .height(AppStorage.get('statusBarHeight') as number - 30)
-    .backgroundColor(ThemeColor.ThemeColor)
+    .backgroundColor(ThemeColor.NavConfig['BackgroundColor'])
     .padding({
       left: 10,
       right: 10,

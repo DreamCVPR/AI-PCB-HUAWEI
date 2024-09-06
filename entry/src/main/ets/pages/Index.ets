@@ -140,7 +140,7 @@ struct Index {
       Row() {
         Row() {
           Text(`${this.title}(${this.taskList.length})`)
-            .fontColor(ThemeColor.FontColor)
+            .fontColor(ThemeColor.NavConfig['FontColor'])
             .textShadow(ThemeColor.TextShadow)
             .fontSize(20)
             .textAlign(TextAlign.Start)
@@ -152,7 +152,7 @@ struct Index {
 
         Row() {
           Text(this.openBatchDel ? '完成' : '')
-            .fontColor(ThemeColor.FontColor)
+            .fontColor(ThemeColor.NavConfig['FontColor'])
             .textShadow(ThemeColor.TextShadow)
             .fontSize(20)
             .textAlign(TextAlign.Start)
@@ -226,7 +226,7 @@ struct Index {
             .width(30)
             .height(30)
             .margin({ right: 8 })
-            .fillColor(ThemeColor.FontColor)
+            .fillColor(ThemeColor.NavConfig['FontColor'])
             .bindMenu(
               this.TaskMenu
             )
@@ -238,7 +238,7 @@ struct Index {
       }
       .width('100%')
       .height(AppStorage.get('statusBarHeight') as number - 30)
-      .backgroundColor(ThemeColor.ThemeColor)
+      .backgroundColor(ThemeColor.NavConfig['BackgroundColor'])
       .padding({
         left: 10,
         right: 10,
@@ -250,7 +250,8 @@ struct Index {
       Row() {
         Row() {
           Text(`${this.title}`)
-            .fontColor(ThemeColor.FontColor)
+            .fontColor(ThemeColor.NavConfig['FontColor'])
+            .textShadow(ThemeColor.TextShadow)
             .fontSize(20)
             .textAlign(TextAlign.Start)
             .margin({ left: 2, top: 4 })
@@ -259,20 +260,14 @@ struct Index {
         .justifyContent(FlexAlign.Start)
         .width('30%')
 
-        Row() {
-          Text('')
-            .fontColor(ThemeColor.FontColor)
-            .fontSize(20)
-            .textAlign(TextAlign.Start)
-        }
+        Row()
         .alignItems(VerticalAlign.Center)
         .justifyContent(FlexAlign.Center)
         .width('40%')
         .enabled(this.openBatchDel)
 
         // Blank()
-        Row() {
-        }
+        Row()
         .alignItems(VerticalAlign.Center)
         .justifyContent(FlexAlign.End)
         .width('30%')
@@ -280,7 +275,7 @@ struct Index {
       }
       .width('100%')
       .height(AppStorage.get('statusBarHeight') as number - 30)
-      .backgroundColor(ThemeColor.ThemeColor)
+      .backgroundColor(ThemeColor.NavConfig['BackgroundColor'])
       .padding({
         left: 10,
         right: 10,
@@ -291,8 +286,9 @@ struct Index {
     else {
       Row() {
         Row() {
-          Text('')
-            .fontColor('#000000')
+          Text(`${this.title}`)
+            .fontColor(ThemeColor.NavConfig['FontColor'])
+            .textShadow(ThemeColor.TextShadow)
             .fontSize(20)
             .textAlign(TextAlign.Start)
             .margin({ left: 2, top: 4 })
@@ -301,20 +297,14 @@ struct Index {
         .justifyContent(FlexAlign.Start)
         .width('30%')
 
-        Row() {
-          Text('')
-            .fontColor('#000000')
-            .fontSize(20)
-            .textAlign(TextAlign.Start)
-        }
+        Row()
         .alignItems(VerticalAlign.Center)
         .justifyContent(FlexAlign.Center)
         .width('40%')
         .enabled(this.openBatchDel)
 
         // Blank()
-        Row() {
-        }
+        Row()
         .alignItems(VerticalAlign.Center)
         .justifyContent(FlexAlign.End)
         .width('30%')
@@ -322,7 +312,7 @@ struct Index {
       }
       .width('100%')
       .height(AppStorage.get('statusBarHeight') as number - 30)
-      .backgroundColor('#ffffff')
+      .backgroundColor(ThemeColor.NavConfig['BackgroundColor'])
       .padding({
         left: 10,
         right: 10,

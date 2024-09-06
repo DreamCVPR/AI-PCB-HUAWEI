@@ -145,9 +145,12 @@ export struct AddTask {
 
       Column() {
         Text('创建检测任务')
-          .fontSize(18)
-          .width('78%')
-          .textAlign(TextAlign.Center)
+          .fontSize(20)
+          .margin({ left: 2, top: 4 })
+          // .width('78%')
+          .textAlign(TextAlign.Start)
+          .fontColor(ThemeColor.NavConfig['FontColor'])
+          .textShadow(ThemeColor.TextShadow)
       }
       .margin({ left: 20 })
     }
