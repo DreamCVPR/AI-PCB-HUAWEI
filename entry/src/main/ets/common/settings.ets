@@ -42,7 +42,7 @@ class _ShadowOptions implements  ShadowOptions {
 }
 
 export class ThemeColor {
-  static ThemeColor = "#FA2A2D"
+  static ThemeColor = "#000000"
   static NavConfig: object = Object({
     BackgroundColor: "#ffffff",
     FontColor: '#000000'
