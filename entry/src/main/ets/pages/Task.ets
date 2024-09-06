@@ -37,55 +37,59 @@ export struct Task {
   }
 
 
+  showDelDialog(index: number) {
+    AlertDialog.show(
+      {
+        title: `已选择1项任务，是否删除?`,
+        message: '删除后3天内可在”我的“回收站中找回，请确认是否删除',
+        autoCancel: true,
+        alignment: DialogAlignment.Center,
+        gridCount: 4,
+        offset: { dx: 0, dy: -20 },
+        primaryButton: {
+          value: '取消',
+          fontColor: '#000000',
+          backgroundColor: '#ffffff',
+          action: () => {
+            this.selectedId = -1;
+          }
+        },
+        secondaryButton: {
+          value: '确定',
+          fontColor: '#000000',
+          backgroundColor: '#ffffff',
+          action: () => {
+            delTask({
+              taskIds: this.taskList[index].taskId
+            }, `已删除1项任务`)
+              .then((res: Response) => {
+                if (res.status == 200) {
+                  setTimeout(() => {
+                    this.getTasks();
+                  }, requestTime)
+                }
+              })
+              .catch((err: Response) => {
+              })
+          }
+        },
+        cancel: () => {
+          this.selectedId = -1;
+        }
+      }
+    )
+  }
+
   @Builder itemEnd(index: number) {
     Row() {
       Image($r('app.media.delete4'))
         .width(40)
         .height(40)
         .onClick(() => {
-          AlertDialog.show(
-            {
-              title: '是否删除该任务?',
-              message: '',
-              autoCancel: true,
-              alignment: DialogAlignment.Center,
-              gridCount: 4,
-              offset: { dx: 0, dy: -20 },
-              primaryButton: {
-                value: '取消',
-                fontColor: '#000000',
-                backgroundColor: '#ffffff',
-                action: () => {
-                  this.selectedId = -1;
-                }
-              },
-              secondaryButton: {
-                value: '确定',
-                fontColor: '#000000',
-                backgroundColor: '#ffffff',
-                action: () => {
-                  delTask({
-                    taskIds: this.taskList[index].taskId
-                  })
-                    .then((res: Response) => {
-                      if (res.status == 200) {
-                        setTimeout(() => {
-                          this.getTasks();
-                        }, requestTime)
-                      }
-                    })
-                    .catch((err: Response) => {
-                    })
-                }
-              },
-              cancel: () => {
-                this.selectedId = -1;
-              }
-            }
-          )
+          this.showDelDialog(index);
         })
     }
-    .margin({right: 10})
+    .margin({right: 10, left: 10})
   }
 
   // 任务单项
@@ -113,7 +117,7 @@ export struct Task {
                       }
                       console.log('this.chooseTaskIdx: ' + this.chooseTaskIdx)
                     })
-                    .position({ top: 4, right: 4 })
+                    .position({ top: -12, right: 4 })
                     .borderColor(Color.White)
                     .zIndex(999)
                 }
@@ -256,68 +260,25 @@ export struct Task {
             }
           }
           .onClick(() => {
-            router.pushUrl({
-              "url": "pages/TaskImg",
-              "params": item
-            })
+            if (!this.openBatchDel) {
+              router.pushUrl({
+                "url": "pages/TaskImg",
+                "params": item
+              })
+            } else {
+              if (this.chooseTaskIdx.includes(item.taskId)) {
+                this.chooseTaskIdx = this.chooseTaskIdx.filter((i: number) => i != item.taskId)
+              } else {
+                this.chooseTaskIdx.push(item.taskId)
+              }
+            }
           })
           .gesture(
             // 长按提示是否删除
             LongPressGesture({repeat: false, duration: 1000})
               .onAction((event: GestureEvent | undefined) => {
                 if (event) {
-                  AlertDialog.show(
-                    {
-                      title: '是否删除该任务?',
-                      message: '',
-                      autoCancel: true,
-                      alignment: DialogAlignment.Center,
-                      gridCount: 4,
-                      offset: { dx: 0, dy: -20 },
-                      primaryButton: {
-                        value: '取消',
-                        fontColor: '#000000',
-                        backgroundColor: '#ffffff',
-                        action: () => {
-                          this.selectedId = -1;
-                        }
-                      },
-                      secondaryButton: {
-                        value: '确定',
-                        fontColor: '#000000',
-                        backgroundColor: '#ffffff',
-                        action: () => {
-                          delTask({
-                            taskIds: item.taskId
-                          })
-                            .then((res: Response) => {
-                              if (res.status == 200) {
-                                this.noticeController.success(`已删除1项任务`);
-                                setTimeout(() => {
-                                  this.noticeController.close();
-                                  this.getTasks();
-                                }, requestTime)
-                              }
-                              else {
-                                this.noticeController.success(`删除任务失败`);
-                                setTimeout(() => {
-                                  this.noticeController.close();
-                                }, noticeTime)
-                              }
-                            })
-                            .catch((err: Response) => {
-                              this.noticeController.success(`删除任务失败`);
-                              setTimeout(() => {
-                                this.noticeController.close();
-                              }, noticeTime)
-                            })
-                        }
-                      },
-                      cancel: () => {
-                        this.selectedId = -1;
-                      }
-                    }
-                  )
+                  this.showDelDialog(index)
                 }
               })
           )
