@@ -49,9 +49,10 @@ export class ThemeColor {
   })
   static LoadingColor = "#906F3E35"
   static FontColor = "#202020"
-  static CaretColor = "#F7453B"
+  static CaretColor = "#95000000"
   static BackgroundColor = "#DCDCDC"
-  static ButtonColor = "rgb(78, 110, 242)"
+  static ButtonColor = "#786ef2"
+  static ButtonFontColor = "#ffffff"
   static CheckBoxSelectColor = "#F64639"
   static CheckBoxUnSelectedColor = "#ffffff"
   static DisableColor(color: string) { return "#50"+color.replace("#", "") }

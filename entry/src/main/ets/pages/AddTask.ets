@@ -247,7 +247,7 @@ export struct AddTask {
                 .align(Alignment.Start)
                 .enabled(!this.previewImg)
                 .backgroundColor(ThemeColor.ButtonColor)
-                .fontColor(ThemeColor.FontColor)
+                .fontColor(ThemeColor.ButtonFontColor)
               Blank()
               Text(this.openManage ? '退出管理' : '管理')
                 .onClick(() => {
@@ -356,7 +356,7 @@ export struct AddTask {
             })
             .enabled(!this.previewImg && this.isValidTaskName && this.isValidTaskDesc)
             .backgroundColor(ThemeColor.ButtonColor)
-            .fontColor(ThemeColor.FontColor)
+            .fontColor(ThemeColor.ButtonFontColor)
             .borderRadius(4)
             .height(36)
             .width(120)
