@@ -9,11 +9,12 @@ export function getUserInfo (parameter) {
   })
 }
 
-export function updateUser (parameter ) {
+export function updateUser (parameter, message) {
   return requests({
     url: '/user/updateUser',
     method: 'post',
-    data: parameter
+    data: parameter,
+    message: message
   })
 }
 

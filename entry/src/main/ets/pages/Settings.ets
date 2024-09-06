@@ -1,10 +1,11 @@
 import { router } from '@kit.ArkUI';
 import picker from '@ohos.file.picker';
-import { UserInfo } from '../common/classes';
+import { Response, UserInfo } from '../common/classes';
 import { FileUtils } from  '../utils/FileUtils';
 import { addImg, detect, getTaskImg, removeImg } from '../api/taskImg';
 import {baseUrl} from '../utils/request';
 import { getUserInfo,updateUser,changeImg,resetPwd } from '..//api/user';
+import { PersonalController } from '../controllers/PersonalController';
 
 
 @Entry
@@ -12,6 +13,8 @@ import { getUserInfo,updateUser,changeImg,resetPwd } from '..//api/user';
 export struct Settings {
   COMPRESS_FILE: string = "/file/compress/"
   ORIGIN_FILE: string = "/file/download/"
+  @Link openEdit: boolean
+  public  personalController?: PersonalController
 
 
   @StorageLink("userInfo") userInfo: UserInfo = new UserInfo();
@@ -27,9 +30,23 @@ export struct Settings {
   aboutToAppear(): void {
     if (AppStorage.get('token') === '')
       router.replaceUrl({url: 'pages/Login'})
+    if (this.personalController)
+      this.personalController.attach(this)
     console.log(JSON.stringify(this.userInfo))
   }
 
+  onSave() {
+    updateUser({
+      userName: this.userName,
+      userPhone: this.userPhone
+    }, '更新信息成功')
+      .then((res: Response) => {
+        if (res.status === 200) {
+          this.userInfo.userName = this.userName;
+          this.userInfo.userPhone = this.userPhone
+        }
+      })
+  }
 
   @Builder
   UserInfo (): void {
@@ -58,7 +75,7 @@ export struct Settings {
         .borderRadius(60)
         .objectFit(ImageFit.Cover)
         Row(){
-          Text('用户名:  ')
+          Text(`用户名:  `)
             .fontSize(16)
             .fontWeight(700)
             .fontColor(Color.Black)
@@ -72,24 +89,41 @@ export struct Settings {
               topLeft: 20,
               bottomLeft: 20
             })
-
-          TextInput({placeholder: '请输入用户名...', text: this.userInfo.userName })
-            .onClick(()=>{
-              updateUser({'userName': this.userInfo.userName, 'userPhone': '' })
-            })
-            .fontSize(16)
-            .fontWeight(700)
-            .fontColor(Color.Black)
-            .width(250)
-            .height(40)
-            .padding({
-              right: 20
-            })
-            .backgroundColor(Color.White)
-            .borderRadius({
-              topRight: 20,
-              bottomRight: 20
-            })
+          if (!this.openEdit) {
+            Text(this.userInfo.userName)
+              .fontSize(16)
+              .fontWeight(700)
+              .fontColor(Color.Black)
+              .width(250)
+              .height(40)
+              .padding({
+                right: 20
+              })
+              .backgroundColor(Color.White)
+              .borderRadius({
+                topRight: 20,
+                bottomRight: 20
+              })
+          }
+          else {
+            TextInput({ placeholder: '请输入用户名...', text: this.userInfo.userName })
+              .onChange((value) => {
+                this.userName = value;
+              })
+              .fontSize(16)
+              .fontWeight(700)
+              .fontColor(Color.Black)
+              .width(250)
+              .height(40)
+              .padding({
+                right: 20
+              })
+              .backgroundColor(Color.White)
+              .borderRadius({
+                topRight: 20,
+                bottomRight: 20
+              })
+          }
         }
         .margin({
           top: 20,
@@ -111,24 +145,42 @@ export struct Settings {
             topLeft: 20,
             bottomLeft: 20
           })
-        TextInput({placeholder: '请输入您的手机号...', text: this.userInfo.userPhone })
-          .onClick(()=>{
-            updateUser({'userName': '', 'userPhone': this.userInfo.userPhone })
-          })
-          .type(InputType.PhoneNumber)
-          .fontSize(16)
-          .fontWeight(700)
-          .fontColor(Color.Black)
-          .width(250)
-          .height(40)
-          .padding({
-            right: 20
-          })
-          .backgroundColor(Color.White)
-          .borderRadius({
-            topRight: 20,
-            bottomRight: 20
-          })
+        if (!this.openEdit) {
+          Text(this.userInfo.userPhone )
+            .fontSize(16)
+            .fontWeight(700)
+            .fontColor(Color.Black)
+            .width(250)
+            .height(40)
+            .padding({
+              right: 20
+            })
+            .backgroundColor(Color.White)
+            .borderRadius({
+              topRight: 20,
+              bottomRight: 20
+            })
+        }
+        else {
+          TextInput({ placeholder: '请输入您的手机号...', text: this.userInfo.userPhone })
+            .onChange((value) => {
+              this.userPhone = value
+            })
+            .type(InputType.PhoneNumber)
+            .fontSize(16)
+            .fontWeight(700)
+            .fontColor(Color.Black)
+            .width(250)
+            .height(40)
+            .padding({
+              right: 20
+            })
+            .backgroundColor(Color.White)
+            .borderRadius({
+              topRight: 20,
+              bottomRight: 20
+            })
+          }
         }
           .margin({
             top: 10,
@@ -153,8 +205,8 @@ export struct Settings {
             bottomLeft: 20
           })
         TextInput({placeholder: '请输入您的密码...', text: this.userInfo.userPhone })
-          .onClick(()=>{
-            resetPwd({'loginPwd': this.userInfo.loginPwd })
+          .onChange((value)=>{
+            this.loginPwd = value;
           })
           .type(InputType.Password)
           .fontSize(16)
