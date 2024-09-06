@@ -189,29 +189,17 @@ struct Index {
                   let taskIds = this.chooseTaskIdx.join(',')
                   delTask({
                     taskIds: taskIds
-                  })
+                  }, `已删除${this.chooseTaskIdx.length}项任务`)
                     .then((res: Response) => {
                       if (res.status == 200) {
-                        this.noticeController.success(`已删除${this.chooseTaskIdx.length}项任务`);
                         setTimeout(() => {
-                          this.noticeController.close();
                           this.taskController.getTasks();
                         }, requestTime)
-                      }
-                      else {
-                        this.noticeController.success(`删除失败`);
-                        setTimeout(() => {
-                          this.noticeController.close();
-                        }, noticeTime)
                       }
                       this.chooseTaskIdx = [];
                       this.openBatchDel = false;
                     })
                     .catch((err: Response) => {
-                      this.noticeController.success(`删除失败`);
-                      setTimeout(() => {
-                        this.noticeController.close();
-                      }, noticeTime)
                     })
                 }
               },
