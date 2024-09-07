@@ -4,7 +4,7 @@ import { addImg, detect, getTaskImg, removeImg } from '../api/taskImg'
 import { SwiperDataSource } from '../utils/SwiperDataSource'
 import { Empty } from '../components/Empty';
 import { pasteboard } from '@kit.BasicServicesKit';
-import { promptAction } from '@kit.ArkUI';
+import { curves, promptAction } from '@kit.ArkUI';
 import { FileUtils } from '../utils/FileUtils';
 import { InteractionUtils } from '../utils/InteractionUtils';
 import { Loading } from '../components/Loading';
@@ -43,8 +43,17 @@ struct TaskImg {
     "spurious_copper": true,
     "open_circuit": true
   })
+  @State showImgDefectPrompt: object = new Object({
+    "mouse_bite": 40,
+    "short": 40,
+    "spur": 40,
+    "spurious_copper": 40,
+    "open_circuit": 40
+  });
   @State isImgEdge: boolean = true
-  @State isRefreshing: boolean = false;
+  @State isRefreshing: boolean = false
+  @State showPop: boolean = false
+  @State animate: boolean = true
 
   private originImgSwiperController: SwiperController = new SwiperController()
 
@@ -532,8 +541,104 @@ struct TaskImg {
             .stroke(this.LABEL_COLOR[className])
             .strokeWidth(0.1)
             .visibility(this.showImgDefect && this.showImgDefectClassName[className] ? Visibility.Visible : Visibility.Hidden)
+          Button()
+            .type(ButtonType.Circle)
+            .borderRadius(this.showImgDefectPrompt[className])
+            .opacity(20-this.showImgDefectPrompt[className])
+            .translate({ x: -1*this.showImgDefectPrompt[className]/2, y: -1*this.showImgDefectPrompt[className]/2 })
+            .onSizeChange(()=>{
+              setTimeout(()=>{
+                this.showImgDefectPrompt[className] = 40
+              }, 3000)
+            })
+            .position(this.getImgLabelPos(
+              originPos ? originPos : this.getImgOriginPos(imgIndex),
+              this.taskImgList[imgIndex]["detectionBoxes"][index][1],
+              this.taskImgList[imgIndex]["detectionBoxes"][index][0],
+              scale ? scale : this.getScale(imgIndex), units))
+            .backgroundColor(this.LABEL_COLOR[className])
+            .enabled(false)
+            .borderColor(this.LABEL_COLOR[className])
+            .visibility(this.showImgDefect && this.showImgDefectClassName[className] ? Visibility.Visible : Visibility.Hidden)
         })
       }
+    }
+  }
+
+  @Builder DetectInfo(index: number) {
+   List({ space: 7 })  {
+      ForEach(Object.keys(this.CLASS_CN_NAME), (className: string, i: number)=>{
+        ListItem() {
+          Flex({ justifyContent: FlexAlign.Start }) {
+            Stack() {
+              Row()
+                .width("100%")
+                .height("100%")
+                .backgroundColor(this.LABEL_COLOR[className])
+                .opacity(0.5)
+                .borderWidth(1)
+                .borderRadius(8)
+                .borderColor(this.LABEL_COLOR[className])
+              Text(this.CLASS_CN_NAME[className])
+                .fontSize(13)
+                .fontWeight(400)
+                .lineHeight("100%")
+            }
+            .width(50)
+            .height(25)
+            .borderRadius(50)
+            Flex({ justifyContent: FlexAlign.Center, alignItems: ItemAlign.Center }) {
+              Text(JSON.stringify(this.taskImgList[index]["detectionClasses"].filter((item: string) => item == className).length))
+                .fontSize(13)
+                .fontWeight(400)
+                .textShadow(ThemeColor.TextShadow)
+            }
+            .width(50)
+            .height(25)
+            .margin({left: 2})
+          }
+        }
+        .borderWidth(1)
+        .borderRadius(8)
+        .borderColor(this.LABEL_COLOR[className])
+        .onClick(()=>{
+          animateTo({ duration: 3000, curve: curves.springMotion() }, () => {
+            this.showImgDefectPrompt[className] = 0
+          })
+        })
+      })
+    }.width(100).height(175).padding(6).borderRadius(5)
+   .listDirection(Axis.Vertical)
+   .divider({strokeWidth: 1, color: ThemeColor.BackgroundColor})
+   .scrollBar(BarState.Off)
+  }
+
+  @Builder Tips(index: number) {
+    if (this.taskImgList[index]["isDetect"] == 1) {
+      Image($r("app.media.tips"))
+        .width(36)
+        .height(36)
+        .borderRadius("50%")
+        .rotate({ angle: -10 })
+        .objectFit(ImageFit.None)
+        .position({"right": 19, "bottom": 52})
+        .backgroundColor("#00000000")
+        .zIndex(10)
+        .bindPopup(this.showPop, {
+          builder: this.DetectInfo(index),
+          placement:Placement.LeftBottom,
+          radius: 8,
+          offset: {y: -30},
+          onStateChange: (e) => {
+            console.info(JSON.stringify(e.isVisible))
+            if (!e.isVisible) {
+              this.showPop = false
+            }
+          }
+        })
+        .onClick(() => {
+          this.showPop = !this.showPop
+        })
     }
   }
 
@@ -725,17 +830,21 @@ struct TaskImg {
         .fontColor("#C9C9CB")
         .zIndex(3)
         .padding(5)
-      // 底部标签类别
-      GridRow({columns: 5}) {
-        ForEach(Object.keys(this.CLASS_CN_NAME), (key: string, index: number)=>{
-          GridCol() {
-            this.LabelClass(key)
-          }
-        })
+      Row() {
+        // 底部标签类别
+        GridRow({columns: 5}) {
+          ForEach(Object.keys(this.CLASS_CN_NAME), (key: string, index: number)=>{
+            GridCol() {
+              this.LabelClass(key)
+            }
+          })
+        }
+        .width("100%")
+        .backgroundColor('rgba(0, 0, 0, 0)')
+        // 缺陷信息提示
+        this.Tips(this.originImgIndex)
       }
-      .width("100%")
-      .backgroundColor('rgba(0, 0, 0, 0)')
-      .position({bottom: 22})
+      .position({bottom: 24})
       .zIndex(3)
       .visibility(this.showImgDefect && this.taskImgList[this.originImgIndex]["isDetect"] == 1 ? Visibility.Visible : Visibility.Hidden)
       // 原图

@@ -73,7 +73,7 @@ export class ThemeColor {
   static ButtonFontColor = "#ffffff"
   static CheckBoxSelectColor = "#003edc"
   static CheckBoxUnSelectedColor = "#ffffff"
-  static TextShadow = new _ShadowOptions(0.2, undefined, "rgba(0, 0, 0, 0.1)", undefined, 2, undefined)
+  static TextShadow = new _ShadowOptions(0.2, undefined, "rgba(0, 0, 0, 0.1)", 2, 2, undefined)
   static Shadow = new _ShadowOptions(25, undefined, "rgba(0, 0, 0, 0.2)", undefined, undefined, undefined)
   static DisableButtonRadialGradient(color: string, condition: boolean) {
     return ({
