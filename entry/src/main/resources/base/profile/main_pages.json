@@ -6,6 +6,7 @@
     "pages/Visual",
     "pages/TaskImg",
     "pages/AddTask",
-    "pages/TaskList"
+    "pages/TaskList",
+    "pages/ChangePwd"
   ]
 }
