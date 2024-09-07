@@ -4,7 +4,7 @@ import { Response, UserInfo } from '../common/classes';
 import { FileUtils } from  '../utils/FileUtils';
 import { addImg, detect, getTaskImg, removeImg } from '../api/taskImg';
 import {baseUrl} from '../utils/request';
-import { getUserInfo,updateUser,changeImg,resetPwd } from '..//api/user';
+import { getUserInfo,updateUser,changeImg} from '..//api/user';
 import { PersonalController } from '../controllers/PersonalController';
 import { JSON } from '@kit.ArkTS';
 
@@ -19,13 +19,17 @@ export struct Settings {
 
 
   @StorageLink("userInfo") userInfo: UserInfo = new UserInfo();
-  @State introduce: string = '';
-  @State userName: string = '';
-  @State userPhone: string = '';
-  @State loginPwd: string = '';
+  @State introduce?: string = '';
+  @State userName?: string = '';
+  @State userPhone?: string = '';
+  @State loginPwd?: string = '';
   @State img: string = '..';
   @State ImgList: Array<object> = [];
   @State originImgRealSize: Array<object> = [];
+  @State file?: string = "";
+
+  @State isFileChange: boolean = false
+  @State isInfoChange: boolean = false
 
 
   aboutToAppear(): void {
@@ -33,20 +37,45 @@ export struct Settings {
       router.replaceUrl({url: 'pages/Login'})
     if (this.personalController)
       this.personalController.attach(this)
+    this.introduce = this.userInfo.userInfo
+    this.userName = this.userInfo.userName
+    this.userPhone = this.userInfo.userPhone
+    this.loginPwd = this.userInfo.loginPwd
+    this.file = this.userInfo.userImg
     console.log(JSON.stringify(this.userInfo))
   }
 
   onSave() {
-    updateUser({
-      userName: this.userName,
-      userPhone: this.userPhone
-    }, '更新信息成功')
-      .then((res: Response) => {
-        if (res.status === 200) {
-          this.userInfo.userName = this.userName;
-          this.userInfo.userPhone = this.userPhone
-        }
-      })
+    if (this.isFileChange) {
+      changeImg({"file": this.file})
+        .then((res: object) => {
+          this.userInfo.userImg = res['result']
+          this.isFileChange = false
+          console.log("增加taskImg成功:"+  JSON.stringify(res));
+        })
+        .catch(()=>{
+          this.isFileChange = false
+        })
+    }
+    if (this.isInfoChange) {
+      updateUser({
+        userName: this.userName,
+        userPhone: this.userPhone,
+        userInfo: this.introduce
+      }, '更新信息成功')
+        .then((res: Response) => {
+          if (res.status === 200) {
+            this.userInfo.userName = this.userName;
+            this.userInfo.userPhone = this.userPhone
+            this.userInfo.userInfo = this.introduce
+            this.isInfoChange = false
+          }
+        })
+        .catch(()=>{
+          this.isInfoChange = false
+        })
+    }
+
 
   }
 
@@ -54,51 +83,35 @@ export struct Settings {
   UserInfo (): void {
     Column() {
       Stack(){
-        Image(this.userInfo?.userImg ? baseUrl+this.COMPRESS_FILE+this.userInfo?.userImg : $r('app.media.logo'))
+        Image(this.file ? (this.isFileChange ? `data:image/jpeg;base64,`+this.file : baseUrl+this.COMPRESS_FILE+this.file): $r('app.media.logo'))
           .width("100%")
           .height(230)
           // .backgroundColor('#73000000')
         // .backgroundImage(baseUrl+this.COMPRESS_FILE+this.userInfo?.userImg)
           .objectFit(ImageFit.Cover)
           .opacity(0.2)
-        if (this.openEdit){
-          Image(this.userInfo?.userImg ? baseUrl+this.COMPRESS_FILE+this.userInfo?.userImg : $r('app.media.logo'))
-            .onClick(() => {
-              FileUtils.chooseImage(1).then(imgList =>{
+        Image(this.file ? (this.isFileChange ? `data:image/jpeg;base64,`+this.file : baseUrl+this.COMPRESS_FILE+this.file): $r('app.media.logo'))
+          .onClick(() => {
+            if (this.openEdit) {
+              FileUtils.chooseImage(1, 20).then(imgList =>{
                 if (imgList[0].length > 0) {
-                  changeImg({"file": imgList[0][0]})
-                    .then((res: object) => {
-                      this.userInfo.userImg = res['result']
-
-                      console.log("增加taskImg成功:"+  JSON.stringify(res));
-                    })
+                  this.file = imgList[0][0]
+                  this.isFileChange = true
                 }
               })
               console.log('上传图像');
-            })
-            .width(120)
-            .height(120)
-              // .backgroundColor('rgb(220,220,220)')
-            .border({
-              width: 1,
-              color: Color.White,
-              style: BorderStyle.Solid
-            })
-            .borderRadius(60)
-            .objectFit(ImageFit.Cover)
-        }else{
-          Image(this.userInfo?.userImg ? baseUrl+this.COMPRESS_FILE+this.userInfo?.userImg : $r('app.media.logo'))
-            .width(120)
-            .height(120)
-              // .backgroundColor('rgb(220,220,220)')
-            .border({
-              width: 1,
-              color: Color.White,
-              style: BorderStyle.Solid
-            })
-            .borderRadius(60)
-            .objectFit(ImageFit.Cover)
-        }
+            }
+          })
+          .width(120)
+          .height(120)
+            // .backgroundColor('rgb(220,220,220)')
+          .border({
+            width: 1,
+            color: Color.White,
+            style: BorderStyle.Solid
+          })
+          .borderRadius(60)
+          .objectFit(ImageFit.Cover)
 
       }.margin({
         bottom: 5
@@ -140,6 +153,7 @@ export struct Settings {
             TextInput({ placeholder: '请输入用户名...', text: this.userInfo.userName })
               .onChange((value) => {
                 this.userName = value;
+                this.isInfoChange = true
               })
               .fontSize(16)
               .fontWeight(700)
@@ -176,7 +190,7 @@ export struct Settings {
             bottomLeft: 20
           })
         if (!this.openEdit) {
-          Text(this.userInfo.userPhone )
+          Text(this.userPhone )
             .fontSize(16)
             .fontWeight(700)
             .fontColor(Color.Black)
@@ -193,9 +207,10 @@ export struct Settings {
             })
         }
         else {
-          TextInput({ placeholder: '请输入您的手机号...', text: this.userInfo.userPhone })
+          TextInput({ placeholder: '请输入您的手机号...', text: this.userPhone })
             .onChange((value) => {
               this.userPhone = value
+              this.isInfoChange = true
             })
             .type(InputType.PhoneNumber)
             .fontSize(16)
@@ -263,9 +278,13 @@ export struct Settings {
       //   placeholder: '个人简介:  ',
       //   text: $$this.introduce
       // })
-      // if (this.openEdit){
+      if (this.openEdit){
         TextArea({ placeholder: '个人简介...', text: this.introduce })
-          .textAlign(TextAlign.Start)
+          .onChange((value)=>{
+            this.introduce = value
+            this.isInfoChange = true
+          })
+          .align(Alignment.TopStart)
           .textOverflow(TextOverflow.Ellipsis)
           .maxLines(3)
           .onSubmit(()  =>  {})
@@ -282,26 +301,27 @@ export struct Settings {
           })
           .backgroundColor(Color.White)
           .borderRadius(20)
-      // }else{
-      //   Text(this.introduce)
-      //     // .textAlign(TextAlign.Start)
-      //     // .textOverflow(TextOverflow.Ellipsis)
-      //     .maxLines(3)
-      //     // .onSubmit(()  =>  {})
-      //     .margin({
-      //       bottom: 10
-      //     })
-      //     .fontColor(Color.Black)
-      //     .width(370).height(80)
-      //     .padding({
-      //       top: 15,
-      //       bottom: 5,
-      //       left: 10,
-      //       right: 10
-      //     })
-      //     .backgroundColor(Color.White)
-      //     .borderRadius(20)
-      // }
+      }else{
+        Text(this.introduce)
+          // .textAlign(TextAlign.Start)
+          // .textOverflow(TextOverflow.Ellipsis)
+          .maxLines(3)
+          // .onSubmit(()  =>  {})
+          .margin({
+            bottom: 10
+          })
+          .fontColor(Color.Black)
+          .width(370).height(80)
+          .padding({
+            top: 15,
+            bottom: 5,
+            left: 10,
+            right: 10
+          })
+          .backgroundColor(Color.White)
+          .borderRadius(20)
+          .align(Alignment.TopStart)
+      }
 
 
     }

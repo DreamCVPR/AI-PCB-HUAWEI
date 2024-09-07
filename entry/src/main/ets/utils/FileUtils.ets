@@ -65,7 +65,7 @@ export class FileUtils {
    * 选择相册中的图片
    * @returns [imgBase64List, imgNameList]
    */
-  static async chooseImage(maxSelectNumber: number = 10): Promise<string[][]> {
+  static async chooseImage(maxSelectNumber: number = 10, quality: number = 100): Promise<string[][]> {
     try {
       let PhotoSelectOptions = new picker.PhotoSelectOptions();
       PhotoSelectOptions.MIMEType = picker.PhotoViewMIMETypes.IMAGE_TYPE;
@@ -73,7 +73,7 @@ export class FileUtils {
       let photoPicker = new picker.PhotoViewPicker();
       return await photoPicker.select(PhotoSelectOptions).then(async (PhotoSelectResult) => {
         console.info('PhotoViewPicker.select successfully, PhotoSelectResult uri: ' + JSON.stringify(PhotoSelectResult));
-        return [await FileUtils.transBase64(PhotoSelectResult['photoUris']), PhotoSelectResult['photoUris'].map(v=>v.substring(v.lastIndexOf("\/")+1))]
+        return [await FileUtils.transBase64(PhotoSelectResult['photoUris'], quality), PhotoSelectResult['photoUris'].map(v=>v.substring(v.lastIndexOf("\/")+1))]
       }).catch((err: string) => {
         console.error('PhotoViewPicker.select failed with err: ' + err);
         return [[],[]]
@@ -163,7 +163,7 @@ export class FileUtils {
     await fileIo.close(file.fd);
   }
 
-  private static async transBase64(imageList: Array<string>) {
+  private static async transBase64(imageList: Array<string>, quality: number = 100) {
     let tempBase64: Array<string> = [];
     for (let i = 0; i < imageList.length; i++) {
       let uri = imageList[i];
@@ -173,7 +173,7 @@ export class FileUtils {
         console.info("uploadImage:file fd: " + fileDes.fd);
         const imageSource = image.createImageSource(fileDes.fd);
         const imagePackerApi: image.ImagePacker = image.createImagePacker();
-        let packOpts: image.PackingOption = { format: 'image/jpeg', quality: 98 };
+        let packOpts: image.PackingOption = { format: 'image/jpeg', quality: quality };
 
         let readBuffer = await imagePackerApi.packing(imageSource, packOpts);
 

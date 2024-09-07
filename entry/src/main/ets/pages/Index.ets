@@ -363,8 +363,8 @@ struct Index {
                   personalController: this.personalController,
                 });
               }
-            }.width('100%').height('100%')
-          }.tabBar(this.TabBuilder(item.num)).flexGrow(1)
+            }.width('100%')
+          }.tabBar(this.TabBuilder(item.num))
         })
 
       }
@@ -410,6 +410,7 @@ struct Index {
         this.Body()
 
       }.width('100%').height('100%')
+
     }
   }
 }

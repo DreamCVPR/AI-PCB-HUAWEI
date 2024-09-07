@@ -76,4 +76,5 @@ export class UserInfo {
   loginName?: string
   loginPwd?: string
   token?: string
+  userInfo?: string
 }
