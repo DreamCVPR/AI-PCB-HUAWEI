@@ -5,9 +5,9 @@ window.onload = async function () {
         document.querySelector("#box1 .boxValue").textContent = res.userTaskCount;
         document.querySelector("#box2 .boxValue").textContent = res.userImgCount;
         document.querySelector("#box3 .boxValue").textContent = res.sumDefect;
-        document.querySelector("#box4 .boxValue").textContent = ((res.maxDefect/res.sumDefect)*100).toFixed(1) + '%';
-        drawPie(res)
+        document.querySelector("#box4 .boxValue").textContent = res.sumDefect?((res.maxDefect/res.sumDefect)*100).toFixed(1) + '%': 0;
         params.print(res.radarList[0])
+        drawPie(res)
         drawRadar(res.radarList)
     });
 
@@ -27,6 +27,17 @@ function drawPie(params) {
         { value: params.spuriousCopperDefect, name: '伪铜' }
     ];
     sum = params.sumDefect;
+
+    for (var i =0; i<pieData.length; i++){
+        if (pieData[i].value == params.maxDefect) {
+            var maxName = pieData[i].name + '(Max)'
+        }
+        if(sum==0){
+            maxName = '无'
+        }
+    }
+    document.querySelector("#box4 .boxName").textContent = maxName;
+
 
 
     function getOptionPie(data) {
@@ -73,7 +84,7 @@ function drawPie(params) {
                             fontSize: 40,
                             fontWeight: 'bold',
                             formatter: function (pieData) {
-                                return  pieData.name + '\n' + (pieData.value/sum*100).toFixed(1) +'%'
+                                return  sum?(pieData.name + '\n' + (pieData.value/sum*100).toFixed(1) +'%'):(pieData.name + '\n0')
                             }
                         }
                     },
