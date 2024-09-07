@@ -12,21 +12,21 @@
         <div class="chartPieInformation">
             <div class="chartPieInformationRow">
                 <div class="chartPieInformationBox" id="box1">
-                    <div class="boxValue">1111</div>
+                    <div class="boxValue"></div>
                     <div class="boxName">检测次数</div>
                 </div>
                 <div class="chartPieInformationBox" id="box2">
-                    <div class="boxValue">2222</div>
+                    <div class="boxValue"></div>
                     <div class="boxName">PCB总量</div>
                 </div>
             </div>
             <div class="chartPieInformationRow">
                 <div class="chartPieInformationBox" id="box3">
-                    <div class="boxValue">3333</div>
+                    <div class="boxValue"></div>
                     <div class="boxName">瑕疵总数</div>
                 </div>
                 <div class="chartPieInformationBox" id="box4">
-                    <div class="boxValue">44%</div>
+                    <div class="boxValue"></div>
                     <div class="boxName" style="color:red">鼠咬(MAX)</div>
                 </div>
             </div>

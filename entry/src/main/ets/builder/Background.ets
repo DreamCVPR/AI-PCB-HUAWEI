@@ -27,8 +27,8 @@ export function Background(context: common.Context, key: string = "", opacity: n
       .objectFit(ImageFit.Cover)
       .width("100%")
       .height("100%")
+      .opacity(opacity)
   }
-  .opacity(opacity)
   .width("100%")
   .height("100%")
 }

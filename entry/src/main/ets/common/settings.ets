@@ -41,21 +41,45 @@ class _ShadowOptions implements  ShadowOptions {
   }
 }
 
+@Builder
+export function DisableBackground(color: ResourceColor, opacity: number = 0.3, condition: boolean = true) {
+  Row() {}.backgroundColor(color).opacity(opacity).width("100%").height("100%")
+}
+
+interface RadialGradient {
+  center: [
+    Length,
+    Length
+  ];
+  radius: number | string;
+  colors: Array<[
+    ResourceColor,
+    number
+  ]>;
+  repeating?: boolean;
+}
+
 export class ThemeColor {
   static ThemeColor = "#000000"
   static NavConfig: object = Object({
     BackgroundColor: "#ffffff",
     FontColor: '#000000'
   })
-  static LoadingColor = "#906F3E35"
+  static LoadingColor = "#99017BBE"
   static FontColor = "#202020"
   static CaretColor = "#95000000"
   static BackgroundColor = "#DCDCDC"
-  static ButtonColor = "#786ef2"
+  static ButtonColor = "rgb(49,94,251)"
   static ButtonFontColor = "#ffffff"
-  static CheckBoxSelectColor = "#F64639"
+  static CheckBoxSelectColor = "#003edc"
   static CheckBoxUnSelectedColor = "#ffffff"
-  static DisableColor(color: string) { return "#50"+color.replace("#", "") }
   static TextShadow = new _ShadowOptions(0.2, undefined, "rgba(0, 0, 0, 0.1)", undefined, 2, undefined)
   static Shadow = new _ShadowOptions(25, undefined, "rgba(0, 0, 0, 0.2)", undefined, undefined, undefined)
+  static DisableButtonRadialGradient(color: string, condition: boolean) {
+    return ({
+      center: ["50%", "50%"],
+      radius: "200%",
+      colors: [[color, 0.0], [condition ? Color.White : color, 1.0]]
+    } as RadialGradient)
+  }
 }

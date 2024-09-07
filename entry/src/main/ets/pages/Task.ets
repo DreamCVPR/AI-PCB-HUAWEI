@@ -4,7 +4,7 @@ import { delTask, getTasks, startDet } from '../api/service'
 import { TaskController } from '../controllers/TaskController';
 import { Empty } from '../components/Empty';
 import { Loading } from '../components/Loading';
-import { cateFlowMap, noticeTime, requestTime, colorFlowMap, ThemeColor } from '../common/settings';
+import { cateFlowMap, noticeTime, requestTime, colorFlowMap, ThemeColor, DisableBackground } from '../common/settings';
 import { Notice } from '../components/Notice';
 import { NoticeController } from '../controllers/NoticeController';
 import { Background } from '../builder/Background';
@@ -207,7 +207,7 @@ export struct Task {
                     .backgroundColor('rgb(021, 151, 165)')
                   } else if (item.taskState == 0) {
                     Button(
-                      `已检测 ${item.countDetectImg}/${item.countAllImg}`,
+                      item.countDetectImg < item.countAllImg ? `检测 ${item.countDetectImg}/${item.countAllImg}` : `已检测 ${item.countDetectImg}/${item.countAllImg}`,
                       { type: ButtonType.Normal, stateEffect: item.countDetectImg < item.countAllImg ? true : false }
                     )
                       .onClick(() => {
@@ -247,7 +247,9 @@ export struct Task {
                       .borderRadius(4)
                       .height(36)
                       .width(110)
-                      .backgroundColor('rgb(7, 193, 96)')
+                      .backgroundColor('rgba(0, 0, 0, 0)')
+                      .radialGradient(ThemeColor.DisableButtonRadialGradient("rgb(7, 193, 96)", item.countDetectImg >= item.countAllImg))
+                      // .background(DisableBackground('rgb(7, 193, 96)', 0.5, item.countDetectImg >= item.countAllImg))
                       // .enabled(item.countDetectImg < item.countAllImg)
                       .fontSize(16)
                       .shadow(ThemeColor.Shadow)
@@ -336,9 +338,9 @@ export struct Task {
   }
 
   // 获取任务列表
-  getTasks (params: object | null = null) {
-    this.showLoading = true;
-    getTasks(params)
+  getTasks (params: object | null = null, showLoading: boolean = true) {
+    this.showLoading = showLoading;
+    return getTasks(params)
       .then((res: Response) => {
         console.log("获取任务成功:"+  JSON.stringify(res));
         let tempList: Array<TaskElem> = [];
@@ -378,8 +380,10 @@ export struct Task {
       Loading({ show: this.showLoading })
       Notice({noticeController: this.noticeController})
       if (this.taskList.length === 0) {
-        Empty({ extraContent: '点击右上角创建检测任务' })
-          .backgroundColor(ThemeColor.BackgroundColor)
+        if (!this.showLoading) {
+          Empty({ extraContent: '点击右上角创建检测任务' })
+            .backgroundColor(ThemeColor.BackgroundColor)
+        }
       } else {
         Refresh({ refreshing: $$this.isRefreshing }) {
           List({ space: 18, initialIndex: 0 }) {
@@ -405,10 +409,7 @@ export struct Task {
         .width('100%')
         .backgroundColor(ThemeColor.BackgroundColor)
         .onRefreshing(() => {
-          this.getTasks();
-          setTimeout(() => {
-            this.isRefreshing = false;
-          }, requestTime)
+          this.getTasks(null, false).then(()=>this.isRefreshing = false);
           console.log('onRefreshing test')
         })
         .refreshOffset(120)
