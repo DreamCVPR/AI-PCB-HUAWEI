@@ -548,6 +548,7 @@ struct TaskImg {
             .translate({ x: (this.taskImgList[imgIndex]["detectionBoxes"][index][3]-this.taskImgList[imgIndex]["detectionBoxes"][index][1])*(scale ? scale : this.getScale(imgIndex))/2-this.showImgDefectPrompt[className],
               y: (this.taskImgList[imgIndex]["detectionBoxes"][index][2]-this.taskImgList[imgIndex]["detectionBoxes"][index][0])*(scale ? scale : this.getScale(imgIndex))/2-this.showImgDefectPrompt[className] })
             .onSizeChange(()=>{
+              if (this.showImgDefectPrompt[className] == 40) return
               setTimeout(()=>{
                 this.showImgDefectPrompt[className] = 40
               }, 2000)
