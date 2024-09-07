@@ -364,7 +364,7 @@ struct Index {
                 });
               }
             }.width('100%')
-          }.tabBar(this.TabBuilder(item.num)).flexGrow(1)
+          }.tabBar(this.TabBuilder(item.num))
         })
 
       }
@@ -410,6 +410,7 @@ struct Index {
         this.Body()
 
       }.width('100%').height('100%')
+
     }
   }
 }

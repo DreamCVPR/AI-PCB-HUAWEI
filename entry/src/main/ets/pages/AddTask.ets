@@ -195,6 +195,7 @@ export struct AddTask {
                   .width('100%')
                   .margin({ left: 30 })
               }
+              .margin({right: 30})
             }
             .height(60)
 
@@ -231,6 +232,7 @@ export struct AddTask {
                   .margin({ left: 30 })
               }
             }
+            .margin({right: 30})
 
             Divider().strokeWidth(1).margin({ left: 50 })
           }
