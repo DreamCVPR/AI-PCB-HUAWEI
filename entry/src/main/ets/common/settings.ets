@@ -69,7 +69,7 @@ export class ThemeColor {
   static FontColor = "#202020"
   static CaretColor = "#95000000"
   static BackgroundColor = "#DCDCDC"
-  static ButtonColor = "#786ef2"
+  static ButtonColor = "rgb(49,94,251)"
   static ButtonFontColor = "#ffffff"
   static CheckBoxSelectColor = "#003edc"
   static CheckBoxUnSelectedColor = "#ffffff"
