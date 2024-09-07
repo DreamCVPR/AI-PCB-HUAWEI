@@ -433,7 +433,7 @@ struct Index {
     if (params) {
       const refresh: boolean = params.refresh
       if (refresh)
-        this.taskController.getTasks();
+        this.taskController.getTasks(new Object({taskName: this.searchText.replace(" ", "")}));
     }
   }
 
