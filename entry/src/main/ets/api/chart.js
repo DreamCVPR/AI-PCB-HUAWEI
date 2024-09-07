@@ -1,6 +1,6 @@
 export function getChartData (parameter) {
     return requests({
-        url: '',
+        url: 'chartData',
         method: 'post',
         data: parameter
     })
