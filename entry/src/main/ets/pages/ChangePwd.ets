@@ -243,7 +243,7 @@ export struct ChangePwd {
           // })
           .width(100)
       }
-      .position({ y:330})
+      .position({ y:720})
       .width('100%')
       .height(60)
       .padding({

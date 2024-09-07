@@ -32,3 +32,4 @@ export function resetPwd (parameter) {
     data: parameter,
   })
 }
+

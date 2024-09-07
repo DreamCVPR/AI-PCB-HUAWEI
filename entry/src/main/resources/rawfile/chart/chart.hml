@@ -27,7 +27,7 @@
                 </div>
                 <div class="chartPieInformationBox" id="box4">
                     <div class="boxValue"></div>
-                    <div class="boxName" style="color:red">鼠咬(MAX)</div>
+                    <div class="boxName" style="color:red"></div>
                 </div>
             </div>
         </div>
