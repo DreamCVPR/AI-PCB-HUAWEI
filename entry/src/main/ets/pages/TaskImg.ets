@@ -544,12 +544,13 @@ struct TaskImg {
           Button()
             .type(ButtonType.Circle)
             .borderRadius(this.showImgDefectPrompt[className])
-            .opacity(20-this.showImgDefectPrompt[className])
-            .translate({ x: -1*this.showImgDefectPrompt[className]/2, y: -1*this.showImgDefectPrompt[className]/2 })
+            .opacity(40-this.showImgDefectPrompt[className])
+            .translate({ x: (this.taskImgList[imgIndex]["detectionBoxes"][index][3]-this.taskImgList[imgIndex]["detectionBoxes"][index][1])*(scale ? scale : this.getScale(imgIndex))/2-this.showImgDefectPrompt[className],
+              y: (this.taskImgList[imgIndex]["detectionBoxes"][index][2]-this.taskImgList[imgIndex]["detectionBoxes"][index][0])*(scale ? scale : this.getScale(imgIndex))/2-this.showImgDefectPrompt[className] })
             .onSizeChange(()=>{
               setTimeout(()=>{
                 this.showImgDefectPrompt[className] = 40
-              }, 3000)
+              }, 2000)
             })
             .position(this.getImgLabelPos(
               originPos ? originPos : this.getImgOriginPos(imgIndex),
@@ -602,7 +603,7 @@ struct TaskImg {
         .borderRadius(8)
         .borderColor(this.LABEL_COLOR[className])
         .onClick(()=>{
-          animateTo({ duration: 3000, curve: curves.springMotion() }, () => {
+          animateTo({ tempo: 0.5, curve: curves.springMotion() }, () => {
             this.showImgDefectPrompt[className] = 0
           })
         })
