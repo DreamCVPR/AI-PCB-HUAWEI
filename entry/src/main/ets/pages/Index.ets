@@ -169,7 +169,7 @@ struct Index {
             AlertDialog.show(
               {
                 title: `已选择${this.chooseTaskIdx.length}项任务，是否删除?`,
-                message: '删除后3天内可在”我的“回收站中找回，请确认是否删除',
+                message: '删除后将无法找回，请确认是否删除',
                 autoCancel: true,
                 alignment: DialogAlignment.Center,
                 gridCount: 4,

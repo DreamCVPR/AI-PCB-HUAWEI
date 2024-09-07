@@ -133,14 +133,22 @@ struct TaskImg {
     }
   }
 
-  move2OtherTask() {}
+  move2OtherTask() {
+    router.pushUrl({
+      "url": "pages/TaskList",
+      "params": new Object({
+        "taskId": this.taskId,
+        "imgIds": this.taskImgList.filter((v, i)=>this.chooseImgIndex?.includes(i)).map((v: object): string=>v["imgId"]).join(",")
+      })
+    })
+  }
 
   remove() {
     if (this.chooseImgIndex !== undefined) {
       this.showLoading = true
       InteractionUtils.confirm(
         `是否删除${this.chooseImgIndex.length}张图片？`,
-        '删除后3天内可在“我的”回收站中找回，请确认是否删除',
+        '删除后将无法找回，请确认是否删除',
         ()=>{
           removeImg({'imgIds': this.taskImgList.filter((v: object, index: number)=>this.chooseImgIndex?.includes(index)).map((value: object): number=>value["imgId"]).join(',')})
             .then((res: object) => {
@@ -747,13 +755,7 @@ struct TaskImg {
           GridCol() {}
           GridCol() { this.Tab($r('app.media.move'), '移动') }
           .onClick(()=>{
-            router.pushUrl({
-              "url": "pages/TaskList",
-              "params": new Object({
-                "taskId": this.taskId,
-                "imgIds": this.taskImgList.filter((v, i)=>this.chooseImgIndex?.includes(i)).map((v: object): string=>v["imgId"]).join(",")
-              })
-            })
+            this.move2OtherTask()
           })
           GridCol() { this.Tab($r('app.media.remove'), '删除') }
           .onClick(()=>{
