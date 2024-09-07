@@ -4,7 +4,7 @@ import { delTask, getTasks, startDet } from '../api/service'
 import { TaskController } from '../controllers/TaskController';
 import { Empty } from '../components/Empty';
 import { Loading } from '../components/Loading';
-import { cateFlowMap, noticeTime, requestTime, colorFlowMap, ThemeColor, DisableBackground } from '../common/settings';
+import { cateFlowMap, requestTime, colorFlowMap, ThemeColor } from '../common/settings';
 import { Notice } from '../components/Notice';
 import { NoticeController } from '../controllers/NoticeController';
 import { Background } from '../builder/Background';
@@ -20,6 +20,7 @@ export struct Task {
   @State message: string = '任务列表';
   @State isRefreshing: boolean = false;
   @State selectedId: number = -1;
+  @State searchText: string = "";
 
   @StorageLink("token") token: string = '';
 
@@ -299,6 +300,10 @@ export struct Task {
       })
   }
 
+  setParams(params: object) {
+    this.searchText = params["searchText"]
+  }
+
   // 检测某一任务
   startDet (selectedId: number) {
     startDet({
@@ -409,7 +414,7 @@ export struct Task {
         .width('100%')
         .backgroundColor(ThemeColor.BackgroundColor)
         .onRefreshing(() => {
-          this.getTasks(null, false).then(()=>this.isRefreshing = false);
+          this.getTasks(new Object({taskName: this.searchText.replace(" ", "")}), false).then(()=>this.isRefreshing = false);
           console.log('onRefreshing test')
         })
         .refreshOffset(120)

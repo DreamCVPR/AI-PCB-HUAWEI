@@ -177,7 +177,7 @@ export struct AddTask {
               .height('100%')
 
               Column() {
-                TextInput({ placeholder: '请输入任务名', text: this.taskName })
+                TextInput({ placeholder: '请输入任务名称', text: this.taskName })
                   .height(40).width('100%')
                   .caretColor(ThemeColor.CaretColor)
                   .onChange((value: string) => {

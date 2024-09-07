@@ -249,6 +249,28 @@ struct TaskImg {
     Row() {}.height("100%").width("100%").backgroundColor(Color.Gray).opacity(opacity).zIndex(zIndex)
   }
 
+  @Builder Tag(num: number) {
+    Stack() {
+      Image($r('app.media.tag'))
+        .width("100%")
+        .height("100%")
+        .objectFit(ImageFit.Fill)
+      Flex({justifyContent: FlexAlign.Center, alignItems: ItemAlign.Center}) {
+        Text(num > 99 ? "99" : num.toString())
+          .fontSize(14)
+          .fontWeight(500)
+          .fontColor(Color.White)
+          .align(Alignment.Top)
+          .margin({top: "-15%"})
+          .textShadow(ThemeColor.TextShadow)
+          .zIndex(2)
+      }.width("100%").height("100%")
+    }
+    .width(46)
+    .height(46)
+    .position({top: -4, left: -9})
+  }
+
   @Builder ImgCard(img: object, index: number) {
     Column() {
       Stack() {
@@ -267,6 +289,9 @@ struct TaskImg {
                 })
               }
             })
+          if (img["detectionClasses"]) {
+            this.Tag(img["detectionClasses"].length)
+          }
           Flex({ alignItems: ItemAlign.Start }) {
           }
           .width("100%")

@@ -1,4 +1,4 @@
-import { LoadingDialog, router } from '@kit.ArkUI';
+import { curves, router } from '@kit.ArkUI';
 import { Settings } from './Settings'
 import { Visual } from '../pages/Visual'
 import { Task } from './Task'
@@ -51,6 +51,9 @@ struct Index {
       page: 'pages/Settings',
     }
   ]
+  @State searchText: string = "";
+
+  @State animate: boolean = true;
 
   @StorageLink("token") token: string = ''
 
@@ -151,8 +154,8 @@ struct Index {
         }
         .alignItems(VerticalAlign.Center)
         .justifyContent(FlexAlign.Start)
+        .visibility(this.animate ? Visibility.Visible : Visibility.None)
         .width('30%')
-
         Row() {
           Text(this.openBatchDel ? '完成' : '')
             .fontColor(ThemeColor.NavConfig['FontColor'])
@@ -215,12 +218,53 @@ struct Index {
             this.openBatchDel = false;
           }
         })
-
+        Search({ placeholder: '请输入任务名称', value: this.searchText })
+          .width("90%")
+          .height(30)
+          .position({top: 6, left: 2})
+          .zIndex(10)
+          .visibility(!this.animate ? Visibility.Visible : Visibility.None)
+          .onChange((value: string) => {
+            this.searchText = value
+            this.taskController.setParams(new Object({"searchText": this.searchText}))
+          })
+          .onSubmit((value: String) => {
+            this.taskController.getTasks(new Object({taskName: this.searchText.replace(" ", "")}));
+          })
+        Image($r('app.media.close'))
+          .width(25)
+          .height(25)
+          .fillColor("#F3F3F3")
+          .position({top: 16, right: 0})
+          .zIndex(10)
+          .visibility(!this.animate ? Visibility.Visible : Visibility.None)
+          .onClick(() => {
+            animateTo({ curve: curves.springMotion() }, () => {
+              this.animate = !this.animate;
+            })
+            this.searchText = ""
+            this.taskController.setParams(new Object({"searchText": this.searchText}))
+            this.taskController.getTasks()
+          })
         // Blank()
         Row() {
+          Image($r('app.media.search'))
+            .width(30)
+            .height(30)
+            .margin({ right: 8 })
+            .fillColor(ThemeColor.NavConfig['FontColor'])
+            .rotate({ angle: !this.animate ? 90 : 0 })
+            .translate({ x: !this.animate ? -300 : 0 })
+            .visibility(this.animate ? Visibility.Visible : Visibility.None)
+            .onClick(() => {
+              animateTo({ curve: curves.springMotion() }, () => {
+                this.animate = !this.animate;
+              })
+            })
           Image($r('app.media.manage'))
             .width(30)
             .height(30)
+            .visibility(this.animate ? Visibility.Visible : Visibility.None)
             .margin({ right: 8 })
             .fillColor(ThemeColor.NavConfig['FontColor'])
             .bindMenu(

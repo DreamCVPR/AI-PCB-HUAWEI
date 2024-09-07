@@ -54,7 +54,7 @@ export struct TaskDetail {
       Column() {
         Column () {
           Column() {
-            TextInput({ placeholder: '请输入任务名', text: this.taskName, controller: this.inputNameController })
+            TextInput({ placeholder: '请输入任务名称', text: this.taskName, controller: this.inputNameController })
               .height(40).width('80%')
               .onChange((value: string) => {
                 if (value.length > 16)

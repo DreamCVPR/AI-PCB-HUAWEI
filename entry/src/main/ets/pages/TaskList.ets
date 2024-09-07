@@ -8,6 +8,7 @@ import { NoticeController } from '../controllers/NoticeController';
 import { Background } from '../builder/Background';
 import { ThemeColor } from '../common/settings';
 import { changeTask } from '../api/taskImg';
+import { curves } from '@kit.ArkUI';
 
 @Entry
 @Component
@@ -18,7 +19,9 @@ struct TaskList {
   @State taskList: Array<object> = [];
   @State showLoading: boolean = false;
   @State message: string = '任务列表';
+  @State searchText: string = "";
   @State isRefreshing: boolean = false;
+  @State animate: boolean = true;
 
   @StorageLink("token") token: string = '';
 
@@ -30,32 +33,74 @@ struct TaskList {
   @Builder TopBar() {
     Row() {
       Flex() {
-        Image($r('app.media.left_arrow'))
-          .fillColor(ThemeColor.NavConfig['FontColor'])
-          .height(25)
-          .width(25)
-          .margin({ left: 2 })
-          .position({bottom: -1})
-          .onClick(()=>{
-            router.back()
+        Row() {
+          Image($r('app.media.left_arrow'))
+            .fillColor(ThemeColor.NavConfig['FontColor'])
+            .height(25)
+            .width(25)
+            .visibility(this.animate ? Visibility.Visible : Visibility.None)
+            .position({bottom: -1})
+            .onClick(()=>{
+              router.back()
+            })
+          Text("选择目标任务")
+            .fontColor(ThemeColor.NavConfig['FontColor'])
+            .fontSize(20)
+            .fontWeight(400)
+            .textAlign(TextAlign.Start)
+            .margin({ left: 10+27 })
+        }
+        .position({ top: 20, left: 2 })
+        .alignItems(VerticalAlign.Center)
+        .justifyContent(FlexAlign.Start)
+        .visibility(this.animate ? Visibility.Visible : Visibility.None)
+        .width(200)
+        Row() {
+          Image($r('app.media.search'))
+            .width(30)
+            .height(30)
+            .margin({ right: 8 })
+            .fillColor(ThemeColor.NavConfig['FontColor'])
+            .rotate({ angle: !this.animate ? 90 : 0 })
+            .translate({ x: !this.animate ? -300 : 0 })
+            .visibility(this.animate ? Visibility.Visible : Visibility.None)
+            .onClick(() => {
+              animateTo({ curve: curves.springMotion() }, () => {
+                this.animate = !this.animate;
+              })
+            })
+        }
+        .alignItems(VerticalAlign.Center)
+        .justifyContent(FlexAlign.End)
+        .width('30%')
+        .position({ top: 16, right: 10 })
+        Search({ placeholder: '请输入任务名称', value: this.searchText })
+          .width("90%")
+          .height(30)
+          .position({top: 6, left: 2})
+          .zIndex(10)
+          .visibility(!this.animate ? Visibility.Visible : Visibility.None)
+          .onChange((value: string) => {
+            this.searchText = value
           })
-        Text("选择目标任务")
-          .fontColor(ThemeColor.NavConfig['FontColor'])
-          .fontSize(20)
-          .fontWeight(400)
-          .textAlign(TextAlign.Start)
-          .margin({ left: 10+27 })
-        Blank()
-        Image($r('app.media.left_arrow'))
-          .fillColor(ThemeColor.NavConfig['FontColor'])
-          .height(25)
-          .width(25)
-          .margin({ left: 2 })
-          .position({bottom: -1})
-          .onClick(()=>{
-            router.back()
+          .onSubmit((value: String) => {
+            this.getTasks(new Object({taskName: this.searchText.replace(" ", "")}));
           })
-      }
+        Image($r('app.media.close'))
+          .width(25)
+          .height(25)
+          .fillColor("#F3F3F3")
+          .position({top: 16, right: 0})
+          .zIndex(10)
+          .visibility(!this.animate ? Visibility.Visible : Visibility.None)
+          .onClick(() => {
+            animateTo({ curve: curves.springMotion() }, () => {
+              this.animate = !this.animate;
+            })
+            this.searchText = ""
+            this.getTasks()
+          })
+      }.width('100%').height("100%")
     }
     .width('100%')
     .height(AppStorage.get('statusBarHeight') as number - 30)
@@ -122,6 +167,7 @@ struct TaskList {
       }
       .height('100%')
       .onClick(() => {
+        this.showLoading = true
         changeTask({"taskId": item.taskId, "imgIds": this.imgIds}).then(()=>{
           router.back()
           router.replaceUrl({

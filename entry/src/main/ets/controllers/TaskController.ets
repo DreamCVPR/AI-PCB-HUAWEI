@@ -12,4 +12,9 @@ export class TaskController {
     if (this.taskComponent)
       this.taskComponent.getTasks(params);
   }
+
+  public setParams(params: object): void  {
+    if (this.taskComponent)
+      this.taskComponent.setParams(params);
+  }
 }
