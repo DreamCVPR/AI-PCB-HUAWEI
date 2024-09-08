@@ -137,7 +137,7 @@ function drawRadar(params) {
             data: (function (){
                 var list = [];
                 for (var i = 1; i <= detectData.length; i++) {
-                    list.push('第'+i+'次');
+                    list.push('任务'+i);
                 }
                 return list;
             })()
@@ -181,7 +181,7 @@ function drawRadar(params) {
                     },
                     data: [{
                         value: detectData[i-1],
-                        name: '第'+i+'次'
+                        name: '任务'+i
                     }]
                 });
             }
