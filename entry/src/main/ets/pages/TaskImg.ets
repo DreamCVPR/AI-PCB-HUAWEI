@@ -80,7 +80,7 @@ struct TaskImg {
           let show: boolean = false
           Object.keys(this.filterImgDefectClassName).forEach((className)=>{
             if (className !== "not_detect" && this.filterImgDefectClassName[className]) {
-              if (item["detectionClasses"].includes(className)) show = true
+              if (item["detectionClasses"].includes(`"${className}"`)) show = true
             }
           })
           return show
