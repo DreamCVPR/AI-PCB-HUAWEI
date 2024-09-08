@@ -208,7 +208,7 @@ export struct Task {
                     .backgroundColor('rgb(021, 151, 165)')
                   } else if (item.taskState == 0) {
                     Button(
-                      item.countDetectImg < item.countAllImg ? `检测 ${item.countDetectImg}/${item.countAllImg}` : `已检测 ${item.countDetectImg}/${item.countAllImg}`,
+                      item.countDetectImg < item.countAllImg ? `检测 ${item.countDetectImg}/${item.countAllImg}` : `检测 ${item.countDetectImg}/${item.countAllImg}`,
                       { type: ButtonType.Normal, stateEffect: item.countDetectImg < item.countAllImg ? true : false }
                     )
                       .onClick(() => {
@@ -252,7 +252,7 @@ export struct Task {
                       .radialGradient(ThemeColor.DisableButtonRadialGradient("rgb(7, 193, 96)", item.countDetectImg >= item.countAllImg))
                       // .background(DisableBackground('rgb(7, 193, 96)', 0.5, item.countDetectImg >= item.countAllImg))
                       // .enabled(item.countDetectImg < item.countAllImg)
-                      .fontSize(16)
+                      .labelStyle({maxFontSize: 16, minFontSize: 13, overflow: TextOverflow.Clip})
                       .shadow(ThemeColor.Shadow)
                   }
                 }
