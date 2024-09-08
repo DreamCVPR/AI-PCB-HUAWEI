@@ -573,12 +573,6 @@ struct TaskImg {
             .opacity(40-this.showImgDefectPrompt[className])
             .translate({ x: (this.taskImgList[imgIndex]["detectionBoxes"][index][3]-this.taskImgList[imgIndex]["detectionBoxes"][index][1])*this.getScale(imgIndex)/2-this.showImgDefectPrompt[className],
               y: (this.taskImgList[imgIndex]["detectionBoxes"][index][2]-this.taskImgList[imgIndex]["detectionBoxes"][index][0])*this.getScale(imgIndex)/2-this.showImgDefectPrompt[className] })
-            .onSizeChange(()=>{
-              if (this.showImgDefectPrompt[className] == 40) return
-              setTimeout(()=>{
-                this.showImgDefectPrompt[className] = 40
-              }, 2000)
-            })
             .position(this.getImgLabelPos(
               this.getImgOriginPos(imgIndex),
               this.taskImgList[imgIndex]["detectionBoxes"][index][1],
@@ -593,7 +587,7 @@ struct TaskImg {
     }
   }
 
-  @Builder DetectInfoPopup(index: number) {
+  @Builder DetectInfoPopup() {
    List({ space: 7 })  {
       ForEach(Object.keys(this.showImgDefectPrompt), (className: string, i: number)=>{
         ListItem() {
@@ -616,7 +610,7 @@ struct TaskImg {
             .height(25)
             .borderRadius(50)
             Flex({ justifyContent: FlexAlign.Center, alignItems: ItemAlign.Center }) {
-              Text(JSON.stringify(this.taskImgList[index]["detectionClasses"].filter((item: string) => item == className).length))
+              Text(JSON.stringify(this.taskImgList[this.originImgIndex]["detectionClasses"].filter((item: string) => item == className).length))
                 .fontSize(13)
                 .fontWeight(400)
                 .textShadow(ThemeColor.TextShadow)
@@ -630,9 +624,17 @@ struct TaskImg {
         .borderRadius(8)
         .borderColor(this.LABEL_COLOR[className])
         .onClick(()=>{
-          animateTo({ tempo: 0.5, curve: curves.springMotion() }, () => {
-            this.showImgDefectPrompt[className] = 0
-          })
+          if (this.showImgDefectPrompt[className] !== 0) {
+            animateTo({
+              tempo: 0.5,
+              curve: curves.springMotion(),
+              onFinish: ()=>{
+                this.showImgDefectPrompt[className] = 40
+              }
+            }, () => {
+              this.showImgDefectPrompt[className] = 0
+            })
+          }
         })
       })
     }.width(100).height(175).padding(6).borderRadius(5)
@@ -641,8 +643,8 @@ struct TaskImg {
    .scrollBar(BarState.Off)
   }
 
-  @Builder Tips(index: number) {
-    if (this.taskImgList[index]["isDetect"] == 1) {
+  @Builder Tips() {
+    if (this.taskImgList[this.originImgIndex]["isDetect"] == 1) {
       Image($r("app.media.tips"))
         .width(36)
         .height(36)
@@ -653,7 +655,7 @@ struct TaskImg {
         .backgroundColor("#00000000")
         .zIndex(10)
         .bindPopup(this.showDetectInfoPopup, {
-          builder: this.DetectInfoPopup(index),
+          builder: this.DetectInfoPopup(),
           placement:Placement.LeftBottom,
           radius: 8,
           offset: {y: -30},
@@ -945,7 +947,7 @@ struct TaskImg {
         .width("100%")
         .backgroundColor('rgba(0, 0, 0, 0)')
         // 缺陷信息提示
-        this.Tips(this.originImgIndex)
+        this.Tips()
       }
       .position({bottom: 24})
       .zIndex(3)
