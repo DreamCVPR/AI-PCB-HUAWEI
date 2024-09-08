@@ -36,6 +36,14 @@ struct TaskImg {
   @State originImgRealSize: Array<object> = [];
   @State showLoading: boolean = true;
   @State showImgDefect: boolean = true;
+  @State filterImgDefectClassName: object = new Object({
+    "not_detect": true,
+    "mouse_bite": true,
+    "short": true,
+    "spur": true,
+    "spurious_copper": true,
+    "open_circuit": true
+  })
   @State showImgDefectClassName: object = new Object({
     "mouse_bite": true,
     "short": true,
@@ -52,27 +60,38 @@ struct TaskImg {
   });
   @State isImgEdge: boolean = true
   @State isRefreshing: boolean = false
-  @State showPop: boolean = false
+  @State showDetectInfoPopup: boolean = false
+  @State showDetectFilterPopup: boolean = false
   @State animate: boolean = true
 
   private originImgSwiperController: SwiperController = new SwiperController()
 
   aboutToAppear(): void {
+    this.CLASS_CN_NAME["not_detect"] = "未检"
     this.getTaskImg().then(()=>this.originImgRealSize = Array.from(this.taskImgList.keys()).map(v=>new Object()))
   }
 
   getTaskImg() {
     return getTaskImg({'taskId': this.taskId})
       .then((res: object) => {
-        this.taskImgList = res['result']
-        this.taskImgList.map((item: object, index: number) => {
+        // this.taskImgList = res['result']
+        this.taskImgList = res['result'].filter((item: object, index: number): boolean => {
+          if (item["isDetect"] !== 1) return this.filterImgDefectClassName["not_detect"]
+          let show: boolean = false
+          Object.keys(this.filterImgDefectClassName).forEach((className)=>{
+            if (className !== "not_detect" && this.filterImgDefectClassName[className]) {
+              if (item["detectionClasses"].includes(className)) show = true
+            }
+          })
+          return show
+        }).map((item: object, index: number) => {
           if (item["detectionClasses"]) {
             item["detectionClasses"] = JSON.parse(item["detectionClasses"])
             item["detectionBoxes"] = JSON.parse(item["detectionBoxes"])
             item["detectionScores"] = JSON.parse(item["detectionScores"])
           }
           return item
-        });
+        })
         this.originImgSize = Array.from(this.taskImgList.keys()).map(v=>new Object())
         this.isRefreshing = false
         this.resetOriginImg()
@@ -281,74 +300,61 @@ struct TaskImg {
   }
 
   @Builder ImgCard(img: object, index: number) {
-    Column() {
-      Stack() {
-        // 低清图片
-        Row() {
-          Image(baseUrl+this.COMPRESS_FILE+img["imgUrl"])
-            .alt($r('app.media.load_img'))
-            .width("100%")
-            .height("100%")
-            .objectFit(ImageFit.CENTER)
-            .onComplete((event) => {
-              if (event) {
-                this.originImgRealSize[index] = new Object({
-                  "height": event.height,
-                  "width": event.width
-                })
-              }
-            })
-          if (img["detectionClasses"]) {
-            this.Tag(img["detectionClasses"].length)
-          }
-          Flex({ alignItems: ItemAlign.Start }) {
-          }
-          .width("100%")
-          .height(20)
-          .position({bottom: 0})
-          .backgroundColor("#5B5B66")
-          .opacity(0.7)
-          Text((index+1).toString().padStart(2, '0'))
-            .fontSize(15)
-            .fontWeight(FontWeight.Bold)
-            .fontColor(Color.White)
-            .position({bottom: 1, left: 3})
-          if (this.taskImgList[index]["isDetect"]) {
-            Image($r('app.media.yes'))
-              .height(15)
-              .width(15)
-              .position({bottom: 1, right: 3})
-          }
-        }
-        .onClick((e)=>{
-          this.originImgIndex = index
-        })
-        .gesture(
-          LongPressGesture({fingers: 1, repeat: false, duration: 300})
-            .onAction(event=>{
-              this.chooseImgIndex = [index]
-            })
-        )
-        // 选择图片
-        if (this.chooseImgIndex !== undefined) {
+    if (img) {
+      Column() {
+        Stack() {
+          // 低清图片
           Row() {
-            this.Mask(0.5)
-          }
-          .onClick(()=>{
-            if (this.chooseImgIndex !== undefined) {
-              if (this.chooseImgIndex.includes(index)) {
-                this.chooseImgIndex = this.chooseImgIndex.filter(item => item != index)
-              } else {
-                this.chooseImgIndex?.push(index)
-              }
+            Image(baseUrl+this.COMPRESS_FILE+img["imgUrl"])
+              .alt($r('app.media.load_img'))
+              .width("100%")
+              .height("100%")
+              .objectFit(ImageFit.CENTER)
+              .onComplete((event) => {
+                if (event) {
+                  this.originImgRealSize[index] = new Object({
+                    "height": event.height,
+                    "width": event.width
+                  })
+                }
+              })
+            if (img["detectionClasses"]) {
+              this.Tag(img["detectionClasses"].length)
             }
+            Flex({ alignItems: ItemAlign.Start }) {
+            }
+            .width("100%")
+            .height(20)
+            .position({bottom: 0})
+            .backgroundColor("#5B5B66")
+            .opacity(0.7)
+            Text((index+1).toString().padStart(2, '0'))
+              .fontSize(15)
+              .fontWeight(FontWeight.Bold)
+              .fontColor(Color.White)
+              .position({bottom: 1, left: 3})
+            if (this.taskImgList[index] && this.taskImgList[index]["isDetect"]) {
+              Image($r('app.media.yes'))
+                .height(15)
+                .width(15)
+                .position({bottom: 1, right: 3})
+            }
+          }
+          .onClick((e)=>{
+            this.originImgIndex = index
           })
-          Checkbox()
-            .select(this.chooseImgIndex.includes(index))
-            .selectedColor(ThemeColor.CheckBoxSelectColor)
-            .unselectedColor(ThemeColor.CheckBoxUnSelectedColor)
-            .shape(CheckBoxShape.ROUNDED_SQUARE)
-            .onClick(() => {
+          .gesture(
+            LongPressGesture({fingers: 1, repeat: false, duration: 300})
+              .onAction(event=>{
+                this.chooseImgIndex = [index]
+              })
+          )
+          // 选择图片
+          if (this.chooseImgIndex !== undefined) {
+            Row() {
+              this.Mask(0.5)
+            }
+            .onClick(()=>{
               if (this.chooseImgIndex !== undefined) {
                 if (this.chooseImgIndex.includes(index)) {
                   this.chooseImgIndex = this.chooseImgIndex.filter(item => item != index)
@@ -357,19 +363,34 @@ struct TaskImg {
                 }
               }
             })
-            .zIndex(2)
-            .position({top: 2, right: 2})
+            Checkbox()
+              .select(this.chooseImgIndex.includes(index))
+              .selectedColor(ThemeColor.CheckBoxSelectColor)
+              .unselectedColor(ThemeColor.CheckBoxUnSelectedColor)
+              .shape(CheckBoxShape.ROUNDED_SQUARE)
+              .onClick(() => {
+                if (this.chooseImgIndex !== undefined) {
+                  if (this.chooseImgIndex.includes(index)) {
+                    this.chooseImgIndex = this.chooseImgIndex.filter(item => item != index)
+                  } else {
+                    this.chooseImgIndex?.push(index)
+                  }
+                }
+              })
+              .zIndex(2)
+              .position({top: 2, right: 2})
+          }
         }
       }
+      .width('49%')
     }
-    .width('49%')
   }
 
   @Builder ListRow(taskImgList: Array<object>, index: number) {
     Flex({ justifyContent: FlexAlign.SpaceBetween }) {
-      this.ImgCard(taskImgList[index], index)
-      if (index+1 < taskImgList.length) {
-        this.ImgCard(taskImgList[index+1], index+1)
+      this.ImgCard(this.taskImgList[index], index)
+      if (index+1 < this.taskImgList.length) {
+        this.ImgCard(this.taskImgList[index+1], index+1)
       }
     }
     .width('100%')
@@ -545,8 +566,8 @@ struct TaskImg {
             .type(ButtonType.Circle)
             .borderRadius(this.showImgDefectPrompt[className])
             .opacity(40-this.showImgDefectPrompt[className])
-            .translate({ x: (this.taskImgList[imgIndex]["detectionBoxes"][index][3]-this.taskImgList[imgIndex]["detectionBoxes"][index][1])*(scale ? scale : this.getScale(imgIndex))/2-this.showImgDefectPrompt[className],
-              y: (this.taskImgList[imgIndex]["detectionBoxes"][index][2]-this.taskImgList[imgIndex]["detectionBoxes"][index][0])*(scale ? scale : this.getScale(imgIndex))/2-this.showImgDefectPrompt[className] })
+            .translate({ x: (this.taskImgList[imgIndex]["detectionBoxes"][index][3]-this.taskImgList[imgIndex]["detectionBoxes"][index][1])*this.getScale(imgIndex)/2-this.showImgDefectPrompt[className],
+              y: (this.taskImgList[imgIndex]["detectionBoxes"][index][2]-this.taskImgList[imgIndex]["detectionBoxes"][index][0])*this.getScale(imgIndex)/2-this.showImgDefectPrompt[className] })
             .onSizeChange(()=>{
               if (this.showImgDefectPrompt[className] == 40) return
               setTimeout(()=>{
@@ -554,22 +575,22 @@ struct TaskImg {
               }, 2000)
             })
             .position(this.getImgLabelPos(
-              originPos ? originPos : this.getImgOriginPos(imgIndex),
+              this.getImgOriginPos(imgIndex),
               this.taskImgList[imgIndex]["detectionBoxes"][index][1],
               this.taskImgList[imgIndex]["detectionBoxes"][index][0],
-              scale ? scale : this.getScale(imgIndex), units))
+              this.getScale(imgIndex)))
             .backgroundColor(this.LABEL_COLOR[className])
             .enabled(false)
             .borderColor(this.LABEL_COLOR[className])
-            .visibility(this.showImgDefect && this.showImgDefectClassName[className] ? Visibility.Visible : Visibility.Hidden)
+            .visibility(this.showImgDefect && this.showImgDefectClassName[className] && !scale ? Visibility.Visible : Visibility.Hidden)
         })
       }
     }
   }
 
-  @Builder DetectInfo(index: number) {
+  @Builder DetectInfoPopup(index: number) {
    List({ space: 7 })  {
-      ForEach(Object.keys(this.CLASS_CN_NAME), (className: string, i: number)=>{
+      ForEach(Object.keys(this.showImgDefectPrompt), (className: string, i: number)=>{
         ListItem() {
           Flex({ justifyContent: FlexAlign.Start }) {
             Stack() {
@@ -626,20 +647,20 @@ struct TaskImg {
         .position({"right": 19, "bottom": 52})
         .backgroundColor("#00000000")
         .zIndex(10)
-        .bindPopup(this.showPop, {
-          builder: this.DetectInfo(index),
+        .bindPopup(this.showDetectInfoPopup, {
+          builder: this.DetectInfoPopup(index),
           placement:Placement.LeftBottom,
           radius: 8,
           offset: {y: -30},
           onStateChange: (e) => {
             console.info(JSON.stringify(e.isVisible))
             if (!e.isVisible) {
-              this.showPop = false
+              this.showDetectInfoPopup = false
             }
           }
         })
         .onClick(() => {
-          this.showPop = !this.showPop
+          this.showDetectInfoPopup = !this.showDetectInfoPopup
         })
     }
   }
@@ -688,6 +709,58 @@ struct TaskImg {
     }
     .width(`${this.originImgRealSize[index]["width"]}px`)
     .height(`${this.originImgRealSize[index]["height"]}px`)
+  }
+
+  @Builder DetectFilterPopup() {
+    Column() {
+      Flex({ justifyContent: FlexAlign.End, alignItems: ItemAlign.Center }) {
+        Text(Object.keys(this.filterImgDefectClassName).filter((className: string) => this.filterImgDefectClassName[className] == true).length == Object.keys(this.filterImgDefectClassName).length ? "取消全选" : "全选")
+          .fontSize(11)
+          .fontWeight(400)
+          .fontColor("#DCDCDC")
+          .onClick(() => {
+            const value = !(Object.keys(this.filterImgDefectClassName).filter((className: string) => this.filterImgDefectClassName[className] == true).length == Object.keys(this.filterImgDefectClassName).length)
+            Object.keys(this.filterImgDefectClassName).forEach((className: string) => {
+              this.filterImgDefectClassName[className] = value
+            })
+            this.showLoading = true
+            this.getTaskImg()
+          })
+      }.width("100%").padding({right: 10, top: 6}).margin({bottom: -2})
+      List({ space: 7 })  {
+        ForEach(Object.keys(this.filterImgDefectClassName), (className: string, i: number)=>{
+          ListItem() {
+            Flex({ justifyContent: FlexAlign.SpaceAround, alignItems: ItemAlign.Center }) {
+              Text(this.CLASS_CN_NAME[className])
+                .fontSize(13)
+                .fontWeight(400)
+                .onClick(() => {
+                  this.filterImgDefectClassName[className] = !this.filterImgDefectClassName[className]
+                  this.showLoading = true
+                  this.getTaskImg()
+                })
+              Checkbox()
+                .select(this.filterImgDefectClassName[className])
+                .selectedColor(ThemeColor.CheckBoxSelectColor)
+                .unselectedColor(ThemeColor.BackgroundColor)
+                .shape(CheckBoxShape.ROUNDED_SQUARE)
+                .width(20)
+                .onClick(() => {
+                  this.filterImgDefectClassName[className] = !this.filterImgDefectClassName[className]
+                  this.showLoading = true
+                  this.getTaskImg()
+                })
+            }
+          }
+          .borderRadius(8)
+          .padding({left: 4})
+          .backgroundColor(this.filterImgDefectClassName[className] ? ThemeColor.ItemSelectColor : Color.White)
+        })
+      }.width("100%").height(220).padding(6).borderRadius(5)
+      .listDirection(Axis.Vertical)
+      .divider({strokeWidth: 1, color: ThemeColor.BackgroundColor})
+      .scrollBar(BarState.Off)
+    }.width(90)
   }
 
   @Builder TopBar() {
@@ -776,6 +849,28 @@ struct TaskImg {
                 this.showImgDefect = !this.showImgDefect
               }
             })
+        } else {
+          Image($r('app.media.filter'))
+            .height(25)
+            .width(25)
+            .margin({ right: 10 })
+            .fillColor(ThemeColor.NavConfig['FontColor'])
+            .bindPopup(this.showDetectFilterPopup, {
+              builder: this.DetectFilterPopup(),
+              placement:Placement.BottomRight,
+              radius: 8,
+              // offset: {y: -30},
+              enableArrow: false,
+              onStateChange: (e) => {
+                console.info(JSON.stringify(e.isVisible))
+                if (!e.isVisible) {
+                  this.showDetectFilterPopup = false
+                }
+              }
+            })
+            .onClick(() => {
+              this.showDetectFilterPopup = !this.showDetectFilterPopup
+            })
         }
       }
     }
@@ -798,7 +893,7 @@ struct TaskImg {
         Empty().visibility(this.taskImgList.length == 0 && !this.showLoading ? Visibility.Visible : Visibility.None)
         List({ initialIndex: 0 }) {
           ForEach(this.taskImgList, (item: object, index: number) => {
-            if (index % 2 == 0) {
+            if (item && index % 2 == 0) {
               this.ListRow(this.taskImgList, index)
             }
           })
@@ -809,6 +904,7 @@ struct TaskImg {
         .zIndex(1)
         .scrollBar(BarState.Off)
         .edgeEffect(EdgeEffect.Fade)
+        .visibility(this.taskImgList.length > 0 ? Visibility.Visible : Visibility.None)
       }.width("100%").height("100%")
     }
     .onRefreshing(() => {
@@ -835,7 +931,7 @@ struct TaskImg {
       Row() {
         // 底部标签类别
         GridRow({columns: 5}) {
-          ForEach(Object.keys(this.CLASS_CN_NAME), (key: string, index: number)=>{
+          ForEach(Object.keys(this.showImgDefectClassName), (key: string, index: number)=>{
             GridCol() {
               this.LabelClass(key)
             }
