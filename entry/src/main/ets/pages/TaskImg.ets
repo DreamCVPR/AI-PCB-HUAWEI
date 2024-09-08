@@ -75,22 +75,22 @@ struct TaskImg {
     return getTaskImg({'taskId': this.taskId})
       .then((res: object) => {
         // this.taskImgList = res['result']
-        this.taskImgList = res['result'].filter((item: object, index: number): boolean => {
-          if (item["isDetect"] !== 1) return this.filterImgDefectClassName["not_detect"]
-          let show: boolean = false
-          Object.keys(this.filterImgDefectClassName).forEach((className)=>{
-            if (className !== "not_detect" && this.filterImgDefectClassName[className]) {
-              if (item["detectionClasses"].includes(`"${className}"`)) show = true
-            }
-          })
-          return show
-        }).map((item: object, index: number) => {
+        this.taskImgList = res['result'].map((item: object, index: number) => {
           if (item["detectionClasses"]) {
             item["detectionClasses"] = JSON.parse(item["detectionClasses"])
             item["detectionBoxes"] = JSON.parse(item["detectionBoxes"])
             item["detectionScores"] = JSON.parse(item["detectionScores"])
           }
           return item
+        }).filter((item: object, index: number): boolean => {
+          if (item["isDetect"] !== 1) return this.filterImgDefectClassName["not_detect"]
+          let show: boolean = false
+          Object.keys(this.filterImgDefectClassName).forEach((className)=>{
+            if (className !== "not_detect" && this.filterImgDefectClassName[className]) {
+              if (item["detectionClasses"].includes(`${className}`)) show = true
+            }
+          })
+          return show
         })
         this.originImgSize = Array.from(this.taskImgList.keys()).map(v=>new Object())
         this.isRefreshing = false
@@ -102,6 +102,11 @@ struct TaskImg {
         this.showLoading = false
         console.log("获取taskImg失败:" + JSON.stringify(err))
       })
+  }
+
+  filterImgByDefect() {
+    this.showLoading = true
+    this.getTaskImg()
   }
 
   resetOriginImg(originImgIndex: number = -1) {
@@ -718,13 +723,13 @@ struct TaskImg {
           .fontSize(11)
           .fontWeight(400)
           .fontColor("#DCDCDC")
+          .enabled(!this.showLoading)
           .onClick(() => {
             const value = !(Object.keys(this.filterImgDefectClassName).filter((className: string) => this.filterImgDefectClassName[className] == true).length == Object.keys(this.filterImgDefectClassName).length)
             Object.keys(this.filterImgDefectClassName).forEach((className: string) => {
               this.filterImgDefectClassName[className] = value
             })
-            this.showLoading = true
-            this.getTaskImg()
+            this.filterImgByDefect()
           })
       }.width("100%").padding({right: 10, top: 6}).margin({bottom: -2})
       List({ space: 7 })  {
@@ -734,12 +739,13 @@ struct TaskImg {
               Text(this.CLASS_CN_NAME[className])
                 .fontSize(13)
                 .fontWeight(400)
+                .enabled(!this.showLoading)
                 .onClick(() => {
                   this.filterImgDefectClassName[className] = !this.filterImgDefectClassName[className]
-                  this.showLoading = true
-                  this.getTaskImg()
+                  this.filterImgByDefect()
                 })
               Checkbox()
+                .enabled(!this.showLoading)
                 .select(this.filterImgDefectClassName[className])
                 .selectedColor(ThemeColor.CheckBoxSelectColor)
                 .unselectedColor(ThemeColor.BackgroundColor)
@@ -747,8 +753,7 @@ struct TaskImg {
                 .width(20)
                 .onClick(() => {
                   this.filterImgDefectClassName[className] = !this.filterImgDefectClassName[className]
-                  this.showLoading = true
-                  this.getTaskImg()
+                  this.filterImgByDefect()
                 })
             }
           }
