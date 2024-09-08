@@ -38,6 +38,7 @@ struct TaskImg {
   @State showImgDefect: boolean = true;
   @State filterImgDefectClassName: object = new Object({
     "not_detect": true,
+    "no_defect": true,
     "mouse_bite": true,
     "short": true,
     "spur": true,
@@ -68,6 +69,7 @@ struct TaskImg {
 
   aboutToAppear(): void {
     this.CLASS_CN_NAME["not_detect"] = "未检"
+    this.CLASS_CN_NAME["no_defect"] = "无暇"
     this.getTaskImg().then(()=>this.originImgRealSize = Array.from(this.taskImgList.keys()).map(v=>new Object()))
   }
 
@@ -84,9 +86,10 @@ struct TaskImg {
           return item
         }).filter((item: object, index: number): boolean => {
           if (item["isDetect"] !== 1) return this.filterImgDefectClassName["not_detect"]
+          if (item["detectionClasses"].length == 0) return this.filterImgDefectClassName["no_defect"]
           let show: boolean = false
           Object.keys(this.filterImgDefectClassName).forEach((className)=>{
-            if (className !== "not_detect" && this.filterImgDefectClassName[className]) {
+            if (className !== "not_detect" && className !== "no_defect" && this.filterImgDefectClassName[className]) {
               if (item["detectionClasses"].includes(`${className}`)) show = true
             }
           })
@@ -763,7 +766,7 @@ struct TaskImg {
           .padding({left: 4})
           .backgroundColor(this.filterImgDefectClassName[className] ? ThemeColor.ItemSelectColor : Color.White)
         })
-      }.width("100%").height(220).padding(6).borderRadius(5)
+      }.width("100%").height(262).padding(10).borderRadius(5)
       .listDirection(Axis.Vertical)
       .divider({strokeWidth: 1, color: ThemeColor.BackgroundColor})
       .scrollBar(BarState.Off)

@@ -10,6 +10,7 @@ import { noticeTime, requestTime, ThemeColor } from '../common/settings';
 import { Loading } from '../components/Loading';
 import { Notice } from '../components/Notice';
 import { PersonalController } from '../controllers/PersonalController';
+import { ChartController } from '../controllers/ChartController';
 
 
 @Entry
@@ -19,6 +20,7 @@ struct Index {
   private taskController: TaskController = new TaskController()
   private noticeController: NoticeController = new NoticeController()
   private personalController: PersonalController = new PersonalController()
+  private chartController: ChartController = new ChartController()
   @State showLoading: boolean = false;
   @State currentIndex: number = 0;
   @State showTask: boolean = false;
@@ -400,7 +402,9 @@ struct Index {
                   taskController: this.taskController,
                 })
               } else if (item.num === 1) {
-                Visual();
+                Visual({
+                  chartController: this.chartController,
+                });
               } else if (item.num === 2) {
                 Settings({
                   openEdit: this.openEdit,
@@ -410,10 +414,12 @@ struct Index {
             }.width('100%')
           }.tabBar(this.TabBuilder(item.num))
         })
-
       }
       .onChange((index: number) => {
         this.updateTitle(this.tabs[index].text)
+        if (index == 1) {
+          this.chartController.refresh()
+        }
         this.currentIndex = index
       })
       .animationDuration(0)

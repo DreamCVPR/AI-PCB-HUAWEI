@@ -3,6 +3,7 @@ import { webview } from '@kit.ArkWeb';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { getTasks } from '../api/service';
 import { MaxSelected } from '@kit.MediaLibraryKit';
+import { ChartController } from '../controllers/ChartController';
 
 class Params {
   token?: string = AppStorage.get("token")
@@ -77,13 +78,25 @@ export struct Visual {
   controller: webview.WebviewController = new webview.WebviewController();
   @StorageLink("token") token: string = '';
   params = new Params()
+  public chartController: ChartController | null = null;
+
+  countIn = 0
 
   aboutToAppear(): void {
     if (this.token === '') {
       router.replaceUrl({ url: 'pages/Login' });
     } else {
+      if (this.chartController) {
+        this.chartController.attach(this); //绑定控制器
+      }
       // 通过重新实例化控制器来清除缓存
       this.controller = new webview.WebviewController();
+    }
+  }
+
+  refresh() {
+    if (this.countIn++ > 0) {
+      this.controller.refresh()
     }
   }
 
