@@ -101,21 +101,19 @@ export struct Visual {
   }
 
   build() {
-    RelativeContainer() {
-      Column() {
-        Web({ src: $rawfile('chart/chart.hml'), controller: this.controller })
-          .javaScriptAccess(true)
-          .javaScriptProxy({
-            object: this.params,
-            name: "params",
-            methodList: ["getToken", "print","getTask"],
-      //      asyncMethodList: [""],
-            controller: this.controller,
-          })
-          .onPageEnd(e => {
-            console.log("New page loaded: " + e.url);
-          })
-      }
+    Column() {
+      Web({ src: $rawfile('chart/chart.hml'), controller: this.controller })
+        .javaScriptAccess(true)
+        .javaScriptProxy({
+          object: this.params,
+          name: "params",
+          methodList: ["getToken", "print","getTask"],
+          //      asyncMethodList: [""],
+          controller: this.controller,
+        })
+        .onPageEnd(e => {
+          console.log("New page loaded: " + e.url);
+        })
     }
   }
 }
