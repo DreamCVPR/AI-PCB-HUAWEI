@@ -420,6 +420,6 @@ export struct Task {
         .refreshOffset(120)
         .pullToRefresh(true)
       }
-    }
+    }.width("100%").height("100%")
   }
 }
